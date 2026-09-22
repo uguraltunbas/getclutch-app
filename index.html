@@ -2,17 +2,59 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Clutch - AI Picks</title>
-<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#111225;color:#fff;min-height:100vh;display:flex;flex-direction:column}a{color:#7c8aff;text-decoration:none}a:hover{color:#a0aaff}nav{display:flex;align-items:center;justify-content:space-between;padding:20px 32px;max-width:1100px;width:100%;margin:0 auto}.nav-brand{font-size:20px;font-weight:800}.nav-links{display:flex;gap:24px}.nav-links a{font-size:14px;color:#a0a3bd;font-weight:500}.nav-links a:hover{color:#fff}.hero{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:60px 24px 40px;max-width:720px;margin:0 auto}.badge{display:inline-block;background:rgba(124,138,255,.15);color:#7c8aff;font-size:13px;font-weight:600;padding:6px 16px;border-radius:20px;margin-bottom:24px}.hero h1{font-size:52px;font-weight:900;letter-spacing:-2px;line-height:1.1;margin-bottom:20px}.hero h1 span{color:#7c8aff}.tagline{font-size:18px;color:#a0a3bd;max-width:520px;margin-bottom:40px;line-height:1.7}.features{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;width:100%;max-width:720px;margin-bottom:48px}.fc{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:24px 18px;text-align:center}.fc .i{font-size:28px;margin-bottom:10px}.fc h3{font-size:15px;font-weight:700;margin-bottom:6px}.fc p{font-size:13px;color:#a0a3bd}footer{border-top:1px solid rgba(255,255,255,.06);padding:32px 24px;text-align:center}.fl{display:flex;justify-content:center;gap:28px;margin-bottom:16px;flex-wrap:wrap}.fl a{font-size:14px;color:#a0a3bd}.fl a:hover{color:#fff}.fc2{font-size:13px;color:#6b6e8a}@media(max-width:640px){.hero h1{font-size:36px}.features{grid-template-columns:1fr;max-width:360px}}</style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clutch — NBA win probabilities with a public record</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=IBM+Plex+Mono&family=Libre+Franklin:wght@400;500&display=swap" rel="stylesheet">
+<style>*{margin:0;padding:0;box-sizing:border-box}
+:root{--paper:#15130F;--panel:#1C1914;--ink:#F1E9D8;--ink2:#CFC4AE;--ink3:#A89C86;--rule:#3A342A;--amber:#FFB020}
+body{background:var(--paper);color:var(--ink2);font-family:'Libre Franklin',-apple-system,BlinkMacSystemFont,sans-serif;line-height:1.65}
+a{color:var(--amber)}
+.w{max-width:760px;margin:0 auto;padding:0 20px}
+header{padding:28px 0 0}
+.mast{display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
+.mast a.brand{font-family:'Fraunces',Georgia,serif;font-weight:900;font-size:40px;color:var(--ink);text-decoration:none;letter-spacing:-.5px}
+nav a{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:12px;letter-spacing:1.5px;color:var(--ink3);text-decoration:none;margin-left:18px;text-transform:uppercase}
+nav a:hover{color:var(--ink)}
+.rule{border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);height:4px;margin:10px 0 0}
+.dateline{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:12px;letter-spacing:1.5px;color:var(--ink3);padding:10px 0;border-bottom:1px solid var(--rule);text-transform:uppercase}
+main{padding:28px 0 64px}
+h1{font-family:'Fraunces',Georgia,serif;font-weight:900;color:var(--ink);font-size:44px;line-height:1.08;letter-spacing:-.5px;margin-bottom:14px}
+.deck{font-size:18px;color:var(--ink2);margin-bottom:8px}
+h2{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:13px;letter-spacing:2px;color:var(--amber);text-transform:uppercase;margin:34px 0 10px;padding-bottom:8px;border-bottom:1px solid var(--rule)}
+h2 span{color:var(--ink3);margin-right:10px}
+p,li{font-size:16px;margin-bottom:12px}
+ul{padding-left:20px}
+.glass{background:#0F1114;border:1px solid #3A3F47;padding:22px;margin:22px 0}
+.glass .k{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:2px;color:var(--amber);text-transform:uppercase}
+.glass .t{font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:24px;color:var(--ink);margin:6px 0}
+footer{border-top:1px solid var(--rule);padding:22px 0 40px;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:1px;color:var(--ink3)}
+footer a{color:var(--ink2);margin-right:16px;text-decoration:none}
+@media(max-width:560px){h1{font-size:34px}.mast a.brand{font-size:32px}nav a{margin-left:12px}}</style>
 </head>
 <body>
-<nav><div class="nav-brand">Clutch</div><div class="nav-links"><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="support.html">Support</a></div></nav>
-<section class="hero">
-<div class="badge">AI-POWERED NBA PREDICTIONS</div>
-<h1>Smarter picks.<br><span>Every game.</span></h1>
-<p class="tagline">Clutch uses machine learning to deliver NBA game predictions, player prop analysis, and daily challenges -- all in one app built for basketball fans.</p>
-<div class="features"><div class="fc"><div class="i">&#129504;</div><h3>AI Predictions</h3><p>ML-powered picks for every NBA game, updated in real time.</p></div><div class="fc"><div class="i">&#127942;</div><h3>Daily Challenges</h3><p>Test your basketball knowledge and climb the leaderboard.</p></div><div class="fc"><div class="i">&#128200;</div><h3>Player Props</h3><p>Detailed stat projections and trends for every player.</p></div></div>
-</section>
-<footer><div class="fl"><a href="privacy.html">Privacy Policy</a><a href="terms.html">Terms of Service</a><a href="support.html">Support</a><a href="mailto:uguraltunbas1@gmail.com">Contact</a></div><p class="fc2">uguraltunbas1@gmail.com &middot; &copy; 2026 Clutch. All rights reserved.</p></footer>
+<div class="w">
+<header>
+<div class="mast"><a class="brand" href="index.html">Clutch</a><nav><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="support.html">Support</a></nav></div>
+<div class="rule"></div>
+<div class="dateline">The NBA, graded nightly</div>
+</header>
+<main>
+<h1>Every game's number.<br>Every call graded.</h1>
+<p class="deck">Clutch gives every NBA game one calibrated win probability, the reasons behind it, and a public Ledger of every call it has made — wins and losses. Free to read, no account needed.</p>
+<div class="glass"><div class="k">The Ledger</div><div class="t">We publish the record, even when it's level with picking the home team.</div><p style="margin:0">Timestamped before tip-off, graded after the final, beside the obvious alternatives.</p></div>
+<h2><span>01</span>Tonight</h2>
+<p>The slate, tonight's call and why, live pages for games in progress, Clutch Time alerts in the final five minutes of a close one.</p>
+<h2><span>02</span>The Report</h2>
+<p>Who's out, ranked by the rotation minutes it actually costs.</p>
+<h2><span>03</span>What-If</h2>
+<p>Start from the model's number with tonight's facts in it, then change them and watch it move.</p>
+<h2><span>04</span>Play</h2>
+<p>Call it: pick a side before tip and get graded like the model. Buzzer beater: eight shots a day. Both earn Press Credits toward a free day of Pro.</p>
+<h2><span>05</span>Plans</h2>
+<p>Free covers the probabilities, the Ledger, the Report, What-If and Play. Pro adds our numbers beside the book's, postmortems and market alerts. Elite adds the 5,000-run simulation.</p>
+
+</main>
+<footer><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="support.html">Support</a><a href="mailto:uguraltunbasai@gmail.com">uguraltunbasai@gmail.com</a><br><br>&copy; 2026 Clutch. Analytics, not a wagering service. Not affiliated with the NBA.</footer>
+</div>
 </body>
 </html>
