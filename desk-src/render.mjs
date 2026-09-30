@@ -29,8 +29,10 @@ async function launch() {
     "--allow-file-access-from-files", "--hide-scrollbars", "--force-device-scale-factor=1",
     "--disable-gpu-vsync", "--no-first-run", "--no-default-browser-check", "--mute-audio",
     "--font-render-hinting=none", ...(process.env.CI ? ["--no-sandbox", "--disable-dev-shm-usage"] : []), "about:blank",
-  ], { stdio: "ignore" });
-  for (let i = 0; i < 100; i++) {
+  ], { stdio: ["ignore", "ignore", "pipe"] });
+  let err = "";
+  proc.stderr.on("data", (d) => { err += d; });
+  for (let i = 0; i < 300; i++) {
     try {
       const list = await (await fetch(`http://127.0.0.1:${PORT}/json/list`)).json();
       const page = list.find((t) => t.type === "page");
@@ -39,7 +41,7 @@ async function launch() {
     await sleep(100);
   }
   proc.kill();
-  throw new Error("Chrome did not start");
+  throw new Error("Chrome did not start: " + err.slice(-1500));
 }
 
 function client(url) {
