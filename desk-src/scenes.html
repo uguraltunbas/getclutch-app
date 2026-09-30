@@ -1,0 +1,503 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="brand.css">
+<script src="led.js"></script>
+<script src="data/teams.js"></script>
+<script src="data/facts.js"></script>
+<style>
+/* Vertical video scenes, 1080×1920. Each scene draws frame t from t alone (renderFrame).
+   Safe zone for TikTok/Reels/Shorts: key text between y 190 and 1540, the lower right kept clear. */
+#stage { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; overflow: hidden; background: var(--paper); }
+#cv, #fx, #top { position: absolute; left: 0; top: 0; }
+#dom, #endl { position: absolute; inset: 0; }
+#cv { z-index: 0; } #dom { z-index: 1; } #top { z-index: 2; } #endl { z-index: 3; } #fx { z-index: 4; }
+.x { position: absolute; transform-origin: 50% 50%; }
+.eb { font: 600 30px/1 var(--mono); letter-spacing: .2em; text-transform: uppercase; color: var(--amber); }
+.eb .r { color: var(--ink4); }
+.hd { font: 900 96px/0.98 var(--display); color: var(--ink); letter-spacing: -.01em; }
+.hd em { font-style: normal; color: var(--amber); }
+.bd { font: 500 40px/1.34 var(--body); color: var(--ink2); }
+.bd b { color: var(--ink); font-weight: 700; }
+.pill { display: inline-block; background: var(--amber); color: var(--onAmber); font: 700 34px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; padding: 26px 34px; }
+.rule2 { border-top: 5px solid var(--ink); border-bottom: 2px solid var(--ink); height: 12px; }
+.glass { background: var(--glass); border: 2px solid var(--glassRule); }
+.tab { font: 900 150px/0.88 var(--tabloid); letter-spacing: -.035em; text-transform: uppercase; color: var(--dayInk); }
+.stamp { font: 900 110px/1 var(--display); padding: 18px 34px 24px; border: 11px solid currentColor; text-transform: uppercase; }
+</style></head>
+<body>
+<div id="stage"><canvas id="cv" width="1080" height="1920"></canvas><div id="dom"></div><canvas id="top" width="1080" height="1920"></canvas><div id="endl"></div><canvas id="fx" width="1080" height="1920"></canvas></div>
+<script>
+const Q = new URLSearchParams(location.search);
+document.documentElement.lang = Q.get("lang") === "tr" ? "tr" : "en";
+const lang = Q.get("lang") || "en", tr = lang === "tr";
+const cv = document.getElementById("cv"), ctx = cv.getContext("2d");
+const fx = document.getElementById("fx"), fxx = fx.getContext("2d");
+const dom = document.getElementById("dom"), stage = document.getElementById("stage");
+const topc = document.getElementById("top"), tx = topc.getContext("2d"), endl = document.getElementById("endl");
+const W = 1080, H = 1920;
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const seg = (t, a, b) => clamp((t - a) / (b - a));
+const eo = (x) => 1 - Math.pow(1 - x, 3);
+const eio = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+const back = (x) => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
+const lerp = (a, b, k) => a + (b - a) * k;
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const nfmt = (n) => (tr ? Math.round(n).toLocaleString("tr-TR") : Math.round(n).toLocaleString("en-US"));
+function el(html, parent = dom) { const d = document.createElement("div"); d.innerHTML = html.trim(); const e = d.firstElementChild; parent.appendChild(e); return e; }
+function vis(e, o, dy = 0, s = 1, rot = 0, dx = 0) { e.style.opacity = o; e.style.transform = `translate(${dx}px, ${dy}px) scale(${s}) rotate(${rot}deg)`; }
+function rise(e, t, a, dur = 0.45, dist = 40) { const k = eo(seg(t, a, a + dur)); vis(e, k, (1 - k) * dist); }
+function rng(seed) { let s = seed >>> 0 || 1; return () => { s ^= s << 13; s >>>= 0; s ^= s >> 17; s ^= s << 5; s >>>= 0; return s / 4294967296; }; }
+function dot(c, x, y, r, color) { c.fillStyle = color; c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.fill(); }
+function glowDots(c, pts, r, color, blur) { c.save(); c.shadowColor = color; c.shadowBlur = blur; c.fillStyle = color; for (const [x, y, a] of pts) { c.globalAlpha = a ?? 1; c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.fill(); } c.restore(); }
+/** An LED readout centred on (cx, cy) at a pitch. */
+function ledAt(c, text, cx, cy, pitch, o = {}) { const w = (LED.cols(text) - 1) * pitch; return LED.draw(c, text, cx - w / 2, cy - 3 * pitch, { pitch, off: o.off ?? null, on: o.on, glow: o.glow ?? pitch * 0.9, alpha: o.alpha, lit: o.lit, r: o.r }); }
+
+// ── the end card, shared by every scene ───────────────────────────────────
+const END = { dur: 1.7 };
+function buildEnd() {
+  const e = el(`<div class="x" style="inset:0;background:var(--paper);display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:980px;gap:34px;text-align:center">
+    <div style="font:900 170px/0.9 var(--display);color:var(--ink)">Clutch</div>
+    <div style="font:900 62px/1.05 var(--display);color:var(--ink)">${tr ? "Her maçı tahmin et. <em style='font-style:normal;color:var(--amber)'>Clutch'ı yen.</em>" : "Call every game. <em style='font-style:normal;color:var(--amber)'>Beat Clutch.</em>"}</div>
+    <div class="pill" style="margin-top:26px">${tr ? "App Store'da ücretsiz" : "Free on the App Store"}</div>
+    <div class="eb" style="color:var(--ink3);margin-top:8px">@clutchledger</div></div>`, endl);
+  return e;
+}
+const C_DOTS = [[1, 0], [2, 0], [3, 0], [0, 1], [0, 2], [0, 3], [1, 4], [2, 4], [3, 4]];
+function drawEnd(t, t0, e) {
+  const k = seg(t, t0, t0 + 0.22);
+  e.style.opacity = k; e.style.transform = `translateY(${(1 - eo(k)) * 30}px)`;
+  fxx.clearRect(0, 0, W, H);
+  if (t < t0) return;
+  const pitch = 86, r = 32, ox = 540 - 1.5 * pitch - 26, oy = 470;
+  fxx.globalAlpha = k;
+  for (let gx = -3; gx <= 7; gx++) for (let gy = -1; gy <= 5; gy++) dot(fxx, ox + gx * pitch, oy + gy * pitch, 7, "rgba(241,233,216,0.07)");
+  const pts = C_DOTS.map(([cx, cy], i) => [ox + cx * pitch, oy + cy * pitch, clamp((t - t0 - 0.12 - i * 0.045) / 0.12)]);
+  glowDots(fxx, pts, r, "#FFB020", 38);
+  fxx.globalAlpha = 1;
+}
+
+// ── scenes ────────────────────────────────────────────────────────────────
+const S = {};
+
+/* sim2000 — the real 2,000 games the phone plays for the demo game, dropped like a Galton board. */
+S.sim2000 = () => {
+  const DUR = 15.2, T_END = 13.5;
+  const home = SIM.home, away = SIM.away, N = home.length;
+  const hAbbr = SIM.home_abbr, aAbbr = SIM.away_abbr;
+  const hName = SIM.home_name, aName = SIM.away_name;
+  const eb = el(`<div class="x eb" style="left:70px;right:70px;top:200px;display:flex;justify-content:space-between"><span>${tr ? "Örnek maç" : "Example game"}</span><span class="r">${tr ? "Simülasyon" : "The simulation"}</span></div>`);
+  const rl = el(`<div class="x rule2" style="left:70px;right:70px;top:252px"></div>`);
+  const h1 = el(`<div class="x hd" style="left:70px;right:70px;top:300px;font-size:92px">${tr ? `Telefonum ${aName}–${hName} maçını <em>2.000 kez oynadı.</em>` : `My phone just played ${aName} at ${hName} <em>2,000 times.</em>`}</div>`);
+  const h2 = el(`<div class="x hd" style="left:70px;right:70px;top:300px;font-size:92px;opacity:0">${tr ? `${hName} <em>2.000 maçın ${nfmt(SIM.home.filter((h, i) => h > SIM.away[i]).length)}'ini</em> kazandı.` : `${hName} won <em>${nfmt(SIM.home.filter((h, i) => h > SIM.away[i]).length)} of 2,000.</em>`}</div>`);
+  const lab = el(`<div class="x eb" style="left:70px;right:70px;top:1540px;display:flex;justify-content:space-between;color:var(--ink3);font-size:26px"><span>← ${aAbbr} ${tr ? "kazanır" : "wins"}</span><span>${tr ? "fark" : "margin"}</span><span>${hAbbr} ${tr ? "kazanır" : "wins"} →</span></div>`);
+  const cap = el(`<div class="x bd" style="left:70px;right:70px;top:1596px;font-size:34px;opacity:0">${tr ? "Her hücum, her şut, her top kaybı. Telefonunda, yaklaşık iki saniyede." : "Every possession, every shot, every turnover. On your phone, in about two seconds."}</div>`);
+  const end = buildEnd();
+  // bins: margin −36…+36, 2 points wide, 3 dots across
+  const B0 = -36, BW = 2, NB = 36, X0 = 90, BINW = 25, BASE = 1500, P = 8, R = 3.1;
+  const binOf = (m) => clamp(Math.floor((m - B0) / BW), 0, NB - 1);
+  const binX = (b) => X0 + b * BINW + 4.5;
+  const rand = rng(20261020);
+  const dots = [];
+  for (let i = 0; i < N; i++) {
+    const m = home[i] - away[i];
+    const rel = i < 14 ? 0.55 + i * 0.16 : 2.8 + 6.6 * Math.pow((i - 14) / (N - 15), 0.78);
+    const fall = i < 14 ? 1.15 : 0.78;
+    const b = binOf(m);
+    const bx = X0 + b * BINW + BINW / 2;
+    const rows = 8, noise = [];
+    for (let k = 0; k <= rows; k++) noise.push((rand() * 2 - 1) * 20 * Math.sin((Math.PI * k) / rows));
+    dots.push({ m, b, rel, land: rel + fall, fall, bx, noise, home: m > 0 });
+  }
+  const order = dots.slice().sort((a, b) => a.land - b.land);
+  const fill = new Array(NB).fill(0);
+  for (const d of order) { d.j = fill[d.b]++; d.sx = binX(d.b) + (d.j % 3) * P; d.sy = BASE - 4 - Math.floor(d.j / 3) * P; }
+  const hist = document.createElement("canvas"); hist.width = W; hist.height = H; const hx = hist.getContext("2d");
+  const pegs = [];
+  for (let k = 0; k < 8; k++) { const y = 896 + k * 28, half = 26 + k * 52; for (let x = -half; x <= half + 0.1; x += 52) pegs.push([540 + x, y]); }
+  function pathAt(d, u) {
+    // u 0..1 over the fall: 0–0.62 through the pegs (8 hops), then a straight drop to the stack
+    const rows = 8, split = 0.62;
+    if (u < split) {
+      const v = u / split, k = Math.min(rows - 1, Math.floor(v * rows)), f = v * rows - k;
+      const xa = lerp(540, d.bx, k / rows) + d.noise[k], xb = lerp(540, d.bx, (k + 1) / rows) + d.noise[k + 1];
+      const ya = 868 + k * 28, yb = 868 + (k + 1) * 28;
+      return [lerp(xa, xb, f), lerp(ya, yb, f) - Math.sin(Math.PI * f) * 12];
+    }
+    const v = (u - split) / (1 - split);
+    return [lerp(d.bx, d.sx, v), lerp(1092, d.sy, v * v)];
+  }
+  window.DURATION = DUR;
+  return (t) => {
+    ctx.clearRect(0, 0, W, H); hx.clearRect(0, 0, W, H);
+    for (const [x, y] of pegs) dot(ctx, x, y, 4.2, "#3A342B");
+    ctx.fillStyle = "rgba(241,233,216,0.28)"; ctx.fillRect(X0 + 18 * BINW - 1, BASE - 380, 2, 392);
+    ctx.fillStyle = "rgba(241,233,216,0.22)"; ctx.fillRect(X0, BASE + 4, NB * BINW, 2);
+    let landed = 0, lh = 0;
+    const flying = [];
+    for (const d of dots) {
+      if (t >= d.land) { landed++; if (d.home) lh++; dot(hx, d.sx, d.sy, R, d.home ? "#FFB020" : "#E9DFCB"); }
+      else if (t >= d.rel) { const [x, y] = pathAt(d, (t - d.rel) / d.fall); flying.push([x, y, d.home]); }
+    }
+    ctx.save(); ctx.filter = "blur(7px)"; ctx.globalAlpha = 0.55; ctx.drawImage(hist, 0, 0); ctx.restore();
+    ctx.drawImage(hist, 0, 0);
+    glowDots(ctx, flying.filter((f) => f[2]).map(([x, y]) => [x, y]), 5, "#FFB020", 16);
+    glowDots(ctx, flying.filter((f) => !f[2]).map(([x, y]) => [x, y]), 5, "#F1E9D8", 10);
+    // counters: games played (LED), then the reveal
+    const out = seg(t, 10.7, 11.0), reveal = seg(t, 11.0, 11.45);
+    const games = String(landed).padStart(4, "0");
+    if (out < 1) {
+      ledAt(ctx, games, 540, 690, 15, { on: "#F1E9D8", glow: 10, alpha: 1 - out });
+      ctx.save(); ctx.globalAlpha = 1 - out;
+      ctx.font = "600 26px 'Plex Mono'"; ctx.fillStyle = "#B4AA97"; ctx.textAlign = "center";
+      ctx.fillText(tr ? `${aAbbr} ${nfmt(landed - lh)}  ·  OYNANAN  ·  ${hAbbr} ${nfmt(lh)}` : `${aAbbr} ${nfmt(landed - lh)}  ·  GAMES PLAYED  ·  ${hAbbr} ${nfmt(lh)}`, 540, 800);
+      ctx.restore();
+    }
+    if (reveal > 0) ledAt(ctx, Math.round((lh / N) * 100) + "%", 540, 700, 22, { alpha: reveal, glow: 22 });
+    vis(h1, 1 - reveal); vis(h2, reveal, (1 - reveal) * 20);
+    vis(cap, eo(seg(t, 11.6, 12.1)), (1 - eo(seg(t, 11.6, 12.1))) * 20);
+    vis(eb, 1); vis(rl, 1); vis(lab, 1);
+    drawEnd(t, T_END, end);
+  };
+};
+
+/* stoppress — What-If: the star sits, the number falls. Demo game, labelled as an example. */
+S.stoppress = () => {
+  const DUR = 10.4, T_END = 8.7;
+  const from = +(Q.get("from") || 58), to = +(Q.get("to") || 43);
+  const who = Q.get("who") || "Dončić", team = Q.get("team") || "Lakers", opp = Q.get("opp") || "Celtics";
+  const band = el(`<div class="x" style="left:0;right:0;top:188px;height:78px;background:var(--glass);border-top:2px solid var(--glassRule);border-bottom:2px solid var(--glassRule);overflow:hidden;display:flex;align-items:center">
+    <div style="background:var(--amber);color:var(--onAmber);font:700 32px/1 var(--mono);letter-spacing:.14em;padding:22px 22px;flex:none;position:relative;z-index:2">STOP PRESS</div>
+    <div id="tick" style="white-space:nowrap;font:700 32px/1 var(--mono);letter-spacing:.12em;color:var(--hot);padding-left:30px"></div></div>`);
+  const tick = band.querySelector("#tick");
+  const tickText = (tr ? `${who.toUpperCase()} OYNAMIYOR · ${team.toUpperCase()} – ${opp.toUpperCase()} · ÖRNEK MAÇ · ` : `${who.toUpperCase()} IS OUT · ${opp.toUpperCase()} AT ${team.toUpperCase()} · EXAMPLE GAME · `).repeat(4);
+  tick.textContent = tickText;
+  const h1 = el(`<div class="x hd" style="left:70px;right:70px;top:330px;font-size:118px">${tr ? `${esc(who)} oynamıyor.` : `${esc(who)} sits.`}</div>`);
+  const h2 = el(`<div class="x hd" style="left:70px;right:40px;top:462px;font-size:80px;white-space:nowrap"><em>${tr ? `${esc(team)} düşüşte.` : `Watch the ${esc(team)} fall.`}</em></div>`);
+  const glass = el(`<div class="x glass" style="left:70px;right:70px;top:640px;height:430px"></div>`);
+  const lbl = el(`<div class="x eb" style="left:106px;top:672px;color:var(--ink3);font-size:26px">${tr ? `${esc(team)} · bu gece kazanma şansı` : `${esc(team)} · chance to win tonight`}</div>`);
+  const bar = el(`<div class="x" style="left:70px;right:70px;top:1100px;height:34px;background:#E9DFCB"><div id="bf" style="height:100%;background:var(--amber);width:${from}%"></div></div>`);
+  const barL = el(`<div class="x eb" style="left:70px;right:70px;top:1150px;display:flex;justify-content:space-between;font-size:26px;color:var(--ink3)"><span id="bl"></span><span id="br"></span></div>`);
+  const chips = el(`<div class="x" style="left:70px;right:70px;top:1216px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px"></div>`);
+  const players = (Q.get("players") || "James,Reaves").split(",");
+  [[who, true], ...players.map((p) => [p, false])].forEach(([p, out]) => chips.appendChild(el(`<div style="border:2px solid ${out ? "var(--hot)" : "var(--ruleBold)"};padding:18px 18px 16px"><div style="font:800 34px/1 var(--body);color:var(--ink)">${esc(p)}</div><div class="eb" data-out="${out ? 1 : 0}" style="font-size:22px;margin-top:10px;color:${out ? "var(--hot)" : "var(--ink3)"}">${tr ? (out ? "OYNAMIYOR" : "OYNUYOR") : out ? "SITS" : "PLAYS"}</div></div>`, chips)));
+  const f1 = el(`<div class="x bd" style="left:70px;right:70px;top:1380px;font-size:36px">${tr ? "What-If'teki her kaldıraç <b>3.678 gerçek maçta ölçüldü.</b> Tahmin değil, ölçüm." : "Every What-If lever is <b>measured on 3,678 real games.</b> Not guessed."}</div>`);
+  const end = buildEnd();
+  window.DURATION = DUR;
+  return (t) => {
+    ctx.clearRect(0, 0, W, H);
+    tick.style.transform = `translateX(${-t * 190}px)`;
+    const roll = seg(t, 1.9, 3.5);
+    const steps = Math.round(lerp(from, to, eio(roll)));
+    const flick = roll > 0 && roll < 1 && Math.floor(t * 30) % 3 === 0;
+    const hotFlash = seg(t, 3.5, 3.6) * (1 - seg(t, 3.9, 4.4));
+    LED.field(tx, 92, 720, 896, 330, 18, "rgba(241,233,216,0.06)", 1.7);
+    ledAt(tx, `${steps}%`, 540, 890, 36, { on: hotFlash > 0.02 ? "#FF6B5A" : "#FFB020", glow: flick ? 50 : 32, off: "#221E18" });
+    document.getElementById("bf").style.width = `${steps}%`;
+    document.getElementById("bl").textContent = `${team.toUpperCase()} ${steps}%`;
+    document.getElementById("br").textContent = `${opp.toUpperCase()} ${100 - steps}%`;
+    const outChip = chips.firstElementChild, outLab = outChip.querySelector("[data-out]");
+    const kOut = seg(t, 1.2, 1.5), isOut = t >= 1.2;
+    outChip.style.borderColor = isOut ? "var(--hot)" : "var(--ruleBold)";
+    outLab.textContent = tr ? (isOut ? "OYNAMIYOR" : "OYNUYOR") : isOut ? "SITS" : "PLAYS";
+    outLab.style.color = isOut ? "var(--hot)" : "var(--ink3)";
+    outChip.style.transform = `scale(${1 + 0.1 * Math.sin(Math.PI * kOut)})`;
+    vis(h1, 1); vis(h2, 1); vis(glass, 1); vis(lbl, 1); vis(bar, 1); vis(barL, 1); vis(chips, 1);
+    rise(f1, t, 4.3);
+    drawEnd(t, T_END, end);
+  };
+};
+
+/* receipt — a slate's seal prints out of the slot, then the stamp. */
+S.receipt = () => {
+  const DUR = 10.6, T_END = 8.9;
+  const games = JSON.parse(Q.get("games") || '[["BOS @ LAL","LAL 58.0%"],["NYK @ MIL","NYK 64.2%"],["OKC @ DEN","OKC 55.1%"],["HOU @ SAS","SAS 61.7%"],["PHI @ ORL","ORL 52.3%"]]');
+  const kind = Q.get("kind") || (tr ? "ÖRNEK · MÜHÜR" : "SAMPLE · SEAL");
+  const lines = [
+    ["CLUTCH · THE BASKETBALL LEDGER", "", "c"],
+    [`${kind} · ${Q.get("slate") || "SLATE 2026-10-22"}`, "", "c2"],
+    ["—", "", "hr"],
+    ...games.map((g) => [g[0], g[1], ""]),
+    ["—", "", "hr"],
+    [tr ? "MÜHÜR" : "SEALED", Q.get("at") || (tr ? "13:22 ET · İLK HÜCUMA 4S 10DK" : "13:22 ET · 4H 10M TO TIP"), ""],
+    ["SHA-256", Q.get("sha") || "9f3a41d2…c21e07", ""],
+    [tr ? "ÖNCEKİ" : "PREV", Q.get("prev") || "71c0d2aa…e9aa31", ""],
+    ["REPO", "clutch-receipts", ""],
+  ];
+  const h1 = el(`<div class="x hd" style="left:70px;right:70px;top:220px;font-size:112px">${tr ? "Clutch <em>fişini saklar.</em>" : "Clutch <em>keeps receipts.</em>"}</div>`);
+  const slot = el(`<div class="x" style="left:70px;right:70px;top:520px;height:30px;background:#050505;border-radius:15px;box-shadow:0 0 0 6px #26221C, 0 18px 40px rgba(0,0,0,.6);z-index:3"></div>`);
+  const slipWrap = el(`<div class="x" style="left:110px;right:110px;top:535px;height:0;overflow:hidden;z-index:2;padding-bottom:18px"></div>`);
+  const slip = el(`<div style="position:absolute;left:0;right:0;top:0;background:var(--slip);color:var(--slipInk);padding:40px 40px 46px;font:600 29px/45px var(--mono)"></div>`, slipWrap);
+  lines.forEach(([a, b, k]) => {
+    if (k === "hr") slip.appendChild(el(`<div style="border-top:3px dashed rgba(27,26,23,.5);margin:18px 0 20px"></div>`, slip));
+    else if (k === "c" || k === "c2") slip.appendChild(el(`<div style="text-align:center;font-weight:${k === "c" ? 700 : 500};letter-spacing:${k === "c" ? ".1em" : ".04em"};opacity:${k === "c" ? 1 : 0.75}">${esc(a)}</div>`, slip));
+    else slip.appendChild(el(`<div style="display:flex;justify-content:space-between;gap:20px"><span>${esc(a)}</span><span style="font-weight:700;text-align:right">${esc(b)}</span></div>`, slip));
+  });
+  slip.appendChild(el(`<div style="position:absolute;left:0;right:0;bottom:-16px;height:16px;background:linear-gradient(45deg,transparent 11px,var(--slip) 0) 0 0/22px 22px,linear-gradient(-45deg,transparent 11px,var(--slip) 0) 0 0/22px 22px"></div>`, slip));
+  const stamp = el(`<div class="x stamp" style="left:560px;top:${Q.get("sty") || 1086}px;color:#1E7A45;font-size:66px;z-index:4;border-width:8px;padding:12px 24px 16px">${tr ? "Mühürlü ✓" : "Sealed ✓"}</div>`);
+  const f1 = el(`<div class="x bd" style="left:70px;right:70px;top:${Q.get("fy") || 1356}px;font-size:38px">${tr ? "Maç başlamadan herkese açık bir GitHub deposuna yazılır. <b>Sonradan kimse değiştiremez. Biz de.</b>" : "Committed to a public GitHub repo before tip. <b>Nobody can change it after. Not even us.</b>"}</div>`);
+  const end = buildEnd();
+  let full = 0;
+  window.DURATION = DUR;
+  window.READY = () => { full = slip.getBoundingClientRect().height + 20; };
+  return (t) => {
+    ctx.clearRect(0, 0, W, H);
+    const k = eio(seg(t, 0.5, 5.2));
+    const hStep = k >= 1 ? full : Math.floor((k * full) / 45) * 45;
+    slipWrap.style.height = Math.min(full, hStep) + "px";
+    vis(h1, 1); vis(slot, 1); vis(slipWrap, 1);
+    const ks = seg(t, 5.5, 5.72);
+    stamp.style.opacity = ks > 0 ? 1 : 0;
+    stamp.style.transform = `scale(${lerp(1.9, 1, eo(ks))}) rotate(-9deg)`;
+    const shake = t > 5.72 ? Math.exp(-(t - 5.72) * 12) * 10 * Math.sin(t * 90) : 0;
+    stage.style.transform = `translate(${shake}px, ${shake * 0.6}px)`;
+    rise(f1, t, 6.3);
+    drawEnd(t, T_END, end);
+  };
+};
+
+/* miss — the back page of the morning paper: our worst miss, in red. Flow layout, so any headline length fits. */
+S.miss = () => {
+  const DUR = 9.6, T_END = 7.9;
+  const m = Q.get("m") ? JSON.parse(Q.get("m")) : FACTS.misses[+(Q.get("i") || 0)];
+  stage.style.background = "var(--dayPaper)";
+  const date = new Date(m.date + "T12:00:00Z").toLocaleDateString(tr ? "tr-TR" : "en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" }).toUpperCase();
+  const favShort = m.short || (m.fav === "OKC" ? "OKC" : m.fav === "GSW" ? "Golden State" : m.favCity);
+  const margin = m.dogScore - m.favScore;
+  el(`<div class="x" style="left:70px;right:70px;top:190px"><div style="font:900 62px/1 var(--display);color:var(--dayInk)">The Basketball Ledger</div>
+    <div style="border-top:6px solid var(--dayInk);border-bottom:2px solid var(--dayInk);height:14px;margin-top:18px"></div>
+    <div style="display:flex;justify-content:space-between;font:600 26px/1 var(--mono);letter-spacing:.14em;color:var(--dayInk2);padding:16px 0;border-bottom:2px solid var(--dayInk)"><span>${date}</span><span>${esc(Q.get("lbl") || ((tr ? "EN KÖTÜ ISKALARIMIZ" : "OUR WORST MISSES") + " · NO. " + (+(Q.get("i") || 0) + 1)))}</span></div></div>`);
+  const col = el(`<div class="x" style="left:66px;right:60px;top:400px;display:flex;flex-direction:column"></div>`);
+  const size = +(Q.get("fs") || 150);
+  const l1 = el(`<div class="tab" style="font-size:${size}px">${tr ? (m.short ? `${esc(favShort.toLocaleUpperCase("tr-TR"))} İÇİN %${Math.round(m.p)} DEDİK.` : `${esc(favShort.toUpperCase())}'YE %${Math.round(m.p)} DEDİK.`) : `WE HAD ${esc(favShort.toUpperCase())} AT ${Math.round(m.p)}%.`}</div>`, col);
+  const w2 = (tr ? `${m.dogName.toUpperCase()} ${margin >= 10 ? `${margin} FARKLA ` : ""}KAZANDI.` : `${m.dogName.toUpperCase()} WON${margin >= 10 ? ` BY ${margin}` : ""}.`).split(" ");
+  const l2 = el(`<div class="tab" style="font-size:${size}px;color:var(--dayHot);margin-top:14px">${w2.map((w) => `<span style="display:inline-block;margin-right:.18em">${esc(w)}</span>`).join("")}</div>`, col);
+  const box = el(`<div style="margin-top:40px;border-top:6px solid var(--dayInk);border-bottom:2px solid var(--dayInk);padding:22px 0;display:flex;justify-content:space-between;font:900 64px/1 var(--tabloid);letter-spacing:-.02em;text-transform:uppercase;color:var(--dayInk)"><span>${esc(m.dogName)} ${m.dogScore}</span><span style="color:var(--dayInk2)">${esc(m.favName)} ${m.favScore}</span></div>`, col);
+  const row = el(`<div style="margin-top:34px;position:relative;min-height:220px"></div>`, col);
+  const body = el(`<div style="width:590px;font:500 36px/1.4 var(--body);color:var(--dayInk2)">${esc(Q.get("b") || (tr ? "İki sezonluk testte, yalnızca o sabah bilinenle tahmin edildi. Kayıtta, diğer her maç gibi duruyor." : "Called in our two-season test with only what was known that morning. It stays in the record like every other game."))}</div>`, row);
+  const stamp = el(`<div class="stamp" style="position:absolute;right:10px;top:10px;color:var(--dayHot);font-size:96px">${tr ? "Iska" : "Miss"}</div>`, row);
+  const kick = el(`<div style="margin-top:30px;font:900 58px/1.05 var(--display);color:var(--dayInk)">${tr ? "Her ıska kayıtta kalır." : "Every miss stays on the record."}</div>`, col);
+  const end = buildEnd();
+  const spans = Array.from(l2.children);
+  window.DURATION = DUR;
+  return (t) => {
+    ctx.clearRect(0, 0, W, H);
+    let shake = 0;
+    spans.forEach((sp, i) => {
+      const a = 0.9 + i * 0.2, k = seg(t, a, a + 0.12);
+      sp.style.opacity = k > 0 ? 1 : 0; sp.style.transform = `scale(${lerp(1.35, 1, eo(k))})`;
+      if (t > a + 0.12) shake += Math.exp(-(t - a - 0.12) * 14) * 7;
+    });
+    const kb = eo(seg(t, 2.0, 2.5));
+    box.style.opacity = kb; box.style.clipPath = `inset(0 ${100 - kb * 100}% 0 0)`;
+    const ks = seg(t, 2.9, 3.08);
+    stamp.style.opacity = ks > 0 ? 1 : 0; stamp.style.transform = `scale(${lerp(2.2, 1, eo(ks))}) rotate(-9deg)`;
+    if (t > 3.08) shake += Math.exp(-(t - 3.08) * 11) * 14;
+    const kbo = eo(seg(t, 3.7, 4.15)); body.style.opacity = kbo; body.style.transform = `translateY(${(1 - kbo) * 30}px)`;
+    const kk = eo(seg(t, 5.2, 5.65)); kick.style.opacity = kk; kick.style.transform = `translateY(${(1 - kk) * 30}px)`;
+    stage.style.transform = t < T_END ? `translate(${Math.sin(t * 83) * shake}px, ${Math.cos(t * 71) * shake * 0.6}px)` : "none";
+    if (t >= T_END) stage.style.background = "var(--paper)";
+    drawEnd(t, T_END, end);
+  };
+};
+
+/* wt30 — thirty teams in nine seconds, the market's number on the glass. */
+S.wt30 = () => {
+  const DUR = 15.6, T_END = 13.9, T0 = 0.9, STEP = 0.31;
+  const order = Q.get("focus") ? [TEAMS.find((x) => x.abbr === Q.get("focus")), ...TEAMS.filter((x) => x.abbr !== Q.get("focus"))] : TEAMS;
+  el(`<div class="x eb" style="left:70px;right:70px;top:200px;display:flex;justify-content:space-between"><span>Win Totals · 2026-27</span><span class="r">${tr ? "Ücretsiz yarışma" : "Free contest"}</span></div>`);
+  el(`<div class="x rule2" style="left:70px;right:70px;top:252px"></div>`);
+  el(`<div class="x hd" style="left:70px;right:70px;top:300px;font-size:104px">${tr ? "30 takım. <em>Üst mü, alt mı?</em>" : "30 teams. <em>Over or under?</em>"}</div>`);
+  const bar = el(`<div class="x" style="left:70px;top:660px;width:30px;height:150px"></div>`);
+  const city = el(`<div class="x eb" style="left:130px;top:668px;color:var(--ink3);font-size:30px"></div>`);
+  const nick = el(`<div class="x" style="left:128px;top:712px;font:900 118px/1 var(--display);color:var(--ink);white-space:nowrap"></div>`);
+  const glass = el(`<div class="x glass" style="left:70px;right:70px;top:880px;height:380px"></div>`);
+  const cnt = el(`<div class="x eb" style="left:70px;right:70px;top:1290px;display:flex;justify-content:space-between;color:var(--ink3);font-size:26px"><span>${tr ? "Piyasanın galibiyet sayısı" : "The market's win total"}</span><span id="n"></span></div>`);
+  const ou = el(`<div class="x" style="left:70px;right:70px;top:1350px;display:grid;grid-template-columns:1fr 1fr;gap:18px"><div id="o" style="border:3px solid var(--ink);padding:28px 0;text-align:center;font:900 64px/1 var(--display)">${tr ? "Üst" : "Over"}</div><div id="u" style="border:3px solid var(--ink);padding:28px 0;text-align:center;font:900 64px/1 var(--display)">${tr ? "Alt" : "Under"}</div></div>`);
+  const out = el(`<div class="x" style="left:70px;right:70px;top:660px;opacity:0">
+    <div class="hd" style="font-size:84px">${tr ? "30'unu da seç. <em>20 Ekim'de ilk hücumdan önce mühürle.</em>" : "Call all 30. <em>Seal it before the first tip on Oct 20.</em>"}</div>
+    <div class="bd" style="margin-top:40px">${tr ? "Ücretsiz. <b>Birinciye 1 yıl Clutch Pro.</b> 30'da 30 yapana ömür boyu Pro." : "Free. <b>First place wins a year of Clutch Pro.</b> Go 30 for 30 and it's Pro for life."}</div>
+    <div class="eb" style="margin-top:44px;color:var(--ink4);font-size:23px;letter-spacing:.08em;line-height:1.5">${tr ? "Katılım ücretsiz · ödül Clutch Pro süresidir · Apple sponsor değildir · resmi kurallar uygulamada" : "Free to enter · prizes are Clutch Pro time · Apple is not a sponsor · official rules in the app"}</div></div>`);
+  const end = buildEnd();
+  window.DURATION = DUR;
+  return (t) => {
+    ctx.clearRect(0, 0, W, H);
+    const i = clamp(Math.floor((t - T0) / STEP), 0, 29);
+    const tm = order[i];
+    const into = ((t - T0) % STEP) / STEP;
+    const done = seg(t, T0 + 30 * STEP + 0.25, T0 + 30 * STEP + 0.7);
+    [bar, city, nick, glass, cnt, ou].forEach((e) => vis(e, 1 - done, -done * 30));
+    vis(out, done, (1 - eo(done)) * 40);
+    bar.style.background = tm.c1;
+    city.textContent = tm.city; nick.textContent = tm.nickname;
+    document.getElementById("n").textContent = `${String(i + 1).padStart(2, "0")} / 30`;
+    const line = tr ? String(tm.line).replace(".", ",") : String(tm.line);
+    const scramble = t >= T0 && into < 0.22 && t < T0 + 30 * STEP;
+    const txt = scramble ? line.replace(/\d/g, () => String(Math.floor(Math.random() * 10))) : line;
+    if (done < 1) {
+      tx.save(); tx.globalAlpha = 1 - done;
+      LED.field(tx, 92, 902, 896, 336, 18, "rgba(241,233,216,0.06)", 1.7);
+      tx.restore();
+      ledAt(tx, txt, 540, 1070, 36, { off: "#221E18", glow: 30, alpha: 1 - done });
+    }
+    const oOn = Math.floor(t * 6.5) % 2 === 0 && t < T0 + 30 * STEP;
+    document.getElementById("o").style.background = oOn ? "var(--amber)" : "transparent";
+    document.getElementById("o").style.color = oOn ? "var(--onAmber)" : "var(--ink)";
+    document.getElementById("u").style.background = !oOn && t < T0 + 30 * STEP && t > T0 ? "var(--ink)" : "transparent";
+    document.getElementById("u").style.color = !oOn && t < T0 + 30 * STEP && t > T0 ? "var(--paper)" : "var(--ink)";
+    drawEnd(t, T_END, end);
+  };
+};
+
+/* duel — an example week, you against Clutch, night by night. */
+S.duel = () => {
+  const DUR = 11.2, T_END = 9.5;
+  const nights = tr ? ["PZT", "SAL", "ÇAR", "PER", "CUM", "CMT", "PAZ"] : ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
+  const games = ["NYK @ BOS", "LAL @ GSW", "OKC @ DEN", "HOU @ SAS", "PHI @ MIA", "MIN @ DAL", "CLE @ DET"];
+  const you = [1, 0, 1, 1, 0, 1, 0], cl = [1, 1, 1, 0, 1, 1, 0];
+  el(`<div class="x eb" style="left:70px;right:70px;top:200px;display:flex;justify-content:space-between"><span>${tr ? "Sen vs Clutch" : "You vs Clutch"}</span><span class="r">${tr ? "Örnek hafta" : "Example week"}</span></div>`);
+  el(`<div class="x rule2" style="left:70px;right:70px;top:252px"></div>`);
+  el(`<div class="x hd" style="left:70px;right:70px;top:300px;font-size:104px">${tr ? "Basketbolu bildiğini mi sanıyorsun? <em>Clutch'ı yen.</em>" : "Think you know ball? <em>Beat Clutch.</em>"}</div>`);
+  const glass = el(`<div class="x glass" style="left:70px;right:70px;top:640px;height:300px"></div>`);
+  const rows = nights.map((n, i) => el(`<div class="x" style="left:70px;right:70px;top:${1024 + i * 66}px;height:60px;display:grid;grid-template-columns:110px 1fr 150px 150px;align-items:center;border-bottom:1px solid var(--rule);font:600 30px/1 var(--mono);letter-spacing:.08em;color:var(--ink2)"><span style="color:var(--ink4)">${n}</span><span>${games[i]}</span><span data-y style="text-align:center"></span><span data-c style="text-align:center"></span></div>`));
+  const hdr = el(`<div class="x" style="left:70px;right:70px;top:1016px;display:grid;grid-template-columns:110px 1fr 150px 150px;font:600 22px/1 var(--mono);letter-spacing:.14em;color:var(--ink4);transform:translateY(-34px)"><span></span><span></span><span style="text-align:center">${tr ? "SEN" : "YOU"}</span><span style="text-align:center">CLUTCH</span></div>`);
+  const f1 = el(`<div class="x bd" style="left:70px;right:70px;top:1500px;font-size:38px;opacity:0">${tr ? "Bu hafta değil. <b>Bu gece yeniden dene.</b>" : "Not this week. <b>Try again tonight.</b>"}</div>`);
+  const end = buildEnd();
+  window.DURATION = DUR;
+  return (t) => {
+    ctx.clearRect(0, 0, W, H);
+    let yw = 0, yl = 0, cw = 0, clo = 0;
+    rows.forEach((r, i) => {
+      const a = 1.0 + i * 0.62, k = seg(t, a, a + 0.18);
+      r.style.opacity = 0.25 + 0.75 * k;
+      const ys = r.querySelector("[data-y]"), cs = r.querySelector("[data-c]");
+      if (t >= a) { ys.textContent = you[i] ? "✓" : "✗"; ys.style.color = you[i] ? "var(--win)" : "var(--hot)"; cs.textContent = cl[i] ? "✓" : "✗"; cs.style.color = cl[i] ? "var(--win)" : "var(--hot)"; you[i] ? yw++ : yl++; cl[i] ? cw++ : clo++; }
+      else { ys.textContent = "·"; cs.textContent = "·"; ys.style.color = cs.style.color = "var(--ink4)"; }
+    });
+    tx.fillStyle = "rgba(241,233,216,0.22)"; tx.fillRect(539, 668, 2, 244);
+    tx.font = "600 28px 'Plex Mono'"; tx.fillStyle = "#B4AA97"; tx.textAlign = "center";
+    tx.fillText(tr ? "SEN" : "YOU", 305, 700); tx.fillText("CLUTCH", 775, 700);
+    ledAt(tx, `${yw}-${yl}`, 305, 820, 26, { on: "#F1E9D8", off: "#221E18", glow: 18 });
+    ledAt(tx, `${cw}-${clo}`, 775, 820, 26, { off: "#221E18", glow: 26 });
+    vis(glass, 1); vis(hdr, 1, -34);
+    rise(f1, t, 6.0);
+    drawEnd(t, T_END, end);
+  };
+};
+
+/* calib — the dots rise to where the favourites actually won. */
+S.calib = () => {
+  const DUR = 10.4, T_END = 8.7;
+  el(`<div class="x eb" style="left:70px;right:70px;top:200px;display:flex;justify-content:space-between"><span>${tr ? "Kayıt · 2024-26 testi" : "The record · tested 2024-26"}</span><span class="r">${tr ? "2.631 maç" : "2,631 games"}</span></div>`);
+  el(`<div class="x rule2" style="left:70px;right:70px;top:252px"></div>`);
+  const h1 = el(`<div class="x hd" style="left:70px;right:70px;top:300px;font-size:92px">${tr ? "Clutch %72 dediğinde," : "When Clutch says 72%,"}<br><em id="h2" style="display:inline-block">${tr ? "%71 oluyor." : "it happens 71%."}</em></div>`);
+  const h2 = h1.querySelector("#h2");
+  const f1 = el(`<div class="x bd" style="left:70px;right:70px;top:1350px;font-size:36px">${tr ? "Her nokta bir güven aralığı. <b>Çizgiye ne kadar yakınsa, rakam o kadar dürüst.</b>" : "Each dot is a confidence band. <b>The closer to the line, the more honest the number.</b>"}</div>`);
+  const f2 = el(`<div class="x bd" style="left:70px;right:70px;top:1480px;font-size:36px">${tr ? "Aynı maçlarda <b>ESPN'in BPI'ından daha isabetli.</b>" : "On the same games: <b>more accurate than ESPN's BPI.</b>"}</div>`);
+  const end = buildEnd();
+  window.DURATION = DUR;
+  return (t) => {
+    ctx.clearRect(0, 0, W, H);
+    ctx.save(); ctx.translate(40, 600);
+    const w = 1000, h = 700, L = 110, R = 40, Tp = 30, B = 70;
+    const x = (v) => L + ((v - 50) / 50) * (w - L - R), y = (v) => h - B - ((v - 50) / 50) * (h - Tp - B);
+    ctx.strokeStyle = "rgba(241,233,216,0.10)"; ctx.lineWidth = 2; ctx.font = "600 26px 'Plex Mono'"; ctx.fillStyle = "#B4AA97";
+    for (let v = 50; v <= 100; v += 10) { ctx.beginPath(); ctx.moveTo(x(50), y(v)); ctx.lineTo(x(100), y(v)); ctx.stroke(); ctx.textAlign = "right"; ctx.fillText(v + "%", L - 18, y(v) + 9); ctx.textAlign = "center"; ctx.fillText(v + "%", x(v), h - B + 46); }
+    ctx.fillStyle = "#7A7062"; ctx.font = "600 23px 'Plex Mono'"; ctx.textAlign = "left"; ctx.fillText(tr ? "FAVORİ KAZANDI ↑" : "FAVOURITE WON ↑", L + 12, Tp + 26); ctx.textAlign = "right"; ctx.fillText(tr ? "CLUTCH DEDİ →" : "CLUTCH SAID →", w - R, h - B - 18);
+    const kl = eo(seg(t, 0.3, 1.0));
+    ctx.setLineDash([12, 12]); ctx.strokeStyle = "rgba(241,233,216,0.5)"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x(50), y(50)); ctx.lineTo(x(50 + 50 * kl), y(50 + 50 * kl)); ctx.stroke(); ctx.setLineDash([]);
+    const pts = [];
+    FACTS.calib.forEach((c, i) => { const a = 1.0 + i * 0.26, k = back(seg(t, a, a + 0.5)); if (t < a) return; pts.push([x(c.said), lerp(y(50), y(c.won), k), 1]); });
+    FACTS.calib.forEach((c, i) => { const a = 1.0 + i * 0.26; if (t < a) return; const rr = 12 + Math.sqrt(c.n) * 0.9; ctx.save(); ctx.shadowColor = "#FFB020"; ctx.shadowBlur = 28; ctx.fillStyle = c.lo === 70 ? "#FFD27A" : "#FFB020"; const p = pts[i]; ctx.beginPath(); ctx.arc(p[0], p[1], rr, 0, Math.PI * 2); ctx.fill(); ctx.restore(); });
+    const hl = seg(t, 4.0, 4.4);
+    if (hl > 0) { const c = FACTS.calib[4]; ctx.save(); ctx.globalAlpha = hl; ctx.strokeStyle = "#F1E9D8"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x(c.said), y(c.won), 44, 0, Math.PI * 2); ctx.stroke(); ctx.font = "700 30px 'Plex Mono'"; ctx.fillStyle = "#F1E9D8"; ctx.textAlign = "left"; ctx.textAlign = "right"; ctx.fillText(tr ? `${String(c.said).replace(".", ",")} DEDİ · ${String(c.won).replace(".", ",")} OLDU` : `SAID ${c.said} · WON ${c.won}`, x(c.said) - 34, y(c.won) - 48); ctx.restore(); }
+    ctx.restore();
+    vis(h1, 1); const k2 = eo(seg(t, 3.8, 4.3)); vis(h2, k2, (1 - k2) * 30);
+    rise(f1, t, 5.0); rise(f2, t, 6.3);
+    drawEnd(t, T_END, end);
+  };
+};
+
+/* builder — Uğur's own account: the build in four numbers and four screens. */
+S.builder = () => {
+  const DUR = 13.2, T_END = 11.5;
+  const stats = tr ? [["2631", "test edilen maç"], ["64", "veritabanı migration'ı"], ["100K", "satır TypeScript"], ["$0", "sunucu faturası"]] : [["2631", "games tested"], ["64", "database migrations"], ["100K", "lines of TypeScript"], ["$0", "server bill"]];
+  const shots = [["shots/02_game.png", tr ? "Tahmin ve nedenleri" : "The call and its reasons"], ["shots/08_sim.png", tr ? "2.000 kez oynanan maç" : "The game, played 2,000 times"], ["shots/09_ledger.png", tr ? "Herkese açık karne" : "The public record"], ["shots/03_wintotals.png", tr ? "Win Totals yarışması" : "The Win Totals contest"]];
+  el(`<div class="x eb" style="left:70px;right:70px;top:200px;display:flex;justify-content:space-between"><span>${tr ? "Nasıl yaptım" : "How I built it"}</span><span class="r">Clutch · 2026</span></div>`);
+  el(`<div class="x rule2" style="left:70px;right:70px;top:252px"></div>`);
+  const h1 = el(`<div class="x hd" style="left:70px;right:70px;top:300px;font-size:96px">${tr ? "Bir NBA uygulamasını tek başıma yaptım, <em>bir yapay zekâ ortağıyla.</em>" : "I built an NBA app alone, <em>with an AI pair.</em>"}</div>`);
+  const grid = el(`<div class="x" style="left:70px;right:70px;top:720px;display:grid;grid-template-columns:1fr 1fr;gap:20px"></div>`);
+  const tiles = stats.map(([n, l]) => el(`<div class="glass" style="height:300px;position:relative"><div class="eb" style="position:absolute;left:28px;bottom:26px;color:var(--ink3);font-size:25px;letter-spacing:.12em">${esc(l)}</div></div>`, grid));
+  const phone = el(`<div class="x" style="left:280px;top:720px;width:520px;height:1130px;border-radius:70px;border:12px solid #2B2721;background:#000;overflow:hidden;opacity:0;box-shadow:0 40px 90px rgba(0,0,0,.6)"><img id="ph" style="width:100%;display:block"></div>`);
+  const pcap = el(`<div class="x eb" style="left:70px;right:70px;top:1500px;text-align:center;font-size:30px;opacity:0"></div>`);
+  const f1 = el(`<div class="x hd" style="left:70px;right:70px;top:720px;font-size:84px;opacity:0">${tr ? "Yeni sezon için <em>App Store'da.</em>" : "Now it's on the App Store <em>for the new season.</em>"}</div>`);
+  const end = buildEnd();
+  window.DURATION = DUR;
+  return (t) => {
+    ctx.clearRect(0, 0, W, H);
+    vis(h1, 1);
+    const gOut = seg(t, 5.0, 5.3);
+    tiles.forEach((tile, i) => {
+      const a = 0.8 + i * 0.5, k = eo(seg(t, a, a + 0.35));
+      tile.style.opacity = k * (1 - gOut); tile.style.transform = `translateY(${(1 - k) * 40}px)`;
+    });
+    grid.style.opacity = 1;
+    if (gOut < 1) {
+      tiles.forEach((tile, i) => {
+        const a = 0.8 + i * 0.5; if (t < a) return;
+        const r = tile.getBoundingClientRect();
+        const n = stats[i][0], k = eo(seg(t, a, a + 1.2));
+        let shown = n;
+        if (/^\d+$/.test(n)) shown = Math.round(+n * k).toLocaleString(tr ? "tr-TR" : "en-US");
+        else if (n === "100K") shown = Math.round(100 * k) + "K";
+        ledAt(tx, shown, r.left + r.width / 2, r.top + 125, 16, { glow: 16, alpha: (1 - gOut) * eo(seg(t, a, a + 0.35)) });
+      });
+    }
+    const si = clamp(Math.floor((t - 5.3) / 1.2), 0, 3);
+    const inPh = seg(t, 5.3, 5.6) * (1 - seg(t, 10.1, 10.4));
+    phone.style.opacity = inPh; phone.style.transform = `translateY(${(1 - eo(seg(t, 5.3, 5.7))) * 80}px)`;
+    const img = document.getElementById("ph"); if (img.getAttribute("src") !== shots[si][0]) img.setAttribute("src", shots[si][0]);
+    pcap.textContent = shots[si][1]; pcap.style.opacity = inPh; pcap.style.top = "640px";
+    rise(f1, t, 10.4);
+    drawEnd(t, T_END, end);
+  };
+};
+
+
+/* buzzer — the real court footage (simulator recording), cut with two slow-motion swishes. */
+S.buzzer = () => {
+  const DUR = 8.5, T_END = 6.8;
+  // output time → source time: [out0, out1, src0, src1]
+  const MAP = [[0, 0.9, 0, 0.9], [0.9, 2.65, 0.9, 1.6], [2.65, 3.25, 1.6, 2.8], [3.25, 4.35, 2.8, 3.9], [4.35, 6.1, 3.9, 4.6], [6.1, 6.8, 4.6, 5.3]];
+  const src = (t) => { for (const [a, b, c, d] of MAP) if (t < b) return c + ((t - a) / (b - a)) * (d - c); return 5.3; };
+  const slow = (t) => (t >= 0.9 && t < 2.65) || (t >= 4.35 && t < 6.1);
+  el(`<div class="x eb" style="left:70px;right:70px;top:190px;display:flex;justify-content:space-between"><span>${tr ? "Saha · Clutch" : "The court · Clutch"}</span><span class="r">${tr ? "Gerçek oyun kaydı" : "Real gameplay"}</span></div>`);
+  const h1 = el(`<div class="x hd" style="left:70px;right:70px;top:246px;font-size:86px">${tr ? "Yukarı fiske. <em>Swish.</em>" : "Flick it up. <em>Swish.</em>"}</div>`);
+  const h2 = el(`<div class="x hd" style="left:70px;right:70px;top:246px;font-size:86px;opacity:0">${tr ? "Beşini de <em>atabilir misin?</em>" : "Can you hit <em>all five?</em>"}</div>`);
+  const frame = el(`<div class="x" style="left:90px;top:400px;width:900px;height:1324px;overflow:hidden;border:2px solid var(--glassRule)"><video id="v" src="src/buzzer90.mp4" muted playsinline preload="auto" style="width:100%;height:100%;object-fit:cover;display:block"></video></div>`);
+  const chip = el(`<div class="x eb" style="left:120px;top:430px;background:var(--amber);color:var(--onAmber);padding:12px 16px;font-size:24px;opacity:0">${tr ? "Ağır çekim" : "Slow-mo"}</div>`);
+  const foot = el(`<div class="x bd" style="left:70px;right:70px;top:1750px;font-size:32px;opacity:0">${tr ? "Daily Spot: herkese aynı beş top, günde bir kez." : "Daily Spot: the same five balls for everyone, once a day."}</div>`);
+  const end = buildEnd();
+  const v = frame.querySelector("#v");
+  window.DURATION = DUR;
+  window.READY = () => new Promise((r) => { if (v.readyState >= 2) r(); else v.addEventListener("loadeddata", r, { once: true }); });
+  return (t) => {
+    ctx.clearRect(0, 0, W, H);
+    const flip = eo(seg(t, 5.9, 6.3));
+    vis(h1, 1 - flip); vis(h2, flip, (1 - flip) * 20);
+    chip.style.opacity = slow(t) ? 1 : 0;
+    rise(foot, t, 6.0);
+    drawEnd(t, T_END, end);
+    const want = Math.min(src(t), v.duration - 0.02);
+    if (Math.abs(v.currentTime - want) < 0.001) return;
+    return new Promise((r) => { v.addEventListener("seeked", () => r(), { once: true }); v.currentTime = want; });
+  };
+};
+
+const scene = (S[Q.get("s") || "sim2000"] || S.sim2000)();
+window.renderFrame = (t) => { tx.clearRect(0, 0, W, H); tx.globalAlpha = 1; const r = scene(t); return Promise.resolve(r).then(() => window.__img()); };
+window.__img = () => Promise.all(Array.from(document.images).filter((i) => i.src && !i.complete).map((i) => new Promise((r) => { i.onload = i.onerror = r; })));
+const FACES = ["900 40px Fraunces", "600 26px 'Plex Mono'", "700 26px 'Plex Mono'", "500 30px Franklin", "700 30px Franklin", "800 30px Franklin", "900 30px Franklin"];
+const prevReady = window.READY;
+window.READY = () => Promise.all(FACES.map((f) => document.fonts.load(f))).then(() => { if (prevReady) prevReady(); });
+</script>
+</body></html>

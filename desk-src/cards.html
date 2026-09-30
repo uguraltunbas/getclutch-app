@@ -1,0 +1,455 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="brand.css">
+<script src="led.js"></script>
+<script src="data/teams.js"></script>
+<script src="data/facts.js"></script>
+<style>
+/* Cards are laid out on a fixed canvas (the job sets the viewport). One template per series:
+   jumbo (LED scoreboard), tabloid (the morning paper), receipt (thermal slip),
+   tote (Win Totals team), board (all 30 lines), duel (you vs Clutch), calib, espn, launch, builder. */
+body { position: relative; }
+.card { position: absolute; inset: 0; overflow: hidden; }
+.pad { position: absolute; inset: 72px 76px; display: flex; flex-direction: column; }
+.top { display: flex; justify-content: space-between; align-items: baseline; font: 600 26px/1 var(--mono); letter-spacing: .2em; text-transform: uppercase; color: var(--amber); }
+.top .r { color: var(--ink4); }
+.dbl { border-top: 4px solid var(--ink); border-bottom: 1.5px solid var(--ink); height: 10px; margin: 22px 0 0; }
+.h1 { font: 900 96px/0.98 var(--display); letter-spacing: -.01em; color: var(--ink); text-wrap: balance; }
+.h1 em { font-style: normal; color: var(--amber); }
+.h2 { font: 900 64px/1.02 var(--display); color: var(--ink); text-wrap: balance; }
+.lede { font: 500 36px/1.36 var(--body); color: var(--ink2); max-width: 30ch; }
+.lede b { color: var(--ink); font-weight: 700; }
+.foot { position: absolute; left: 76px; right: 76px; bottom: 60px; display: flex; justify-content: space-between; align-items: center; font: 600 22px/1.3 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink4); }
+.foot .brand { color: var(--ink2); display: flex; align-items: center; gap: 14px; }
+.foot .brand img { width: 44px; height: 44px; border-radius: 10px; }
+.cta { display: inline-flex; align-items: center; gap: 16px; background: var(--amber); color: var(--onAmber); font: 700 30px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; padding: 24px 30px; }
+.glass { background: var(--glass); border: 2px solid var(--glassRule); position: relative; }
+.legal { font: 500 20px/1.4 var(--mono); letter-spacing: .04em; color: var(--ink4); }
+canvas.led { position: absolute; left: 0; top: 0; }
+.stamp { position: absolute; font: 900 64px/1 var(--display); letter-spacing: .02em; padding: 14px 26px 18px; border: 7px solid currentColor; transform: rotate(-8deg); text-transform: uppercase; }
+</style></head>
+<body>
+<div id="root" class="card"></div>
+<script>
+const Q = new URLSearchParams(location.search);
+document.documentElement.lang = Q.get("lang") === "tr" ? "tr" : "en";
+const $ = (html) => { const d = document.createElement("div"); d.innerHTML = html.trim(); return d.firstElementChild; };
+const root = document.getElementById("root");
+const W = innerWidth, H = innerHeight;
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const lang = Q.get("lang") || "en";
+const fmt = (n, d = 1) => (lang === "tr" ? Number(n).toFixed(d).replace(".", ",") : Number(n).toFixed(d));
+
+function canvasAt(x, y, w, h) {
+  const c = document.createElement("canvas");
+  c.className = "led"; c.width = w; c.height = h;
+  c.style.left = x + "px"; c.style.top = y + "px"; c.style.width = w + "px"; c.style.height = h + "px";
+  root.appendChild(c);
+  return c.getContext("2d");
+}
+/** An LED readout centred in a box, sized to fit its width. */
+function ledBox(ctx, text, bx, by, bw, bh, o = {}) {
+  const cols = LED.cols(text);
+  const pitch = Math.min(o.maxPitch ?? 60, Math.floor((bw - (o.inset ?? 60)) / cols), Math.floor((bh - (o.insetY ?? 60)) / 7));
+  const w = (cols - 1) * pitch, h = 6 * pitch;
+  const x = bx + (bw - w) / 2, y = by + (bh - h) / 2;
+  if (o.field) LED.field(ctx, bx + (o.fieldInset ?? 22), by + (o.fieldInset ?? 22), bw - 2 * (o.fieldInset ?? 22), bh - 2 * (o.fieldInset ?? 22), pitch / 2, "rgba(241,233,216,0.06)", pitch * 0.09);
+  LED.draw(ctx, text, x, y, { pitch, on: o.on ?? "#FFB020", off: o.off === undefined ? "#231F19" : o.off, glow: o.glow ?? pitch * 0.8 });
+  return { pitch, x, y, w, h };
+}
+const foot = (right = "@clutchledger") => `<div class="foot"><span class="brand"><img src="icon.png" alt="">Clutch · the Basketball Ledger</span><span>${esc(right)}</span></div>`;
+
+// ── templates ─────────────────────────────────────────────────────────────
+const T = {};
+
+/* jumbo — Tonight's Number: one call, huge, on scoreboard glass. */
+T.jumbo = () => {
+  const num = Q.get("num") || "81%";
+  root.appendChild($(`<div class="pad">
+    <div class="top"><span>${esc(Q.get("e") || "Clutch's call · tonight")}</span><span class="r">${esc(Q.get("d") || "")}</span></div>
+    <div class="dbl"></div>
+    <div class="h1" style="margin-top:56px">${Q.get("h") || "Thunder over Pelicans."}</div>
+    <div class="glass" id="g" style="margin-top:48px;height:520px"></div>
+    <div style="margin-top:36px;display:flex;justify-content:space-between;align-items:flex-end;gap:30px">
+      <div class="lede">${Q.get("b") || "Sealed before tip. Graded after the final. <b>Your call?</b>"}</div>
+    </div>
+  </div>`));
+  root.insertAdjacentHTML("beforeend", foot(Q.get("f") || "@clutchledger"));
+  const g = document.getElementById("g").getBoundingClientRect();
+  const ctx = canvasAt(g.left, g.top, g.width, g.height);
+  ledBox(ctx, num, 0, 0, g.width, g.height, { field: true, maxPitch: 56, inset: 90 });
+};
+
+/* tabloid — The Miss, as the morning paper's back page (Day Edition). */
+T.tabloid = () => {
+  const m = Q.get("m") ? JSON.parse(Q.get("m")) : FACTS.misses[+(Q.get("i") || 0)];
+  const date = new Date(m.date + "T12:00:00Z");
+  const dstr = date.toLocaleDateString(lang === "tr" ? "tr-TR" : "en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" }).toUpperCase();
+  const margin = m.dogScore - m.favScore;
+  const h1 = Q.get("h") || `We had ${m.short || (m.fav === "GSW" ? "Golden State" : m.favCity === "Oklahoma City" ? "OKC" : m.favCity)} at ${Math.round(m.p)}%.`;
+  const h2 = Q.get("h2") || `${m.dogName} won${margin >= 10 ? ` by ${margin}` : ""}.`;
+  document.body.style.background = "var(--dayPaper)";
+  root.style.background = "var(--dayPaper)";
+  root.appendChild($(`<div class="pad" style="color:var(--dayInk)">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end">
+      <div style="font:900 50px/1 var(--display);color:var(--dayInk)">The Basketball Ledger</div>
+      <div style="font:600 22px/1.2 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--dayInk2);text-align:right">${esc(Q.get("ed") || "From the test file")}</div>
+    </div>
+    <div style="border-top:5px solid var(--dayInk);border-bottom:2px solid var(--dayInk);height:12px;margin-top:18px"></div>
+    <div style="display:flex;justify-content:space-between;font:600 22px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--dayInk2);padding:16px 0;border-bottom:2px solid var(--dayInk)"><span>${dstr}</span><span>${esc(Q.get("lbl") || ((lang === "tr" ? "En kötü ıskalarımız" : "Our worst misses") + " · No. " + (+(Q.get("i") || 0) + 1)))}</span></div>
+    <div style="font:900 132px/0.9 var(--tabloid);letter-spacing:-.035em;text-transform:uppercase;margin-top:44px;color:var(--dayInk)">${esc(h1)}</div>
+    <div style="font:900 132px/0.9 var(--tabloid);letter-spacing:-.035em;text-transform:uppercase;margin-top:18px;color:var(--dayHot)">${esc(h2)}</div>
+    <div style="margin-top:46px;border-top:5px solid var(--dayInk);border-bottom:2px solid var(--dayInk);padding:18px 0;display:flex;justify-content:space-between;align-items:baseline;font:900 58px/1 var(--tabloid);letter-spacing:-.02em;text-transform:uppercase;color:var(--dayInk)"><span>${esc(m.dogName)} ${m.dogScore}</span><span style="color:var(--dayInk2)">${esc(m.favName)} ${m.favScore}</span></div>
+    <div style="margin-top:28px;font:500 31px/1.42 var(--body);color:var(--dayInk2);max-width:600px">${esc(Q.get("b") || "Called in our two-season test with only what was known that morning. It stays in the record like every other game.")}</div>
+  </div>`));
+  root.appendChild($(`<div class="stamp" style="color:var(--dayHot);right:92px;top:${Q.get("sy") || 1010}px;font-size:84px;border-width:9px">${lang === "tr" ? "Iska" : "Miss"}</div>`));
+  root.appendChild($(`<div class="foot" style="color:var(--dayInk2)"><span class="brand" style="color:var(--dayInk)"><img src="icon.png" alt="">${lang === "tr" ? "Her ıska kayıtta kalır." : "Every miss stays on the record."}</span><span>@clutchledger</span></div>`));
+};
+
+/* tote — one Win Totals team: the market's number on the glass, over or under. */
+T.tote = () => {
+  const t = TEAMS.find((x) => x.abbr === (Q.get("team") || "HOU"));
+  const idx = TEAMS.indexOf(t) + 1;
+  const tr = lang === "tr";
+  root.appendChild($(`<div class="pad">
+    <div class="top"><span>${tr ? "Win Totals · 2026-27" : "Win Totals · 2026-27"}</span><span class="r">${tr ? `${idx} / 30` : `${idx} of 30`}</span></div>
+    <div class="dbl"></div>
+    <div style="display:flex;align-items:center;gap:22px;margin-top:50px">
+      <div style="width:26px;height:122px;background:${t.c1}"></div>
+      <div style="margin-left:18px">
+        <div class="mono" style="font-size:26px;color:var(--ink3)">${esc(t.city)}</div>
+        <div style="font:900 104px/0.95 var(--display);color:var(--ink);margin-top:6px">${esc(t.nickname)}</div>
+      </div>
+    </div>
+    <div class="glass" id="g" style="margin-top:44px;height:430px"></div>
+    <div class="mono" style="font-size:24px;color:var(--ink3);margin-top:18px;display:flex;justify-content:space-between"><span>${tr ? "Piyasanın galibiyet sayısı" : "The market's win total"}</span><span>${tr ? "82 maç" : "82 games"}</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:40px">
+      <div style="border:3px solid var(--ink);padding:26px 0;text-align:center;font:900 60px/1 var(--display)">${tr ? "Üst" : "Over"}</div>
+      <div style="border:3px solid var(--ink);padding:26px 0;text-align:center;font:900 60px/1 var(--display)">${tr ? "Alt" : "Under"}</div>
+    </div>
+    <div class="lede" style="margin-top:36px;max-width:none;font-size:31px">${tr ? `30 takımın hepsini Clutch'ta seç, 20 Ekim'deki ilk hücumdan önce mühürle. <b>Ücretsiz. Birinciye 1 yıl Clutch Pro.</b>` : `Call all 30 in Clutch and seal it before the first tip on Oct 20. <b>Free. First place wins a year of Clutch Pro.</b>`}</div>
+  </div>`));
+  root.appendChild($(`<div class="foot" style="bottom:52px"><span class="legal" style="max-width:720px">${tr ? "Katılım ücretsiz. Ödül Clutch Pro süresidir. Apple sponsor değildir." : "Free to enter. Prizes are Clutch Pro time. Apple is not a sponsor."}</span><span>@clutchledger</span></div>`));
+  const g = document.getElementById("g").getBoundingClientRect();
+  const ctx = canvasAt(g.left, g.top, g.width, g.height);
+  ledBox(ctx, tr ? String(t.line).replace(".", ",") : String(t.line), 0, 0, g.width, g.height, { field: true, maxPitch: 52, inset: 120 });
+};
+
+/* board — all thirty lines on one tote board. */
+T.board = () => {
+  const tr = lang === "tr";
+  root.appendChild($(`<div class="pad" style="inset:64px 64px">
+    <div class="top"><span>${tr ? "Win Totals · 2026-27" : "Win Totals · 2026-27"}</span><span class="r">${tr ? "Piyasa · 30 Eylül" : "The market · Sep 30"}</span></div>
+    <div class="dbl"></div>
+    <div class="h2" style="margin-top:34px;font-size:78px">${tr ? "30 takım. <em class='amber' style='font-style:normal'>Üst mü, alt mı?</em>" : "30 teams. <em class='amber' style='font-style:normal'>Over or under?</em>"}</div>
+    <div id="cols" style="display:grid;grid-template-columns:1fr 1fr;gap:0 40px;margin-top:30px"></div>
+    <div class="lede" style="margin-top:24px;max-width:none;font-size:29px">${tr ? `Clutch'ta hepsini seç, en emin olduğun üçüne yıldız koy, 20 Ekim'de ilk hücumdan önce mühürle. <b>Ücretsiz. Birinciye 1 yıl Pro.</b>` : `Call every one in Clutch, star your three surest, seal it before the first tip on Oct 20. <b>Free. First place wins a year of Pro.</b>`}</div>
+  </div>`));
+  root.appendChild($(`<div class="foot" style="bottom:46px;left:64px;right:64px"><span class="legal">${tr ? "Katılım ücretsiz · ödül Pro süresidir · Apple sponsor değildir" : "Free to enter · prizes are Pro time · Apple is not a sponsor"}</span><span>@clutchledger</span></div>`));
+  const cols = document.getElementById("cols");
+  for (const conf of ["East", "West"]) {
+    const col = $(`<div><div class="mono" style="font-size:22px;color:var(--ink3);padding-bottom:10px;border-bottom:2px solid var(--ruleBold)">${tr ? (conf === "East" ? "Doğu" : "Batı") : conf}</div></div>`);
+    TEAMS.filter((t) => t.conf === conf).forEach((t) => {
+      col.appendChild($(`<div style="display:flex;justify-content:space-between;align-items:center;height:47px;border-bottom:1px solid var(--rule)">
+        <span style="display:flex;align-items:center;gap:14px;font:600 27px/1 var(--body);color:var(--ink)"><i style="width:8px;height:26px;background:${t.c1};display:inline-block"></i>${esc(t.nickname)}</span>
+        <span data-line="${t.line}" style="width:150px;height:40px;position:relative"></span></div>`));
+    });
+    cols.appendChild(col);
+  }
+  requestAnimationFrame(() => {});
+  document.querySelectorAll("[data-line]").forEach((el) => {
+    const r = el.getBoundingClientRect();
+    const ctx = canvasAt(r.left, r.top, r.width, r.height);
+    const text = tr ? el.dataset.line.replace(".", ",") : el.dataset.line;
+    const pitch = 5.2;
+    const w = (LED.cols(text) - 1) * pitch;
+    LED.draw(ctx, text, r.width - w - 6, (r.height - 6 * pitch) / 2, { pitch, off: null, glow: 5, r: 2.1 });
+  });
+};
+
+/* duel — you against Clutch, on the scoreboard. */
+T.duel = () => {
+  const tr = lang === "tr";
+  root.appendChild($(`<div class="pad">
+    <div class="top"><span>${tr ? "Clutch · her gece" : "Clutch · every night"}</span><span class="r">${tr ? "Kayıtta" : "On the record"}</span></div>
+    <div class="dbl"></div>
+    <div class="h1" style="margin-top:56px;font-size:${tr ? 80 : 96}px">${Q.get("h") || (tr ? "Basketbolu bildiğini mi düşünüyorsun? <em>Clutch'ı yen.</em>" : "Think you know ball? <em>Beat Clutch.</em>")}</div>
+    <div class="glass" id="g" style="margin-top:50px;height:420px"></div>
+    <div id="steps" style="margin-top:40px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px"></div>
+  </div>`));
+  root.insertAdjacentHTML("beforeend", foot(tr ? "App Store'da ücretsiz" : "Free on the App Store"));
+  const steps = tr ? [["1", "Maç başlamadan tahminini yap"], ["2", "Clutch'ın tahmini herkese açık mühürlenir"], ["3", "Maçtan sonra karne ikinizi de notlar"]] : [["1", "Make your call before tip"], ["2", "Clutch's call is sealed in public"], ["3", "After the final, the Ledger grades you both"]];
+  steps.forEach(([n, v]) => document.getElementById("steps").appendChild($(`<div style="border-top:3px solid var(--amber);padding-top:16px"><div style="font:900 54px/1 var(--display);color:var(--amber)">${n}</div><div style="font:600 27px/1.32 var(--body);color:var(--ink2);margin-top:12px">${v}</div></div>`)));
+  const g = document.getElementById("g").getBoundingClientRect();
+  const ctx = canvasAt(g.left, g.top, g.width, g.height);
+  const half = g.width / 2;
+  ctx.fillStyle = "rgba(241,233,216,0.22)"; ctx.fillRect(half - 1, 40, 2, g.height - 80);
+  ctx.font = "600 26px 'Plex Mono'"; ctx.fillStyle = "#B4AA97"; ctx.textAlign = "center";
+  ctx.fillText(tr ? "SEN" : "YOU", half / 2, 74); ctx.fillText("CLUTCH", half + half / 2, 74);
+  ledBox(ctx, Q.get("you") || "?-?", 0, 70, half, g.height - 90, { maxPitch: 34, inset: 70, on: "#F1E9D8" });
+  ledBox(ctx, Q.get("clutch") || "5-2", half, 70, half, g.height - 90, { maxPitch: 34, inset: 70 });
+};
+
+/* calib — we say it, it happens: said vs won by bucket. */
+T.calib = () => {
+  const tr = lang === "tr";
+  root.appendChild($(`<div class="pad">
+    <div class="top"><span>${tr ? "Kayıt · 2024-26 testi" : "The record · tested 2024-26"}</span><span class="r">${FACTS.games.toLocaleString("en-US")} ${tr ? "maç" : "games"}</span></div>
+    <div class="dbl"></div>
+    <div class="h1" style="margin-top:50px;font-size:84px">${tr ? "Clutch %72 dediğinde, <em>%71 oluyor.</em>" : "When Clutch says 72%, <em>it happens 71%.</em>"}</div>
+    <div id="chart" style="margin-top:40px;height:640px;position:relative"></div>
+    <div class="lede" style="margin-top:26px;max-width:none;font-size:30px">${tr ? "Her nokta bir güven aralığı: Clutch favoriye ne dedi, favori ne sıklıkla kazandı. <b>Çizgiye ne kadar yakınsa, rakam o kadar dürüst.</b>" : "Each dot is a confidence band: what Clutch said about the favourite, and how often the favourite won. <b>The closer to the line, the more honest the number.</b>"}</div>
+  </div>`));
+  root.insertAdjacentHTML("beforeend", foot("@clutchledger"));
+  const box = document.getElementById("chart").getBoundingClientRect();
+  const ctx = canvasAt(box.left, box.top, box.width, box.height);
+  drawCalib(ctx, box.width, box.height, 1, tr);
+};
+function drawCalib(ctx, w, h, k, tr) {
+  const L = 110, R = 30, Tp = 20, B = 70;
+  const x = (v) => L + ((v - 50) / 50) * (w - L - R);
+  const y = (v) => h - B - ((v - 50) / 50) * (h - Tp - B);
+  ctx.clearRect(0, 0, w, h);
+  ctx.strokeStyle = "rgba(241,233,216,0.10)"; ctx.lineWidth = 2;
+  ctx.font = "600 24px 'Plex Mono'"; ctx.fillStyle = "#B4AA97";
+  for (let v = 50; v <= 100; v += 10) {
+    ctx.beginPath(); ctx.moveTo(x(50), y(v)); ctx.lineTo(x(100), y(v)); ctx.stroke();
+    ctx.textAlign = "right"; ctx.fillText(v + "%", L - 18, y(v) + 8);
+    ctx.textAlign = "center"; ctx.fillText(v + "%", x(v), h - B + 44);
+  }
+  ctx.textAlign = "left"; ctx.fillStyle = "#7A7062"; ctx.font = "600 21px 'Plex Mono'";
+  ctx.fillText(tr ? "FAVORİ KAZANDI ↑" : "FAVOURITE WON ↑", L + 10, Tp + 24);
+  ctx.textAlign = "right"; ctx.fillText(tr ? "CLUTCH DEDİ →" : "CLUTCH SAID →", w - R, h - B - 16);
+  ctx.setLineDash([10, 10]); ctx.strokeStyle = "rgba(241,233,216,0.45)"; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(x(50), y(50)); ctx.lineTo(x(100), y(100)); ctx.stroke(); ctx.setLineDash([]);
+  FACTS.calib.forEach((c, i) => {
+    const t = Math.max(0, Math.min(1, k * FACTS.calib.length - i));
+    if (t <= 0) return;
+    const e = 1 - Math.pow(1 - t, 3);
+    const yy = y(50) + (y(c.won) - y(50)) * e;
+    const rr = 12 + Math.sqrt(c.n) * 0.9;
+    ctx.save(); ctx.shadowColor = "#FFB020"; ctx.shadowBlur = 26; ctx.fillStyle = "#FFB020";
+    ctx.beginPath(); ctx.arc(x(c.said), yy, rr, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+  });
+}
+
+/* espn — two seasons, same games, the accuracy score. */
+T.espn = () => {
+  const tr = lang === "tr";
+  root.appendChild($(`<div class="pad">
+    <div class="top"><span>${tr ? "Kayıt · aynı 2.631 maç" : "The record · same 2,631 games"}</span><span class="r">2024-26</span></div>
+    <div class="dbl"></div>
+    <div class="h1" style="margin-top:50px;font-size:80px">${tr ? "İki sezonda test edildi. <em>ESPN'in BPI'ından daha isabetli.</em>" : "Tested on two seasons. <em>More accurate than ESPN's BPI.</em>"}</div>
+    <div id="bars" style="margin-top:46px;display:flex;flex-direction:column;gap:22px"></div>
+    <div class="lede" style="margin-top:34px;max-width:none;font-size:29px">${tr ? "Bir tahminin yazı turadan ne kadar iyi olduğu (Brier skoruyla). Kazananı bilmek herkes için ~%69; fark, <b>ne kadar emin olunacağını bilmekte.</b> Piyasanın son rakamı hâlâ bir tık önde." : "How far above a coin flip each forecast was (Brier skill). Everyone picks about 69% of winners; the gap is in <b>knowing how sure to be.</b> The market's final number still edges us."}</div>
+  </div>`));
+  root.insertAdjacentHTML("beforeend", foot(tr ? "Canlı kayıt 20 Ekim'de başlıyor" : "Live record starts Oct 20"));
+  const s = FACTS.skill;
+  const rows = [["Clutch", s["2025-26"].clutch, s["2024-25"].clutch, true], [tr ? "Piyasanın son rakamı" : "The market's final number", s["2025-26"].close, s["2024-25"].close], ["ESPN BPI", s["2025-26"].espn, s["2024-25"].espn], [tr ? "Hep ev sahibi" : "Always the home team", s["2025-26"].home, s["2024-25"].home]];
+  const bars = document.getElementById("bars");
+  const max = 25;
+  rows.forEach(([name, a, b, us]) => {
+    bars.appendChild($(`<div>
+      <div style="display:flex;justify-content:space-between;font:${us ? 800 : 600} 32px/1.2 var(--body);color:${us ? "var(--amber)" : "var(--ink2)"}"><span>${esc(name)}</span><span style="font-family:var(--mono);font-weight:600">${fmt(a)} · ${fmt(b)}</span></div>
+      <div style="display:grid;gap:6px;margin-top:10px">
+        <div style="height:22px;background:var(--ledOff)"><div style="height:100%;width:${(a / max) * 100}%;background:${us ? "var(--amber)" : "var(--ink3)"}"></div></div>
+        <div style="height:12px;background:var(--ledOff)"><div style="height:100%;width:${(b / max) * 100}%;background:${us ? "var(--amber)" : "var(--ink4)"};opacity:.75"></div></div>
+      </div></div>`));
+  });
+  bars.appendChild($(`<div class="mono" style="font-size:21px;color:var(--ink4);letter-spacing:.1em">${tr ? "Kalın çubuk 2025-26 · ince çubuk 2024-25 · puan = (0,25 − Brier) / 0,25 × 100" : "Thick bar 2025-26 · thin bar 2024-25 · score = (0.25 − Brier) / 0.25 × 100"}</div>`));
+};
+
+/* launch — the promise, with the game page peeking up from the bottom edge. */
+T.launch = () => {
+  const tr = lang === "tr";
+  root.appendChild($(`<div class="pad">
+    <div class="top"><span>Clutch · 2026-27</span><span class="r">${tr ? "iPhone'da ücretsiz" : "Free on iPhone"}</span></div>
+    <div class="dbl"></div>
+    <div class="h1" style="margin-top:52px;font-size:116px">${tr ? "Her maçı tahmin et. <em>Clutch'ı yen.</em>" : "Call every game. <em>Beat Clutch.</em>"}</div>
+    <div style="display:grid;grid-template-columns:1fr 440px;gap:40px;margin-top:46px;flex:1;min-height:0">
+      <div style="display:flex;flex-direction:column;gap:30px">
+        <div class="lede" style="font-size:33px">${tr ? "Clutch her NBA maçına bir kazanma olasılığı veriyor ve onu <b>maçtan önce herkese açık mühürlüyor.</b> Sen de tahminini yap; karne ikinizi de notlasın." : "Clutch puts a win probability on every NBA game and <b>seals it in public before tip.</b> Make your own call. The Ledger grades you both."}</div>
+        <div id="three" style="display:flex;flex-direction:column;gap:18px"></div>
+      </div>
+      <div></div>
+    </div>
+  </div>`));
+  root.appendChild($(`<div style="position:absolute;right:76px;top:${Q.get("py") || 640}px;width:440px;height:1400px;border-radius:64px;border:10px solid #2B2721;background:#000;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.6)"><img src="${Q.get("shot") || "shots/02_game.png"}" style="width:100%;display:block"></div>`));
+  root.insertAdjacentHTML("beforeend", `<div class="foot" style="right:auto"><span class="brand"><img src="icon.png" alt="">${tr ? "App Store'da ücretsiz" : "Free on the App Store"}</span></div>`);
+  const items = tr ? [["Mühürlü", "maçtan önce, herkese açık bir kayda"], ["Notlu", "maçtan sonra, ıskalar dahil"], ["Oynanır", "Win Totals, The 82, Daily Spot"]] : [["Sealed", "before tip, in a public record"], ["Graded", "after the final, misses included"], ["Played", "Win Totals, The 82, Daily Spot"]];
+  const three = document.getElementById("three");
+  items.forEach(([k, v]) => three.appendChild($(`<div style="border-top:3px solid var(--amber);padding-top:14px;display:flex;gap:16px;align-items:baseline"><span style="font:900 40px/1 var(--display);color:var(--ink)">${k}</span><span style="font:500 25px/1.3 var(--body);color:var(--ink3)">${v}</span></div>`)));
+};
+
+/* builder — Uğur's own posts: the build in numbers. */
+T.builder = () => {
+  const tr = lang === "tr";
+  const stats = JSON.parse(Q.get("stats") || "[]");
+  root.appendChild($(`<div class="pad">
+    <div class="top"><span>${tr ? "Nasıl yapıldı" : "How it was built"}</span><span class="r">Clutch · 2026</span></div>
+    <div class="dbl"></div>
+    <div class="h1" style="margin-top:50px;font-size:88px">${Q.get("h") || (tr ? "Tek kişi. Sıfır sunucu. <em>Bir yapay zekâ ortağı.</em>" : "One person. Zero servers. <em>One AI pair.</em>")}</div>
+    <div id="grid" style="margin-top:46px;display:grid;grid-template-columns:1fr 1fr;gap:22px"></div>
+  </div>`));
+  root.insertAdjacentHTML("beforeend", foot("@clutchledger"));
+  const grid = document.getElementById("grid");
+  stats.forEach(([num, label]) => {
+    const cell = $(`<div class="glass" style="height:230px"><div class="mono" style="position:absolute;left:26px;bottom:22px;right:20px;font-size:22px;color:var(--ink3);letter-spacing:.12em;line-height:1.3">${esc(label)}</div></div>`);
+    grid.appendChild(cell);
+  });
+  document.querySelectorAll("#grid .glass").forEach((el, i) => {
+    const r = el.getBoundingClientRect();
+    const ctx = canvasAt(r.left, r.top, r.width, r.height - 60);
+    ledBox(ctx, stats[i][0], 0, 10, r.width, r.height - 70, { maxPitch: 17, inset: 50, off: null });
+  });
+};
+
+/* receipt — a slate's seal, printed. */
+T.receipt = () => {
+  const tr = lang === "tr";
+  const lines = JSON.parse(Q.get("games") || "[]");
+  root.appendChild($(`<div class="pad" style="align-items:center">
+    <div class="h1" style="align-self:stretch;font-size:92px">${Q.get("h") || (tr ? "Clutch <em>fişini saklar.</em>" : "Clutch <em>keeps receipts.</em>")}</div>
+    <div id="slip" style="margin-top:40px;width:900px;background:var(--slip);color:var(--slipInk);padding:42px 48px 54px;font:600 29px/1.55 var(--mono);position:relative;box-shadow:0 30px 60px rgba(0,0,0,.45)"></div>
+  </div>`));
+  root.insertAdjacentHTML("beforeend", foot(Q.get("f") || "Public repo · clutch-receipts"));
+  const slip = document.getElementById("slip");
+  const hr = `<div style="border-top:3px dashed rgba(27,26,23,.55);margin:14px 0"></div>`;
+  slip.innerHTML = `<div style="text-align:center;font-weight:700;letter-spacing:.14em">CLUTCH · THE BASKETBALL LEDGER</div>
+    <div style="text-align:center;font-weight:500;opacity:.75">${esc(Q.get("kind") || "SEAL")} · ${esc(Q.get("slate") || "")}</div>${hr}
+    ${lines.map((g) => `<div style="display:flex;justify-content:space-between"><span>${esc(g[0])}</span><span style="font-weight:700">${esc(g[1])}</span></div>`).join("")}${hr}
+    <div style="display:flex;justify-content:space-between"><span>SEALED</span><span>${esc(Q.get("at") || "")}</span></div>
+    <div style="display:flex;justify-content:space-between"><span>SHA-256</span><span>${esc(Q.get("sha") || "")}</span></div>
+    <div style="display:flex;justify-content:space-between"><span>PREV</span><span>${esc(Q.get("prev") || "")}</span></div>`;
+  const zig = (top) => `<div style="position:absolute;left:0;right:0;${top ? "top:-16px" : "bottom:-16px"};height:16px;background:linear-gradient(${top ? "-45deg" : "45deg"},transparent 11px,var(--slip) 0) 0 0/22px 22px,linear-gradient(${top ? "45deg" : "-45deg"},transparent 11px,var(--slip) 0) 0 0/22px 22px"></div>`;
+  slip.insertAdjacentHTML("beforeend", zig(true) + zig(false));
+  if (Q.get("stamp")) slip.insertAdjacentHTML("beforeend", `<div class="stamp" style="color:#1E7A45;right:-30px;bottom:40px;font-size:58px">${esc(Q.get("stamp"))}</div>`);
+};
+
+
+/* count — Win Totals countdown story (1080×1920). */
+T.count = () => {
+  const tr = lang === "tr";
+  const d = Q.get("d") || "10";
+  const last = d === "0";
+  root.appendChild($(`<div class="pad" style="inset:200px 76px 140px">
+    <div class="top"><span>Win Totals · 2026-27</span><span class="r">${tr ? "Ücretsiz" : "Free"}</span></div>
+    <div class="dbl"></div>
+    <div class="glass" id="g" style="margin-top:70px;height:560px"></div>
+    <div class="h1" style="margin-top:60px;font-size:104px">${last ? (tr ? "Bu gece <em>kilitleniyor.</em>" : "Locks <em>tonight.</em>") : tr ? `${d} gün kaldı. <em>30'unu mühürle.</em>` : `${d} days left. <em>Seal your 30.</em>`}</div>
+    <div class="lede" style="margin-top:40px;max-width:none">${last ? (tr ? "İlk hücum 22:00'de (TSİ). Sonrasında sezon notlar." : "First tip at 3 PM ET. After that, the season grades you.") : tr ? "30 takım, üst ya da alt, üç yıldız. <b>Birinciye 1 yıl Clutch Pro.</b>" : "30 teams, over or under, three stars. <b>First place wins a year of Clutch Pro.</b>"}</div>
+    <div style="margin-top:50px"><span class="cta">${tr ? "Clutch'ta mühürle" : "Seal it in Clutch"}</span></div>
+  </div>`));
+  root.appendChild($(`<div class="foot" style="bottom:120px"><span class="legal">${tr ? "Katılım ücretsiz · ödül Pro süresidir · Apple sponsor değildir" : "Free to enter · prizes are Pro time · Apple is not a sponsor"}</span><span>@clutchledger</span></div>`));
+  const g = document.getElementById("g").getBoundingClientRect();
+  const ctx = canvasAt(g.left, g.top, g.width, g.height);
+  ledBox(ctx, last ? (tr ? "BUGÜN" : "TODAY").replace("Ü", "U") : d.padStart(2, "0"), 0, 0, g.width, g.height, { field: true, maxPitch: 70, inset: 120 });
+};
+
+/* xheader — X profile banner (1500×500); the lower-left stays clear for the avatar. */
+T.xheader = () => {
+  document.body.style.background = "var(--glass)"; root.style.background = "var(--glass)";
+  const ctx = canvasAt(0, 0, W, H);
+  LED.field(ctx, 12, 12, W - 24, H - 24, 22, "rgba(241,233,216,0.07)", 2.2);
+  const text = "BEAT CLUTCH";
+  const pitch = 21, w = (LED.cols(text) - 1) * pitch;
+  LED.draw(ctx, text, W - w - 110, 150, { pitch, off: "#221E18", glow: 20 });
+  root.appendChild($(`<div style="position:absolute;right:110px;top:330px;text-align:right;font:600 22px/1.4 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--ink3)">${Q.get("sub") || "Every NBA game · sealed before tip · graded after the final"}</div>`));
+};
+
+/* ytbanner — YouTube channel art (2560×1440); everything inside the 1546×423 safe area. */
+T.ytbanner = () => {
+  document.body.style.background = "var(--glass)"; root.style.background = "var(--glass)";
+  const ctx = canvasAt(0, 0, W, H);
+  LED.field(ctx, 20, 20, W - 40, H - 40, 30, "rgba(241,233,216,0.06)", 2.6);
+  const text = "BEAT CLUTCH";
+  const pitch = 24, w = (LED.cols(text) - 1) * pitch;
+  LED.draw(ctx, text, (W - w) / 2, 560, { pitch, off: "#221E18", glow: 24 });
+  root.appendChild($(`<div style="position:absolute;left:0;right:0;top:760px;text-align:center;font:600 30px/1.4 var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--ink3)">Call every NBA game · sealed before tip · graded after the final</div>`));
+};
+
+/* hl — Instagram highlight cover: one LED symbol in the centre circle. */
+T.hl = () => {
+  document.body.style.background = "var(--glass)"; root.style.background = "var(--glass)";
+  const ctx = canvasAt(0, 0, W, H);
+  const text = Q.get("g") || "30";
+  const pitch = +(Q.get("p") || 44), w = (LED.cols(text) - 1) * pitch;
+  LED.draw(ctx, text, (W - w) / 2, H / 2 - 3 * pitch, { pitch, off: null, glow: pitch * 0.9, r: pitch * 0.4 });
+};
+
+/* event — App Store In-App Event media: no text, no logos (Apple's media guidance). */
+T.event = () => {
+  document.body.style.background = "var(--glass)"; root.style.background = "var(--glass)";
+  const ctx = canvasAt(0, 0, W, H);
+  const kind = Q.get("k") || "wt";
+  const pitch = Math.round(Math.min(W, H) / 46);
+  LED.field(ctx, pitch, pitch, W - 2 * pitch, H - 2 * pitch, pitch, "rgba(241,233,216,0.06)", pitch * 0.12);
+  if (kind === "wt") {
+    // the tote board: thirty rows, each as long as the market's win total, two columns
+    const lines = TEAMS.map((t) => +t.line);
+    const landscape = W > H;
+    const cols = 2, rows = 15;
+    const rowH = (H - pitch * (landscape ? 8 : 14)) / rows;
+    const colW = (W - pitch * 6) / cols;
+    lines.forEach((ln, i) => {
+      const c = i < 15 ? 0 : 1, r = i % 15;
+      const x0 = pitch * 3 + c * colW, y = pitch * (landscape ? 4 : 7) + r * rowH + rowH / 2;
+      const n = Math.round(((ln - 15) / 50) * (colW / pitch - 3));
+      const pts = [];
+      for (let k = 0; k < n; k++) pts.push([x0 + k * pitch, y]);
+      ctx.save(); ctx.shadowColor = "#FFB020"; ctx.shadowBlur = pitch * 0.9; ctx.fillStyle = i % 5 === 0 ? "#F1E9D8" : "#FFB020";
+      pts.forEach(([x, yy]) => { ctx.beginPath(); ctx.arc(x, yy, pitch * 0.34, 0, Math.PI * 2); ctx.fill(); });
+      ctx.restore();
+    });
+  } else {
+    // opening night: a ribbon board wave over a lit floor
+    const g = ctx.createRadialGradient(W / 2, H * 1.05, 10, W / 2, H * 1.05, H * 0.9);
+    g.addColorStop(0, "rgba(255,176,32,0.35)"); g.addColorStop(1, "rgba(255,176,32,0)");
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    const bands = 5, top = H * 0.28;
+    for (let b = 0; b < bands; b++) {
+      for (let x = pitch; x < W - pitch; x += pitch) {
+        const wave = Math.sin(x / (W / 6) + b * 0.7);
+        const lit = wave > 0.15 - b * 0.12;
+        if (!lit) continue;
+        ctx.save(); ctx.shadowColor = "#FFB020"; ctx.shadowBlur = pitch; ctx.fillStyle = b === 2 ? "#F1E9D8" : "#FFB020"; ctx.globalAlpha = 0.55 + 0.45 * Math.max(0, wave);
+        ctx.beginPath(); ctx.arc(x, top + b * pitch * 1.6, pitch * 0.34, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+      }
+    }
+  }
+};
+
+
+/* slate — tonight's calls on one board: every game, Clutch's side and its number. */
+T.slate = () => {
+  const tr = lang === "tr";
+  const games = JSON.parse(Q.get("g") || "[]");
+  root.appendChild($(`<div class="pad" style="inset:64px 64px">
+    <div class="top"><span>${tr ? "Clutch · bu gece" : "Clutch · tonight"}</span><span class="r">${esc(Q.get("d") || "")}</span></div>
+    <div class="dbl"></div>
+    <div class="h2" style="margin-top:30px;font-size:${games.length > 9 ? 70 : 80}px">${tr ? "Bu gecenin tahminleri. <em class='amber' style='font-style:normal'>Hangisi yanlış?</em>" : "Tonight's calls. <em class='amber' style='font-style:normal'>Which one is wrong?</em>"}</div>
+    <div id="rows" style="margin-top:28px;display:flex;flex-direction:column"></div>
+    <div class="lede" style="margin-top:22px;max-width:none;font-size:28px">${tr ? "Hepsi maç başlamadan mühürlü, maçtan sonra notlanıyor. <b>Sen de tahmin et, Clutch'ı yen.</b>" : "Sealed before tip, graded after the final. <b>Make your own calls and beat Clutch.</b>"}</div>
+  </div>`));
+  root.insertAdjacentHTML("beforeend", foot(tr ? "App Store'da ücretsiz" : "Free on the App Store"));
+  const rows = document.getElementById("rows");
+  const h = Math.min(78, Math.floor(700 / Math.max(1, games.length)));
+  games.forEach((g) => {
+    rows.appendChild($(`<div style="display:flex;justify-content:space-between;align-items:center;height:${h}px;border-bottom:1px solid var(--rule)">
+      <span style="display:flex;flex-direction:column;gap:4px"><span style="font:700 ${Math.min(34, h * 0.42)}px/1 var(--body);color:var(--ink)">${esc(g.fav)} <span style="color:var(--ink3);font-weight:500">${tr ? "vs" : "over"} ${esc(g.dog)}</span></span><span class="mono" style="font-size:${Math.min(20, h * 0.26)}px;color:var(--ink4)">${esc(g.tip)}</span></span>
+      <span data-p="${g.p}" style="width:210px;height:${Math.round(h * 0.7)}px;position:relative"></span></div>`));
+  });
+  document.querySelectorAll("[data-p]").forEach((el) => {
+    const r = el.getBoundingClientRect();
+    const ctx = canvasAt(r.left, r.top, r.width, r.height);
+    const text = el.dataset.p + "%";
+    const pitch = Math.max(4, Math.min(8, r.height / 8));
+    const w = (LED.cols(text) - 1) * pitch;
+    LED.draw(ctx, text, r.width - w - 6, (r.height - 6 * pitch) / 2, { pitch, off: null, glow: pitch, r: pitch * 0.38 });
+  });
+};
+
+const FACES = ["900 40px Fraunces", "700 40px Fraunces", "600 24px 'Plex Mono'", "500 24px 'Plex Mono'", "700 24px 'Plex Mono'", "400 30px Franklin", "500 30px Franklin", "600 30px Franklin", "800 30px Franklin", "900 30px Franklin"];
+window.READY = () => Promise.all(FACES.map((f) => document.fonts.load(f))).then(() => (T[Q.get("t") || "jumbo"] || T.jumbo)());
+</script>
+</body></html>

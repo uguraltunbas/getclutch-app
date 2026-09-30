@@ -1,0 +1,43 @@
+/* Clutch launch pack v2 — the brand, as the app ships it (lib/theme/palette.ts,
+   Night Edition + Day Edition) plus the icon's glowing LED dots. Every card
+   and every video frame is built from these tokens. */
+@font-face { font-family: "Fraunces"; font-weight: 900; src: url(fonts/Fraunces_900Black.ttf); }
+@font-face { font-family: "Fraunces"; font-weight: 700; src: url(fonts/Fraunces_700Bold.ttf); }
+@font-face { font-family: "Fraunces"; font-weight: 600; src: url(fonts/Fraunces_600SemiBold.ttf); }
+@font-face { font-family: "Fraunces"; font-weight: 400; font-style: italic; src: url(fonts/Fraunces_400Regular_Italic.ttf); }
+@font-face { font-family: "Plex Mono"; font-weight: 500; src: url(fonts/IBMPlexMono_500Medium.ttf); }
+@font-face { font-family: "Plex Mono"; font-weight: 600; src: url(fonts/IBMPlexMono_600SemiBold.ttf); }
+@font-face { font-family: "Plex Mono"; font-weight: 700; src: url(fonts/IBMPlexMono_700Bold.ttf); }
+@font-face { font-family: "Franklin"; font-weight: 400; src: url(fonts/LibreFranklin_400Regular.ttf); }
+@font-face { font-family: "Franklin"; font-weight: 500; src: url(fonts/LibreFranklin_500Medium.ttf); }
+@font-face { font-family: "Franklin"; font-weight: 600; src: url(fonts/LibreFranklin_600SemiBold.ttf); }
+@font-face { font-family: "Franklin"; font-weight: 800; src: url(fonts/LibreFranklin_800ExtraBold.ttf); }
+@font-face { font-family: "Franklin"; font-weight: 900; src: url(fonts/LibreFranklin_900Black.ttf); }
+@font-face { font-family: "Franklin"; font-weight: 900; font-style: italic; src: url(fonts/LibreFranklin_900Black_Italic.ttf); }
+@font-face { font-family: "Doto"; font-weight: 900; src: url(fonts/Doto_900Black.ttf); }
+
+:root {
+  /* Night Edition */
+  --paper: #15130F; --paper2: #1C1914; --cardHi: #241F19;
+  --ink: #F1E9D8; --ink2: #CFC4AE; --ink3: #B4AA97; --ink4: #7A7062;
+  --rule: rgba(241,233,216,0.14); --ruleBold: rgba(241,233,216,0.28);
+  --amber: #FFB020; --amberGlow: rgba(255,176,32,0.55); --onAmber: #15130F;
+  --hot: #FF4D4D; --win: #5AD98A;
+  /* the glass every instrument sits on, and the unlit LED */
+  --glass: #101114; --glassRule: rgba(241,233,216,0.22); --ledOff: #2A251E;
+  /* Day Edition — the morning paper */
+  --dayPaper: #EDEEF0; --dayInk: #0E0F12; --dayInk2: #3B3F47; --dayHot: #D1222E; --dayRule: rgba(14,15,18,0.16);
+  /* thermal receipt stock */
+  --slip: #F3F1EC; --slipInk: #1B1A17;
+
+  --display: "Fraunces", Georgia, serif;
+  --tabloid: "Franklin", "Franklin Gothic", Arial, sans-serif;
+  --body: "Franklin", -apple-system, sans-serif;
+  --mono: "Plex Mono", ui-monospace, Menlo, monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; overflow: hidden; background: var(--paper); color: var(--ink); }
+body { font-family: var(--body); -webkit-font-smoothing: antialiased; text-rendering: geometricPrecision; }
+canvas { display: block; }
+.mono { font-family: var(--mono); font-weight: 600; letter-spacing: .16em; text-transform: uppercase; }
+.amber { color: var(--amber); }

@@ -1,0 +1,57 @@
+# The site and the Clutch desk, deployed together to GitHub Pages.
+# The desk (desk/) is rebuilt from public data three times a day; the rest of
+# the site is copied as it is in main. If the desk build fails, the site still
+# deploys (the desk step is allowed to fail).
+name: Site and desk
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 6 * * *"    # 09:00 TSİ · last night's miss, today's receipt (if sealed), Win Totals
+    - cron: "0 15 * * *"   # 18:00 TSİ · tonight's calls and receipts before US tips
+    - cron: "30 20 * * *"  # 23:30 TSİ · late updates before the first ET tips
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "ET date to build (YYYY-MM-DD, empty = today)"
+        required: false
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: ffmpeg
+        run: sudo apt-get update -q && sudo apt-get install -y -q ffmpeg
+      - name: Site
+        run: |
+          mkdir -p _site
+          rsync -a --exclude '.git' --exclude '.github' --exclude 'desk-src' --exclude '_site' ./ _site/
+      - name: Desk
+        continue-on-error: true
+        env:
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          CHROME_PATH: /usr/bin/google-chrome
+          DESK_DATE: ${{ github.event.inputs.date }}
+        run: node desk-src/make.mjs --out _site/desk
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
