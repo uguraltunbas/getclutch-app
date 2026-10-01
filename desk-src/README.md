@@ -11,6 +11,10 @@ day by `.github/workflows/desk.yml` and published at `/desk/` (noindex).
   paper, the receipt, the Win Totals tote board, countdown stories).
 - Never reads a Pro column and never shows the Machine's Win Totals picks
   before the lock (2026-10-20 19:00 UTC).
+- Clutch's Cards (from 1.0.7, migration 065): the free row of the snapshot
+  `cards/<date>` — tonight's three cards (`t=cards`), last night's results with
+  every leg graded from the finals, misses included (`t=cardsres`), and on
+  Mondays last week's record (`t=cardsweek`). Captions are English only.
 
 Run locally: `SUPABASE_ANON_KEY=… node desk-src/make.mjs --date 2026-10-22 --out /tmp/desk`
 

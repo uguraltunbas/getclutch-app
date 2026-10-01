@@ -449,6 +449,101 @@ T.slate = () => {
   });
 };
 
+/* A check or a cross drawn as a stroke (the mono face has no ✓ of its own). */
+const tick = (ok, px = 26) => ok === true
+  ? `<svg width="${px}" height="${px}" viewBox="0 0 12 12" style="vertical-align:-0.12em"><path d="M2 6.5l2.5 2.5L10 3" fill="none" stroke="currentColor" stroke-width="2"/></svg>`
+  : ok === false
+    ? `<svg width="${px}" height="${px}" viewBox="0 0 12 12" style="vertical-align:-0.12em"><path d="M3 3l6 6M9 3l-6 6" fill="none" stroke="currentColor" stroke-width="2"/></svg>`
+    : "·";
+
+/* cards — Clutch's Cards tonight (migration 065): the three cards on one board,
+   each with its legs, Clutch's chance as an LED number and the points it pays. */
+T.cards = () => {
+  const cs = JSON.parse(Q.get("c") || "[]");
+  root.appendChild($(`<div class="pad" style="inset:64px 64px">
+    <div class="top"><span>Clutch's cards · tonight</span><span class="r">${esc(Q.get("d") || "")}</span></div>
+    <div class="dbl"></div>
+    <div class="h2" style="margin-top:30px;font-size:84px">Three cards. <em style="font-style:normal;color:var(--amber)">Which one lands?</em></div>
+    <div id="rows" style="margin-top:34px;display:flex;flex-direction:column;gap:18px"></div>
+    <div class="lede" style="margin-top:26px;max-width:none;font-size:28px">Built from Clutch's ${esc(Q.get("at") || "morning")} numbers, sealed before tip. <b>Copy one in the app</b> — every card is worth the same on average.</div>
+  </div>`));
+  root.insertAdjacentHTML("beforeend", foot("Free on the App Store"));
+  const rows = document.getElementById("rows");
+  cs.forEach((c) => {
+    rows.appendChild($(`<div class="glass" style="height:230px;display:flex;align-items:center;justify-content:space-between;padding:0 36px">
+      <span style="display:flex;flex-direction:column;gap:16px">
+        <span style="font:900 66px/1 var(--display);color:var(--ink)">${esc(c.tier)}</span>
+        <span style="display:flex;flex-wrap:wrap;gap:10px 26px;font:600 32px/1 var(--mono);letter-spacing:.06em;color:var(--ink2);max-width:560px">${(Array.isArray(c.legs) ? c.legs : String(c.legs).split(" · ")).map((t) => `<span>${esc(t)}</span>`).join("")}</span>
+        <span style="font:600 24px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)">Every leg right: +${esc(c.pts)} pts</span>
+      </span>
+      <span data-p="${esc(c.p)}" style="width:330px;height:150px;position:relative"></span>
+    </div>`));
+  });
+  document.querySelectorAll("[data-p]").forEach((el) => {
+    const r = el.getBoundingClientRect();
+    ledBox(canvasAt(r.left, r.top, r.width, r.height), el.dataset.p + "%", 0, 0, r.width, r.height, { maxPitch: 18, inset: 10, insetY: 20 });
+  });
+};
+
+/* cardsres — last night's cards, every leg graded (the misses too). */
+T.cardsres = () => {
+  const cs = JSON.parse(Q.get("c") || "[]");
+  root.appendChild($(`<div class="pad" style="inset:64px 64px">
+    <div class="top"><span>Clutch's cards · last night</span><span class="r">${esc(Q.get("d") || "")}</span></div>
+    <div class="dbl"></div>
+    <div class="h2" style="margin-top:34px;font-size:84px">${Q.get("h") || "Last night's cards."}</div>
+    <div id="rows" style="margin-top:40px;display:flex;flex-direction:column;gap:22px"></div>
+    <div class="lede" style="margin-top:36px;max-width:none;font-size:30px">Every card was sealed before tip in the public record. <b>The misses stay on it too.</b></div>
+  </div>`));
+  root.insertAdjacentHTML("beforeend", foot("Free on the App Store"));
+  const rows = document.getElementById("rows");
+  const mark = (ok) => `<span style="color:${ok === true ? "var(--win)" : ok === false ? "var(--hot)" : "var(--ink4)"}">${tick(ok, 28)}</span>`;
+  cs.forEach((c) => {
+    const chip = c.status === "won" ? `<span style="background:var(--win);color:var(--onAmber);padding:9px 14px">HIT · +${esc(c.pts)} PTS</span>`
+      : c.status === "lost" ? `<span style="border:3px solid var(--hot);color:var(--hot);padding:6px 12px">MISSED · ${esc(c.right)} OF ${esc(c.n)}</span>`
+      : `<span style="border:3px solid var(--ink4);color:var(--ink3);padding:6px 12px">${c.status === "void" ? "VOID" : "STILL OPEN"}</span>`;
+    rows.appendChild($(`<div class="glass" style="padding:30px 34px;display:flex;flex-direction:column;gap:20px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font:900 58px/1 var(--display);color:var(--ink)">${esc(c.tier)} <span style="font:600 28px/1 var(--mono);color:var(--ink3)">${esc(c.p)}%</span></span>
+        <span style="font:700 24px/1 var(--mono);letter-spacing:.12em">${chip}</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:12px 30px;font:600 30px/1.25 var(--mono);color:var(--ink2)">${c.legs.map((l) => `<span>${mark(l.ok)} ${esc(l.team)} <span style="color:var(--ink4)">${esc(l.score || "")}</span></span>`).join("")}</div>
+    </div>`));
+  });
+};
+
+/* cardsweek — the week's record of Clutch's cards (posted on Mondays). */
+T.cardsweek = () => {
+  const w = JSON.parse(Q.get("w") || "{}");
+  const nights = w.nights || [];
+  const days = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
+  root.appendChild($(`<div class="pad" style="inset:64px 64px">
+    <div class="top"><span>Clutch's cards · the week</span><span class="r">${esc(Q.get("d") || "")}</span></div>
+    <div class="dbl"></div>
+    <div class="h2" style="margin-top:30px;font-size:84px">The week's record.</div>
+    <div id="grid" style="margin-top:56px;display:grid;grid-template-columns:250px repeat(7, minmax(0, 1fr)) 120px;gap:16px;align-items:center"></div>
+    <div style="margin-top:80px;display:flex;align-items:baseline;gap:24px"><span style="font:600 28px/1.2 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)">Clutch's points from cards</span><span style="font:900 104px/1 var(--display);color:var(--amber)">${esc(w.points?.total ?? 0)}</span></div>
+    <div class="lede" style="margin-top:36px;max-width:none;font-size:30px">Every card sealed before tip. <b>Beat Clutch's week in the app.</b></div>
+  </div>`));
+  root.insertAdjacentHTML("beforeend", foot("Free on the App Store"));
+  const g = document.getElementById("grid");
+  const cell = (s) => {
+    const look = s === "won" ? "background:var(--win);color:var(--onAmber)"
+      : s === "lost" ? "background:var(--ledOff);color:var(--hot)"
+      : s === "void" ? "background:var(--ledOff);color:var(--ink3)"
+      : "border:2px solid var(--rule);color:var(--ink4)";
+    const glyph = s === "won" ? tick(true, 40) : s === "lost" ? tick(false, 40) : s === "void" ? "–" : "·";
+    return `<span style="height:112px;display:flex;align-items:center;justify-content:center;font:700 40px/1 var(--mono);${look}">${glyph}</span>`;
+  };
+  g.insertAdjacentHTML("beforeend", "<span></span>" + days.map((d) => `<span style="font:600 22px/1 var(--mono);letter-spacing:.12em;color:var(--ink3);text-align:center">${d}</span>`).join("") + "<span></span>");
+  [["solid", "Solid"], ["balanced", "Balanced"], ["bold", "Bold"]].forEach(([k, name]) => {
+    const marks = days.map((_, i) => (nights[i] || {})[k] ?? null);
+    const won = marks.filter((s) => s === "won").length, played = marks.filter((s) => s === "won" || s === "lost").length;
+    g.insertAdjacentHTML("beforeend", `<span style="font:900 46px/1 var(--display);color:var(--ink)">${name}</span>` + marks.map(cell).join("") +
+      `<span style="font:700 42px/1 var(--mono);color:var(--ink);text-align:right">${won}/${played}</span>`);
+  });
+};
+
 const FACES = ["900 40px Fraunces", "700 40px Fraunces", "600 24px 'Plex Mono'", "500 24px 'Plex Mono'", "700 24px 'Plex Mono'", "400 30px Franklin", "500 30px Franklin", "600 30px Franklin", "800 30px Franklin", "900 30px Franklin"];
 window.READY = () => Promise.all(FACES.map((f) => document.fonts.load(f))).then(() => (T[Q.get("t") || "jumbo"] || T.jumbo)());
 </script>

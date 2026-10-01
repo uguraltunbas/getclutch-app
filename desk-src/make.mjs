@@ -88,7 +88,7 @@ if (misses.length) {
   const held = last.length - misses.length;
   const body = `Sealed before tip in the public record. Last night: ${held} of ${last.length} calls held.`;
   const bodyTr = `Maçtan önce herkese açık kayda mühürlendi. Dün gece: ${last.length} tahminin ${held}'i tuttu.`;
-  items.push({ kind: "Sabahın ıskası", when: "Sabah · X, Threads, Instagram", img: card("miss.png", { t: "tabloid", m, ed: "Morning edition", lbl: "Last night's worst miss", b: body }), vid: video("miss.mp4", { s: "miss", m, lbl: "LAST NIGHT'S WORST MISS", b: body }), vidTr: video("miss-tr.mp4", { s: "miss", m: { ...m, short: m.favName }, lang: "tr", lbl: "DÜN GECENİN EN KÖTÜ ISKASI", b: bodyTr }),
+  items.push({ kind: "Last night's worst miss", when: "Morning · X, Threads, Instagram", img: card("miss.png", { t: "tabloid", m, ed: "Morning edition", lbl: "Last night's worst miss", b: body }), vid: video("miss.mp4", { s: "miss", m, lbl: "LAST NIGHT'S WORST MISS", b: body }), vidTr: video("miss-tr.mp4", { s: "miss", m: { ...m, short: m.favName }, lang: "tr", lbl: "DÜN GECENİN EN KÖTÜ ISKASI", b: bodyTr }),
     en: `Last night Clutch had the ${m.favName} at ${Math.round(m.p)}%. The ${m.dogName} won ${dogScore}–${favScore}.\n\nIt stays on the record, like every other call. ${held} of ${last.length} held last night.`,
     tr: `Dün gece Clutch ${m.favName} için %${Math.round(m.p)} dedi. ${m.dogName} ${dogScore}–${favScore} kazandı.\n\nKayıtta kalıyor, diğer her tahmin gibi. Dün gece ${last.length} tahminin ${held}'i tuttu.` });
   // the TR card
@@ -100,7 +100,7 @@ if (tonight.length) {
   const showBoard = tonight.length >= 3;
   const board = tonight.map((x) => ({ fav: x.fav.nickname, dog: x.dog.nickname, p: x.pct, tip: tipET(x.g.game_time_utc) }));
   const pre = tonight[0].g.season_type === "Preseason";
-  if (showBoard) items.push({ kind: pre ? "Bu gecenin tahminleri (hazırlık)" : "Bu gecenin tahminleri", when: "Öğleden sonra · X, Threads, IG hikâye", img: card("tonight.png", { t: "slate", g: board, d: nice(TODAY) + (pre ? " · preseason" : "") }),
+  if (showBoard) items.push({ kind: pre ? "Tonight's calls (preseason)" : "Tonight's calls", when: "Afternoon · X, Threads, IG story", img: card("tonight.png", { t: "slate", g: board, d: nice(TODAY) + (pre ? " · preseason" : "") }),
     en: `Tonight's calls from Clutch${pre ? " (preseason: sealed, not graded)" : ""}, all sealed before tip:\n\n${tonight.map((x) => `${x.fav.nickname} ${x.pct}% over ${x.dog.nickname}`).join("\n")}\n\nWhich one is wrong?`,
     tr: `Clutch'ın bu geceki tahminleri${pre ? " (hazırlık: mühürlü, notlanmıyor)" : ""}:\n\n${tonight.map((x) => `${x.fav.nickname} %${x.pct} (${x.dog.nickname}'a karşı) · ${tipTR(x.g.game_time_utc)}`).join("\n")}\n\nHangisi yanlış?` });
   // "biggest" = the two teams with the highest win totals between them (a proxy for interest)
@@ -108,7 +108,7 @@ if (tonight.length) {
   const top = tonight.slice().sort((a, b) => lineOf(b.home) + lineOf(b.away) - (lineOf(a.home) + lineOf(a.away))).slice(0, 3);
   top.forEach((x, i) => {
     const h = `${x.fav.nickname} over <em>${x.dog.nickname}.</em>`;
-    items.push({ kind: `Bu gecenin sayısı · ${x.away.abbreviation} @ ${x.home.abbreviation}`, when: "Maçtan önce · X (anketle), Threads", img: card(`jumbo-${i + 1}.png`, { t: "jumbo", num: `${x.pct}%`, e: "Clutch's call", d: `${nice(TODAY)} · ${tipET(x.g.game_time_utc)}`, h, b: `${x.why ? x.why.replace(/\s*\((favors|favours) (home|away)\)\s*$/i, "") + ". " : ""}Sealed before tip. <b>Your call?</b>` }),
+    items.push({ kind: `Tonight's number · ${x.away.abbreviation} @ ${x.home.abbreviation}`, when: "Before tip · X (with a poll), Threads", img: card(`jumbo-${i + 1}.png`, { t: "jumbo", num: `${x.pct}%`, e: "Clutch's call", d: `${nice(TODAY)} · ${tipET(x.g.game_time_utc)}`, h, b: `${x.why ? x.why.replace(/\s*\((favors|favours) (home|away)\)\s*$/i, "") + ". " : ""}Sealed before tip. <b>Your call?</b>` }),
       en: `Clutch: ${x.fav.nickname} ${x.pct}% over the ${x.dog.nickname} tonight (${tipET(x.g.game_time_utc)}).\n\nSealed before tip, graded after the final. Your call?`,
       tr: `Clutch: bu gece ${x.fav.nickname} %${x.pct}, rakip ${x.dog.nickname} (${tipTR(x.g.game_time_utc)}).\n\nMaçtan önce mühürlü, maçtan sonra notlanıyor. Sen ne diyorsun?`,
       poll: [x.fav.nickname, x.dog.nickname] });
@@ -121,7 +121,7 @@ if (receipt) {
   const at = new Date(receipt.committed_at).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "America/New_York" }) + " ET";
   const games = tonight.slice(0, 7).map((x) => [`${x.away.abbreviation} @ ${x.home.abbreviation}`, `${x.fav.abbreviation} ${(x.fp * 100).toFixed(1)}%`]);
   const qq = { kind: "SEAL", slate: `SLATE ${TODAY} · ${receipt.n_games ?? tonight.length} GAMES`, games, at, sha: short(receipt.sha256), prev: short(receipt.prev_sha256) };
-  items.push({ kind: "Günün fişi", when: "Öğle · X, Threads", img: card("receipt.png", { t: "receipt", ...qq, stamp: "Sealed ✓", f: RECEIPTS_REPO }), vid: video("receipt.mp4", { s: "receipt", ...qq }),
+  items.push({ kind: "Today's receipt", when: "Midday · X, Threads", img: card("receipt.png", { t: "receipt", ...qq, stamp: "Sealed ✓", f: RECEIPTS_REPO }), vid: video("receipt.mp4", { s: "receipt", ...qq }),
     en: `Today's receipt: ${receipt.n_games ?? tonight.length} calls committed to the public repo at ${at}, before any of them tipped.\n\nsha256 ${short(receipt.sha256)}, chained to yesterday's ${short(receipt.prev_sha256)}.\n${RECEIPTS_REPO}`,
     tr: `Bugünün fişi: ${receipt.n_games ?? tonight.length} tahmin, hiçbiri başlamadan ${at}'de herkese açık depoya yazıldı.\n\nsha256 ${short(receipt.sha256)}, dünküne (${short(receipt.prev_sha256)}) zincirli.\n${RECEIPTS_REPO}` });
 }
@@ -133,7 +133,7 @@ if (now < LOCK) {
   const lock = "Free to enter · prizes are Clutch Pro time · Apple is not a sponsor.";
   if ([10, 5, 3, 1].includes(days) || days <= 0) {
     const d = days <= 1 ? "0" : String(days);
-    items.push({ kind: `Win Totals · ${days <= 1 ? "son gün" : days + " gün kaldı"}`, when: "Sabah · IG ve X hikâye", img: card(`count-${d}.png`, { t: "count", d }, 1080, 1920), imgTr: card(`count-${d}-tr.png`, { t: "count", d, lang: "tr" }, 1080, 1920),
+    items.push({ kind: `Win Totals · ${days <= 1 ? "last day" : days + " days left"}`, when: "Morning · IG and X stories", img: card(`count-${d}.png`, { t: "count", d }, 1080, 1920), imgTr: card(`count-${d}-tr.png`, { t: "count", d, lang: "tr" }, 1080, 1920),
       en: days <= 1 ? `Last call. Win Totals locks at today's first tip (3 PM ET). 30 teams, over or under, three stars. ${lock}` : `${days} days to seal your Win Totals. 30 teams, over or under, three stars. First place wins a year of Clutch Pro. ${lock}`,
       tr: days <= 1 ? `Son çağrı. Win Totals bugün 22:00'de (TSİ) ilk hücumla kilitleniyor. 30 takım, üst ya da alt. Katılım ücretsiz · ödül Pro süresidir · Apple sponsor değildir.` : `Win Totals'ı mühürlemek için ${days} gün. 30 takım, üst ya da alt, üç yıldız. Birinciye 1 yıl Clutch Pro. Katılım ücretsiz · ödül Pro süresidir · Apple sponsor değildir.` });
   }
@@ -141,10 +141,62 @@ if (now < LOCK) {
   const k = Math.floor((now - start) / 86400000);
   if (k >= 0 && k < 15) {
     teamsJs.slice(k * 2, k * 2 + 2).forEach((t) => {
-      items.push({ kind: `Win Totals · ${t.nickname} ${t.line}`, when: "Sabah · X, Threads, IG", img: card(`wt-${t.abbr.toLowerCase()}.png`, { t: "tote", team: t.abbr }),
+      items.push({ kind: `Win Totals · ${t.nickname} ${t.line}`, when: "Morning · X, Threads, IG", img: card(`wt-${t.abbr.toLowerCase()}.png`, { t: "tote", team: t.abbr }),
         en: `The market has the ${t.nickname} at ${t.line} wins. Over or under?\n\nCall all 30 in Clutch before the first tip on Oct 20. ${lock}`,
         tr: `Piyasa ${t.nickname} için ${t.line.replace(".", ",")} galibiyet diyor. Üst mü, alt mı?\n\n30 takımın hepsini 20 Ekim 22:00'ye (TSİ) kadar Clutch'ta mühürle. Katılım ücretsiz · ödül Pro süresidir · Apple sponsor değildir.` });
     });
+  }
+}
+
+// 5 · Clutch's Cards (migration 065): tonight's three, last night's results (every leg, the
+// misses too) and, on Mondays, last week's record. From the snapshot's free row only — the
+// published chances, never the market's numbers. Last night's results are read from the
+// finals here (the Overnight grade lands after the morning desk run).
+async function cardsOf(date) {
+  try { return (await get(`api_snapshots?select=body&key=eq.${encodeURIComponent("cards/" + date)}&tier=eq.free&limit=1`))[0]?.body || null; }
+  catch (e) { console.warn("cards:", e.message); return null; }
+}
+const TIER = { solid: "Solid", balanced: "Balanced", bold: "Bold" };
+const pctOf = (chance) => (chance >= 0.01 ? String(Math.round(chance * 100)) : "<1");
+const cardsTonight = await cardsOf(TODAY);
+if (cardsTonight?.cards?.length) {
+  const at = cardsTonight.built_at ? tipET(cardsTonight.built_at) : "morning";
+  const c = cardsTonight.cards.map((k) => ({ tier: TIER[k.tier], legs: k.legs.map((l) => l.team), p: pctOf(k.chance), pts: k.points }));
+  items.push({ kind: "Tonight's cards", when: "Morning · X, Threads, IG story", img: card("cards-tonight.png", { t: "cards", c, d: nice(TODAY), at }),
+    en: `Clutch's three cards tonight, built from its ${at} numbers and sealed before tip:\n\n${c.map((k) => `${k.tier}: ${k.legs.join(" · ")} (${k.p}%, +${k.pts} pts if every leg is right)`).join("\n")}\n\nWhich one lands? Copy one in the app and beat Clutch.` });
+}
+const cardsLast = await cardsOf(YESTERDAY);
+if (cardsLast?.cards?.length) {
+  const G = Object.fromEntries(last.map((x) => [x.g.id, x.g]));
+  const c = cardsLast.cards.map((k) => {
+    const legs = k.legs.map((l) => {
+      const g = G[l.game_id];
+      if (!g || g.home_score == null || g.away_score == null) return { team: l.team, ok: null, score: "" };
+      const winner = g.home_score > g.away_score ? g.home_team_id : g.away_team_id;
+      const score = l.home ? `${g.home_score}–${g.away_score}` : `${g.away_score}–${g.home_score}`;
+      return { team: l.team, ok: winner === l.team_id, score };
+    });
+    const status = legs.some((l) => l.ok === false) ? "lost" : legs.every((l) => l.ok === true) ? "won" : k.status === "void" ? "void" : "pending";
+    return { tier: TIER[k.tier], status, p: pctOf(k.chance), pts: k.points, right: legs.filter((l) => l.ok === true).length, n: legs.length, legs };
+  });
+  if (c.every((k) => k.status !== "pending")) {
+    const hit = c.filter((k) => k.status === "won"), miss = c.filter((k) => k.status === "lost");
+    const names = (xs) => xs.map((k) => k.tier).join(" and ");
+    const h = !hit.length ? "No card hit last night." : !miss.length ? "Every card hit." : `${names(hit)} hit. <em style="font-style:normal;color:var(--amber)">${names(miss)} missed.</em>`;
+    items.push({ kind: "Last night's cards", when: "Morning · X, Threads", img: card("cards-last.png", { t: "cardsres", c, d: nice(YESTERDAY), h }),
+      en: `Clutch's cards last night:\n\n${c.map((k) => `${k.tier}: ${k.status === "won" ? `hit, ${k.n} for ${k.n} (+${k.pts} pts)` : k.status === "lost" ? `missed, ${k.right} of ${k.n}` : "void"}`).join("\n")}\n\nAll sealed before tip. The misses stay on the record.` });
+  }
+}
+// "Mar 9–15", or "Mar 30–Apr 5" across a month
+const weekSpan = (mon) => { const a = nice(mon), z = nice(shift(mon, 6)); return a.split(" ")[0] === z.split(" ")[0] ? `${a}–${z.split(" ")[1]}` : `${a}–${z}`; };
+if (new Date(TODAY + "T12:00:00Z").getUTCDay() === 1) {
+  let w = null;
+  try { w = (await get(`api_snapshots?select=body&key=like.cards/*&tier=eq.free&game_date=gte.${shift(TODAY, -7)}&game_date=lte.${YESTERDAY}&order=game_date.desc&limit=1`))[0]?.body?.week || null; }
+  catch (e) { console.warn("cards week:", e.message); }
+  if (w?.nights?.length) {
+    const rec = (k) => `${w.nights.filter((x) => x[k] === "won").length}/${w.nights.filter((x) => x[k] === "won" || x[k] === "lost").length}`;
+    items.push({ kind: "The week's record", when: "Monday morning · X, Threads", img: card("cards-week.png", { t: "cardsweek", w, d: weekSpan(w.monday) }),
+      en: `Clutch's cards last week: Solid ${rec("solid")} · Balanced ${rec("balanced")} · Bold ${rec("bold")}. ${w.points?.total ?? 0} points from cards.\n\nEvery card sealed before tip. Beat Clutch's week in the app.` });
   }
 }
 
@@ -164,9 +216,9 @@ try { run("video", videos); } catch (e) { console.warn(e.message, "— continuin
 
 // ── the page ──
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-const block = (label, text, id) => `<div class="post"><div class="ph"><span>${label}</span><button type="button" data-copy="${id}">Kopyala</button></div><pre id="${id}">${esc(text)}</pre></div>`;
+const block = (label, text, id) => `<div class="post"><div class="ph"><span>${label}</span><button type="button" data-copy="${id}">Copy</button></div><pre id="${id}">${esc(text)}</pre></div>`;
 let n = 0;
-const html = `<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
 <title>Clutch Desk · ${esc(TODAY)}</title>
 <style>
 :root{--paper:#15130F;--card:#1C1914;--ink:#F1E9D8;--ink2:#CFC4AE;--ink3:#B4AA97;--rule:rgba(241,233,216,.14);--amber:#FFB020;color-scheme:dark}
@@ -182,13 +234,13 @@ a.dl{display:inline-block;margin-top:6px;font:600 12px/1 ui-monospace,Menlo,mono
 pre{margin:0;padding:10px 12px;white-space:pre-wrap;word-break:break-word;font:15px/1.5 -apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink)}
 .empty{color:var(--ink3)}
 </style></head><body><div class="w">
-<div><div class="eb">Clutch desk · ${esc(TODAY)} (ET)</div><h1>Bugün paylaşılacaklar</h1><p class="empty">Herkese açık verilerden otomatik üretildi. Görseli ya da videoyu uzun basıp kaydet veya "İndir"e dokun; metni kopyala. Link profilde dursun.</p></div>
+<div><div class="eb">Clutch desk · ${esc(TODAY)} (ET)</div><h1>Today's posts</h1><p class="empty">Made automatically from public data. Long-press an image or video to save it, or tap Download; copy the text. Keep the link in the profile.</p></div>
 ${items.length ? items.map((it) => `<div class="it"><div><h2>${esc(it.kind)}</h2><div class="when">${esc(it.when)}</div></div>
-<div class="media">${[it.img, it.imgTr, it.vid, it.vidTr].filter(Boolean).map((f) => `<div>${f.endsWith(".mp4") ? `<video src="${f}" controls muted playsinline preload="metadata" poster="${f.replace(/\.mp4$/, ".cover.png")}"></video>` : `<img src="${f}" alt="" loading="lazy">`}<a class="dl" href="${f}" download>İndir</a></div>`).join("")}</div>
-${block("English", it.en, "c" + ++n)}${block("Türkçe", it.tr, "c" + ++n)}${it.poll ? `<p class="when">X anketi: ${esc(it.poll.join(" / "))}</p>` : ""}</div>`).join("\n") : `<p class="empty">Bugün için içerik yok (maç ya da notlanan gece yok).</p>`}
-<p class="when">Üretim: ${new Date().toISOString()} · kaynak: desk-src/make.mjs</p>
+<div class="media">${[it.img, it.imgTr, it.vid, it.vidTr].filter(Boolean).map((f) => `<div>${f.endsWith(".mp4") ? `<video src="${f}" controls muted playsinline preload="metadata" poster="${f.replace(/\.mp4$/, ".cover.png")}"></video>` : `<img src="${f}" alt="" loading="lazy">`}<a class="dl" href="${f}" download>Download</a></div>`).join("")}</div>
+${block("English", it.en, "c" + ++n)}${it.tr ? block("Turkish", it.tr, "c" + ++n) : ""}${it.poll ? `<p class="when">X poll: ${esc(it.poll.join(" / "))}</p>` : ""}</div>`).join("\n") : `<p class="empty">Nothing to post today (no games and no graded night).</p>`}
+<p class="when">Built ${new Date().toISOString()} · source: desk-src/make.mjs</p>
 </div><script>
-document.querySelectorAll("[data-copy]").forEach(function(b){b.addEventListener("click",function(){var t=document.getElementById(b.dataset.copy).innerText;function ok(){b.textContent="Kopyalandı";setTimeout(function(){b.textContent="Kopyala"},1500)}if(navigator.clipboard){navigator.clipboard.writeText(t).then(ok,function(){})}});});
+document.querySelectorAll("[data-copy]").forEach(function(b){b.addEventListener("click",function(){var t=document.getElementById(b.dataset.copy).innerText;function ok(){b.textContent="Copied";setTimeout(function(){b.textContent="Copy"},1500)}if(navigator.clipboard){navigator.clipboard.writeText(t).then(ok,function(){})}});});
 </script></body></html>`;
 writeFileSync(join(OUT, "index.html"), html);
 writeFileSync(join(OUT, TODAY, "index.html"), html.replaceAll(`src="${TODAY}/`, 'src="').replaceAll(`href="${TODAY}/`, 'href="').replaceAll(`poster="${TODAY}/`, 'poster="'));
