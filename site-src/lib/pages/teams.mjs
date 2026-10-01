@@ -4,7 +4,7 @@
 
 import { page, esc, APP, ORIGIN, teamSlug } from "../html.mjs";
 import { pct, pickSide, normalizeStatus, finalLabel, RATE_FLOOR } from "../copy.mjs";
-import { dayLabel, shortDate, mediumDate, timeET } from "../time.mjs";
+import { dayLabel, shortDate, mediumDate, timeET, seasonOf as seasonOfDate } from "../time.mjs";
 
 export function teamPages(m) {
   const board = m.seasonBoard;
@@ -24,10 +24,10 @@ export function teamPages(m) {
       const home = m.T[g.home_team_id], away = m.T[g.away_team_id];
       const side = p == null ? null : pickSide(p, home, away);
       const num = side ? `${esc(side.team.abbreviation)} ${pct(side.prob)}` : "--";
-      const label = `${dayLabel(g.game_date)} · ${at(g)} ${o.nickname}${g.season_type === "Preseason" ? " · preseason" : ""}`;
+      const label = `${at(g)} ${o.nickname}${g.season_type === "Preseason" ? " · preseason" : ""}`;
       const tip = g.game_time_utc ? timeET(g.game_time_utc) : "";
       const name = v ? `<a href="${v.path}">${esc(label)}</a>` : esc(label);
-      return `<div class="callrow"><span class="mono">${esc(shortDate(g.game_date).toUpperCase())}</span><span>${name} <span class="mono hide-xs">· ${esc(tip)}</span></span><span class="d">${num}</span><span>${side ? '<span class="chip">CLUTCH\'S CALL</span>' : '<span class="note">Lands that morning</span>'}</span></div>`;
+      return `<div class="callrow"><span class="mono">${esc(dayLabel(g.game_date).toUpperCase())}</span><span>${name} <span class="mono hide-xs">· ${esc(tip)}</span></span><span class="d">${num}</span><span>${side ? '<span class="chip">THE CALL</span>' : '<span class="note">That morning</span>'}</span></div>`;
     }).join("");
 
     const lastRows = last.map((g) => {
@@ -43,12 +43,15 @@ export function teamPages(m) {
 
     const line = m.lines[t.id];
     const pc = chance[t.id];
-    const graded = m.calls.filter((c) => c.matchup.split(" @ ").includes(t.abbreviation));
+    const mine = m.calls.filter((c) => c.matchup.split(" @ ").includes(t.abbreviation));
+    const seasonOfCall = (c) => c.season || seasonOfDate(c.game_date);
+    const gradedSeason = mine.some((c) => seasonOfCall(c) === m.current) ? m.current : mine[0] ? seasonOfCall(mine[0]) : null;
+    const graded = mine.filter((c) => seasonOfCall(c) === gradedSeason);
     const right = graded.filter((c) => c.correct).length;
     const stats = [
       line ? `<div><span class="d amber">${Number(line.line).toFixed(1)}</span><span class="mono">WIN TOTAL · ${esc((line.source || "Market consensus").toUpperCase())}</span></div>` : "",
       pc != null ? `<div><span class="d">${(pc * 100).toFixed(0)}%</span><span class="mono">CLUTCH'S PLAYOFF CHANCE</span></div>` : "",
-      graded.length ? `<div><span class="d">${right}–${graded.length - right}</span><span class="mono">CLUTCH'S GRADED CALLS IN ${esc(t.nickname.toUpperCase())} GAMES</span></div>` : "",
+      graded.length ? `<div><span class="d">${right}–${graded.length - right}</span><span class="mono">CLUTCH'S CALLS IN ${esc(t.nickname.toUpperCase())} GAMES · ${esc(gradedSeason)}${gradedSeason !== m.current && m.last?.retired && m.last.season === gradedSeason ? " · RETIRED MODEL" : ""}</span></div>` : "",
     ].join("");
     const path = `/teams/${teamSlug(t)}/`;
     const nextG = next[0];

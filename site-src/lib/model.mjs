@@ -10,7 +10,7 @@ export function buildModel(raw) {
   const snap = (k) => raw.snaps[k] ?? null;
   const ledger = snap("ledger")?.body ?? null;
   const ledgerAt = snap("ledger")?.computedAt ?? null;
-  const calls = snap("ledger/calls")?.body?.calls ?? [];
+  const calls = (snap("ledger/calls")?.body?.calls ?? []).slice().sort((a, b) => (b.game_date + b.tip_utc).localeCompare(a.game_date + a.tip_utc));
   const callBy = Object.fromEntries(calls.map((c) => [c.game_id, c]));
   const lines = Object.fromEntries((raw.lines ?? []).map((l) => [l.team_id, l]));
   const now = Date.parse(raw.builtAt);

@@ -1,0 +1,21 @@
+// clutchledger.com — Cloudflare Workers Static Assets, no code on the apex.
+// The folder is what site-src/build.mjs writes (`node site-src/build.mjs
+// --out _site_v2`); .github/workflows/site.yml builds and deploys it.
+//   html_handling   /ledger → /ledger/ (the canonical form every page names)
+//   404-page        _site_v2/404.html for anything not in the paper
+// _site_v2/_headers sets the CSP, HSTS, nosniff, Referrer-Policy and caching
+// (HTML short, /assets/* immutable: their names carry a content hash);
+// _site_v2/_redirects sends the old GitHub Pages .html links to the new paths.
+// www.clutchledger.com → apex is the tiny Worker in site-src/www/.
+{
+  "name": "clutchledger",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "./_site_v2",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  },
+  "routes": [{ "pattern": "clutchledger.com", "custom_domain": true }],
+  "workers_dev": false,
+  "preview_urls": false
+}

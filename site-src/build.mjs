@@ -150,6 +150,7 @@ const kinds = { games: m.pageGames.length, nights: Object.keys(m.nights).length,
 console.log(`site ${TODAY} → ${OUT}`);
 console.log(`  ${pages.length} pages (${indexed.length} indexed; ${kinds.games} game pages over ${kinds.nights} nights, ${kinds.teams} team pages), tonight = ${m.tonight ?? "none"}`);
 console.log(`  html ${(Math.min(...sizes) / 1024).toFixed(1)}–${(Math.max(...sizes) / 1024).toFixed(1)} KB · css ${cssKB.toFixed(1)} KB · live.js ${liveKB.toFixed(2)} KB · fonts ${(fontBytes / 1024).toFixed(0)} KB (${FONTS.length} woff2)`);
+for (const p of pages) if (p.html.startsWith("<!-- DRAFT")) warn.push(`${p.path} is a DRAFT: the owner must approve it before it is published`);
 for (const w of warn) console.warn(`  warn: ${w}`);
 if (fail.length) {
   for (const f of fail) console.error(`  FAIL: ${f}`);

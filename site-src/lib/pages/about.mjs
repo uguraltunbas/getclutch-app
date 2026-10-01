@@ -86,7 +86,7 @@ function legalPage(doc, { path, title, description, kick }) {
   const secs = doc.sections.map((s, i) => `${s.todo ? `<!-- TODO(owner review): ${esc(s.todo)} -->\n` : ""}<h2><span>${String(i + 1).padStart(2, "0")}</span>${esc(s.title)}</h2>
 ${prose(s.body, { email: SUPPORT_EMAIL })}${s.link ? `<p class="lk"><a href="${s.link.href}">${esc(s.link.label)}</a></p>` : ""}`).join("\n");
   const body = `${doc.draft ? "<!-- DRAFT: owner must approve -->\n" : ""}<div class="wrap r"><div class="rhead"><span class="kick">${esc(kick)} · LAST UPDATED ${esc(doc.updated.toUpperCase())}</span><h1 class="rh1">${esc(doc.title)}</h1><p class="rdeck">${esc(doc.intro)}</p></div>
-<div class="body legal">${doc.draft ? '<p class="draft">Draft · pending the owner\'s approval</p>' : ""}<div>${secs}</div></div></div>`;
+<div class="body legal"><div>${secs}</div></div></div>`;
   const html = page({ path, title, description, body, og: "default" });
   return { path, title, html: doc.draft ? `<!-- DRAFT: owner must approve -->\n${html}` : html };
 }

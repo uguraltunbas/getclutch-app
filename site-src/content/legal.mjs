@@ -131,7 +131,7 @@ export const REFUNDS = {
       title: "Bought on the web",
       body:
         "Clutch Pro bought at app.clutchledger.com is sold by Paddle.com, our reseller and merchant of record, and refunds follow Paddle's buyer terms.\n" +
-        `On top of them: if you ask within 14 days of a purchase or of a renewal, you get a full refund of that payment, no questions asked. Write to ${SUPPORT_EMAIL} from the e-mail address on the order, or include the order number from Paddle's receipt, and we ask Paddle to refund it. The money goes back to the card or account you paid with; how long it takes to show depends on your bank.\n` +
+        `On top of them: if you ask within 14 days of a purchase or of a renewal, you get a full refund of that payment. Write to ${SUPPORT_EMAIL} from the e-mail address on the order, or include the order number from Paddle's receipt, and we ask Paddle to refund it. The money goes back to the card or account you paid with; how long it takes to show depends on your bank.\n` +
         "A refunded payment ends the Pro it paid for.",
       link: { href: PADDLE_BUYER_TERMS, label: "Paddle's buyer terms →" },
     },
