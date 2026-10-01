@@ -57,7 +57,7 @@ export function board(g, { kicker = "THE CALL", link = null, headingLevel = 0 } 
     foot = `<div class="bfinal"><span class="d">POSTPONED</span><span class="chip">NOTHING TO GRADE</span></div>`;
   } else if (g.hasCall) {
     const pa = callPoints(1 - g.homeProb), ph = callPoints(g.homeProb);
-    const btn = (t, pts, fav) => `<a class="cbtn${fav ? "" : " ghost"}" href="${appGame(g)}" aria-label="Call ${esc(t.nickname)} in the app, ${pts} points if right">CALL ${esc(t.abbreviation)} · ${pts}</a>`;
+    const btn = (t, pts, fav) => `<a class="cbtn${fav ? "" : " ghost"}" href="${appGame(g)}">CALL ${esc(t.abbreviation)} · ${pts}<span class="vh"> points if right: call the ${esc(t.nickname)} in the app</span></a>`;
     foot = `<div class="bcall">${btn(g.away, pa, !favHome)}${btn(g.home, ph, favHome)}</div>`;
   } else {
     foot = `<div class="bcall"><a class="cbtn ghost wide" href="${appGame(g)}">CALL IT IN THE APP</a></div>`;

@@ -84,5 +84,5 @@ export function notFoundPage() {
 /** Old links (the GitHub Pages files) on the new domain: a redirect page each. */
 export function redirectPage(from, to) {
   const url = ORIGIN + to;
-  return { path: from, redirect: true, html: `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Moved · Clutch</title><meta name="robots" content="noindex"><link rel="canonical" href="${url}"><meta http-equiv="refresh" content="0; url=${to}"></head><body><p>This page moved: <a href="${to}">${url}</a></p></body></html>\n` };
+  return { path: from, redirect: true, html: `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Moved · Clutch</title><link rel="canonical" href="${url}"><meta http-equiv="refresh" content="0; url=${to}"></head><body><p>This page moved: <a href="${to}">${url}</a></p></body></html>\n` };
 }

@@ -13,6 +13,8 @@ a:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var
 h1,h2,h3,p{margin:0}
 ul{margin:0;padding-left:20px}
 code{font-family:var(--mono);font-size:.9em;word-break:break-all}
+p a,li a{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .skip{position:absolute;left:-9999px;top:8px;z-index:20;background:var(--amber);color:var(--paper);padding:10px 14px;font-weight:700}
 .skip:focus{left:16px}
 .wrap{max-width:1280px;margin:0 auto;padding:0 64px}
@@ -270,7 +272,7 @@ a.bk:hover{color:var(--ink)}
 .scroll{overflow-x:auto}
 .gradebox{border:1px dashed var(--rule);padding:18px 20px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:22px;align-items:center}
 .gradebox.done{border-style:solid;background:var(--panel)}
-.gradebox .d{font-size:40px;letter-spacing:2px;color:var(--led)}
+.gradebox .d{font-size:40px;letter-spacing:2px;color:var(--dim)}
 .gradebox.done .d{color:var(--ink)}
 .gradebox h2{font-family:var(--display);font-weight:700;font-size:19px}
 .gradebox p{font-size:14.5px;line-height:1.5;color:var(--ink2);margin-top:4px}
