@@ -1,0 +1,66 @@
+/* Clutch · live scores. The page is complete without this: it only refreshes
+   tonight's status and scores from the public games table (anon key, public
+   by design — it ships in the app), so a build from hours ago still shows
+   the live score. Polls once a minute while a game is on and the tab shows. */
+(function () {
+  "use strict";
+  var U = "__SUPABASE_URL__", K = "__SUPABASE_ANON_KEY__";
+  if (!window.fetch || !document.querySelector) return;
+  var nodes = Array.prototype.slice.call(document.querySelectorAll("[data-gid]"));
+  if (!nodes.length) return;
+  var ids = [];
+  nodes.forEach(function (n) { if (ids.indexOf(n.getAttribute("data-gid")) < 0) ids.push(n.getAttribute("data-gid")); });
+  var timer = null;
+
+  function st(s) { return s === "in_progress" ? "live" : s === "cancelled" || s === "canceled" ? "postponed" : s; }
+  function per(p) { return p <= 4 ? "Q" + p : p === 5 ? "OT" : (p - 4) + "OT"; }
+  function zero(c) {
+    var s = String(c).trim();
+    var v = s.indexOf(":") >= 0 ? s.split(":").reduce(function (a, x) { return a * 60 + Number(x); }, 0) : Number(s);
+    return v === 0;
+  }
+  function label(g) {
+    var s = st(g.status);
+    if (s === "final") return g.period > 4 ? "FINAL/" + (g.period === 5 ? "OT" : (g.period - 4) + "OT") : "FINAL";
+    if (s === "halftime") return "HALF";
+    if (s === "live") return g.period ? per(g.period) + (g.clock && !zero(g.clock) ? " " + String(g.clock).replace(/^0(?=\d:)/, "") : "") : "LIVE";
+    if (s === "postponed") return "POSTPONED";
+    return null;
+  }
+  function paint(rows) {
+    var by = {}, on = false;
+    rows.forEach(function (r) { by[r.id] = r; });
+    nodes.forEach(function (n) {
+      var g = by[n.getAttribute("data-gid")];
+      if (!g) return;
+      var s = st(g.status), l = label(g), scored = (s === "live" || s === "halftime" || s === "final") && g.home_score != null && g.away_score != null;
+      if (s === "live" || s === "halftime") on = true;
+      if (!l) return;
+      var a = n.getAttribute("data-a") || "", h = n.getAttribute("data-h") || "";
+      var line = a + " " + g.away_score + " · " + h + " " + g.home_score;
+      var sc = n.querySelectorAll('[data-live="sc"]');
+      var stn = n.querySelectorAll('[data-live="st"]');
+      for (var i = 0; i < stn.length; i++) stn[i].textContent = l + (scored && !sc.length ? " · " + line : "");
+      if (scored) {
+        for (var j = 0; j < sc.length; j++) {
+          sc[j].textContent = sc[j].getAttribute("data-fmt") === "dash" ? g.away_score + "–" + g.home_score : line;
+          sc[j].hidden = false;
+        }
+        var pre = n.querySelectorAll('[data-live="pre"]');
+        for (var k = 0; k < pre.length; k++) pre[k].hidden = true;
+      }
+      n.classList.toggle("is-live", s === "live" || s === "halftime");
+    });
+    return on;
+  }
+  function load() {
+    timer = null;
+    if (document.hidden) return;
+    fetch(U + "/rest/v1/games?select=id,status,period,clock,home_score,away_score&id=in.(" + ids.join(",") + ")", { headers: { apikey: K, Authorization: "Bearer " + K } })
+      .then(function (r) { return r.ok ? r.json() : []; })
+      .then(function (rows) { if (paint(rows || [])) timer = setTimeout(load, 60000); })
+      .catch(function () {});
+  }
+  document.addEventListener("visibilitychange", function () { if (!document.hidden && !timer) load(); });
+  load();
+})();
