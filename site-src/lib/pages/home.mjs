@@ -206,7 +206,7 @@ ${missBand(m)}
 </div></section>
 
 <section class="sec" id="pricing" aria-labelledby="price-h"><div class="wrap">
-<h2 class="h2 shead" id="price-h">Free for good. <em>Pro when you want the whole lab.</em></h2>
+<h2 class="h2 hm" id="price-h">Free for good. <em>Pro when you want the whole lab.</em></h2>
 <div class="plans">
 <div class="plan"><h3>Free</h3><div class="price"><span class="d">$0</span><span>for good</span></div><ul>${FRONT_FREE.map((x) => `<li>${esc(x)}</li>`).join("")}</ul><a class="btn ghost" href="${APP}/">Play free</a></div>
 <div class="plan pro"><span class="tag">${PLAN.trialDays} DAYS FREE ON ANNUAL</span><h3>Pro</h3><div class="price"><span class="d amber">${PLAN.monthly}</span><span>a month · or ${PLAN.annual} a year</span></div><ul>${FRONT_PRO.map((x) => `<li>${esc(x)}</li>`).join("")}</ul><a class="btn" href="${APP}/paywall">Try Pro free for ${PLAN.trialDays} days</a></div>
@@ -215,7 +215,7 @@ ${missBand(m)}
 </div></section>
 
 <section class="sec" aria-labelledby="faq-h"><div class="wrap">
-<h2 class="h2 shead" id="faq-h">Questions, answered</h2>
+<h2 class="h2 hm" id="faq-h">Questions, answered</h2>
 <div class="faq">${FAQ.map((q) => `<div><h3>${esc(q.q)}</h3><p>${esc(q.a)}</p></div>`).join("")}</div>
 </div></section>
 

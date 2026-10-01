@@ -379,5 +379,5 @@ a.bk:hover{color:var(--ink)}
 .stat .d{font-size:48px}
 }
 @media (max-width:420px){.acts{gap:10px}.btn.sm{padding:10px 12px;font-size:14px}.logo{font-size:28px}.bar{gap:10px}}
-.gap{margin-top:14px}.mt{margin-top:44px}
+.gap{margin-top:14px}.hm{margin-bottom:28px}.mt{margin-top:44px}
 /*@teams*/

@@ -64,5 +64,5 @@ export const FAQ = [
   { q: "Is Clutch any good?", a: "Look at the Ledger. Every call is there, graded beside the market, ESPN and picking the home team, misses included. Where the sample is too small, it says so." },
   { q: "Do I need an iPhone?", a: "No. Everything to follow and call runs in your browser. The iPhone app adds the lock screen, widgets and Siri." },
   { q: "What does Pro add?", a: "Model only — Clutch's own number before the market — the projected final, every factor, late-news alerts and the simulation." },
-  { q: "Can I cancel?", a: "Any time. Pro runs to the end of the period you paid for. On the web, the 7-day trial on the annual plan costs nothing if you cancel before it ends." },
+  { q: "Can I cancel?", a: "Any time. Pro runs to the end of the period you paid for, and the 7-day free trial on the yearly plan costs nothing if you cancel before it ends." },
 ];

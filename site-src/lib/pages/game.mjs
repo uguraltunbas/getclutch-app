@@ -177,7 +177,8 @@ ${aside(g, m, night)}
     location: { "@type": "Place", name: g.home.city, address: { "@type": "PostalAddress", addressLocality: g.home.city } },
   };
   const live = g.status !== "final" && g.status !== "postponed" ? true : night.some((x) => x.status !== "final" && x.status !== "postponed");
-  return { path: g.path, title, html: page({ path: g.path, title, description: dk, body, current: "tonight", og: "game", ogType: "article", jsonld: ld, live }) };
+  const description = `${g.away.name} at ${g.home.name}, ${mediumDate(g.date)}. ${dk}`;
+  return { path: g.path, title, html: page({ path: g.path, title, description, body, current: "tonight", og: "game", ogType: "article", jsonld: ld, live }) };
 }
 
 /** /games/<date>/ — one night. */
