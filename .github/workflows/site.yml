@@ -4,7 +4,16 @@
 #
 # When: every push to main, four times a day — after the morning seal
 # (10:30 UTC), before the first tips (16:00), during games (22:30), after
-# the finals (04:30) — and by hand (an ET date to build for, optional).
+# the late finals (07:30; 3:30 AM ET in EDT, 2:30 AM in EST) — and by hand
+# (an ET date to build for, optional).
+#
+# WEB_APP_LIVE (a repository variable, Settings › Variables): "true" once
+# app.clutchledger.com is open — the "play" links and the browser copy turn
+# on. Unset or anything else: they point at the iPhone app.
+#
+# Actions are pinned to a commit (the tag in the comment); checkout keeps no
+# credentials; wrangler is pinned (wrangler.jsonc and Workers _headers /
+# _redirects need wrangler 4; the action's own default is 3).
 # A build that fails a check (a betting word, a duplicate title, a page or
 # the stylesheet over budget, a data read failing) stops here and the last
 # deploy stays up. Without CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID
@@ -17,7 +26,7 @@ on:
     - cron: "30 10 * * *"
     - cron: "0 16 * * *"
     - cron: "30 22 * * *"
-    - cron: "30 4 * * *"
+    - cron: "30 7 * * *"
   workflow_dispatch:
     inputs:
       date:
@@ -32,14 +41,17 @@ jobs:
   site:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
       - name: Build and check
         env:
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
           SITE_DATE: ${{ github.event.inputs.date }}
+          WEB_APP_LIVE: ${{ vars.WEB_APP_LIVE }}
         run: node site-src/build.mjs --out _site_v2
       - name: Cloudflare credentials?
         id: cf
@@ -53,22 +65,24 @@ jobs:
             echo "deploy=false" >> "$GITHUB_OUTPUT"
             echo "::notice::No CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID secret: built and checked, not deployed."
           fi
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: site
           path: _site_v2
           retention-days: 7
       - name: Deploy the site
         if: steps.cf.outputs.deploy == 'true'
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@9acf94ace14e7dc412b076f2c5c20b8ce93c79cd # v3.15.0
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "4.146.0"
           command: deploy
       - name: Deploy the www redirect
         if: steps.cf.outputs.deploy == 'true'
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@9acf94ace14e7dc412b076f2c5c20b8ce93c79cd # v3.15.0
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "4.146.0"
           command: deploy --config site-src/www/wrangler.jsonc

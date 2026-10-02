@@ -12,7 +12,7 @@ function recordBlock(r, heading) {
   const v = verdictOf(r);
   const rate = r.n >= RATE_FLOOR && r.hitRate != null;
   let html = `<section class="panel" aria-labelledby="${heading.id}"><span class="kick">${esc(heading.kick)}</span><h2 id="${heading.id}">${esc(heading.title)}</h2>
-<div class="stat"><div><span class="d">${rec(r.hits, r.n)}</span><span class="mono">RIGHT–WRONG · ${r.n} GRADED CALLS</span></div>${rate ? `<div><span class="d amber">${r.hitRate.toFixed(1)}%</span><span class="mono">${r.ci ? `LIKELY RANGE ${r.ci[0]}–${r.ci[1]}%` : "RIGHT"}</span></div>` : ""}<div><span class="mono ${v.tone === "win" ? "" : "ink3"}">${esc(v.line)}</span></div></div>`;
+<div class="stat"><div><span class="d">${rec(r.hits, r.n)}</span><span class="mono">RIGHT–WRONG · ${r.n} GRADED CALLS</span></div>${rate ? `<div><span class="d amber">${r.hitRate.toFixed(1)}%</span><span class="mono">${r.ci ? `LIKELY RANGE ${Number(r.ci[0]).toFixed(1)}–${Number(r.ci[1]).toFixed(1)}%` : "RIGHT"}</span></div>` : ""}<div><span class="mono ${v.tone === "win" ? "" : "ink3"}">${esc(v.line)}</span></div></div>`;
   for (const c of comparisons(r)) {
     const val = (x, recd) => (c.small ? recd : `${x.toFixed(1)}%`);
     html += `<div class="cmp gap"><div class="cmp-h"><span class="t">${esc(c.title)}</span><span class="mono">THE SAME ${c.n} GAMES</span></div>

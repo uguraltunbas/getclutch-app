@@ -1,3 +1,5 @@
+import { WEB_APP_LIVE } from "../lib/html.mjs";
+
 // What Free and Pro contain — the app's ONE list, copied word for word from
 // the mobile repo's lib/constants/plans.ts (FEATURES, 1.0.6 · Faz 6 · Dalga A).
 // The pricing page renders these rows exactly; the front page quotes some of
@@ -59,10 +61,12 @@ export const FREE_CARDS = [
 ];
 
 export const FAQ = [
-  { q: "Can I win money?", a: "No. Clutch is analytics for fans: no deposit, no cash prize, nothing to pay out. Points and levels earn Free Pro days, and the free contests award Pro time, never money." },
-  { q: "Where does the number come from?", a: "A model trained on past seasons — form, rest, travel and the official injury report — blended with the market's price, the bookmaker's cut taken out. How it works shows every piece." },
+  { q: "Can I win money?", a: "No. Clutch is analytics for fans: no deposit and no cash prizes. Points and levels earn Free Pro days — time in Pro, never money." },
+  { q: "Where does the number come from?", a: "A model trained on past seasons — form, rest, travel and the official injury report — blended with the market's price. How it works shows every piece." },
   { q: "Is Clutch any good?", a: "Look at the Ledger. Every call is there, graded beside the market, ESPN and picking the home team, misses included. Where the sample is too small, it says so." },
-  { q: "Do I need an iPhone?", a: "No. Everything to follow and call runs in your browser. The iPhone app adds the lock screen, widgets and Siri." },
+  WEB_APP_LIVE
+    ? { q: "Do I need an iPhone?", a: "No. Everything to follow and call runs in your browser. The iPhone app adds the lock screen, widgets and Siri." }
+    : { q: "Do I need an iPhone?", a: "Today, to make calls, yes: Clutch is an iPhone app. The browser version opens this October, with the same paper and the same calls. Every number is on this site already." },
   { q: "What does Pro add?", a: "Model only — Clutch's own number before the market — the projected final, every factor, late-news alerts and the simulation." },
-  { q: "Can I cancel?", a: "Any time. Pro runs to the end of the period you paid for, and the 7-day free trial on the yearly plan costs nothing if you cancel before it ends." },
+  { q: "Can I cancel?", a: "Any time. Pro runs to the end of the period you paid for, and the 7-day free trial on the yearly plan costs nothing if you cancel before it ends (on iPhone, at least 24 hours before)." },
 ];

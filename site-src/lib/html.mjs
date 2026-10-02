@@ -6,6 +6,22 @@
 export const ORIGIN = "https://clutchledger.com";
 export const APP = "https://app.clutchledger.com";
 export const APP_STORE = "https://apps.apple.com/app/id6761838099";
+/** The official Win Totals rules: on the GitHub Pages site the App Store links to, not on this domain (Paddle reviews this one). */
+export const WIN_TOTALS_RULES_URL = "https://uguraltunbas.github.io/getclutch-app/win-totals-rules.html";
+
+/**
+ * Is the web app (app.clutchledger.com) open to readers? Until it is, every
+ * "play" link goes to the App Store and no sentence promises the browser:
+ * WEB_APP_LIVE=true in the build's environment (the repository variable the
+ * workflow passes) turns the browser links and copy on.
+ */
+export const WEB_APP_LIVE = /^(1|true|yes)$/i.test(process.env.WEB_APP_LIVE ?? "");
+/** Where "play" goes: the web app when it is open, else the iPhone app. */
+export const PLAY = WEB_APP_LIVE ? `${APP}/` : APP_STORE;
+/** A game in the web app, or the iPhone app until the web app is open. */
+export const playGame = (id) => (WEB_APP_LIVE ? `${APP}/games/${id}` : APP_STORE);
+/** Pro's checkout: the web app's paywall, or the iPhone app. */
+export const PLAY_PRO = WEB_APP_LIVE ? `${APP}/paywall` : APP_STORE;
 
 export const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 
@@ -24,18 +40,21 @@ const NAV = [
   ["/#tonight", "Tonight", "tonight"],
   ["/ledger/", "The Ledger", "ledger"],
   ["/receipts/", "Receipts", "receipts"],
-  ["/win-totals/", "Win Totals", "win-totals"],
+  ["/teams/", "Teams", "teams"],
   ["/how-it-works/", "How it works", "how"],
   ["/pricing/", "Pricing", "pricing"],
 ];
 
 function masthead(current) {
   const links = NAV.map(([href, label, key]) => `<a href="${href}"${key === current ? ' aria-current="page"' : ""}>${label}</a>`).join("");
+  const acts = WEB_APP_LIVE
+    ? `<a class="signin" href="${APP}/">Sign in</a><a class="btn sm" href="${APP}/"><span class="hide-s">Play in your browser</span><span class="show-s">Play free</span></a>`
+    : `<a class="btn sm" href="${APP_STORE}"><span class="hide-s">Get the iPhone app</span><span class="show-s">Get the app</span></a>`;
   return `<header class="top"><div class="wrap bar">
 <a class="logo" href="/" aria-label="Clutch, front page">Clutch</a>
 <nav class="nav" aria-label="Site">${links}</nav>
-<div class="acts"><a class="signin" href="${APP}/">Sign in</a><a class="btn sm" href="${APP}/"><span class="hide-s">Play in your browser</span><span class="show-s">Play free</span></a>
-<details class="menu"><summary>Menu</summary><nav aria-label="Site, small screens">${links}<a href="/teams/">Teams</a><a href="/support/">Support</a></nav></details></div>
+<div class="acts">${acts}
+<details class="menu"><summary>Menu</summary><nav aria-label="Site, small screens">${links}<a href="/support/">Support</a></nav></details></div>
 </div></header>`;
 }
 
@@ -43,11 +62,11 @@ function footer() {
   return `<footer class="foot"><div class="wrap">
 <div class="fgrid">
 <div class="fbrand"><span class="logo">Clutch</span><p>NBA analytics for fans. A number for every game, the reasons behind it, and a public record of every call.</p></div>
-<nav aria-label="The paper"><span class="mono">The paper</span><a href="/#tonight">Tonight</a><a href="/ledger/">The Ledger</a><a href="/receipts/">Receipts</a><a href="/teams/">Teams</a><a href="/win-totals/">Win Totals</a></nav>
+<nav aria-label="The paper"><span class="mono">The paper</span><a href="/#tonight">Tonight</a><a href="/ledger/">The Ledger</a><a href="/receipts/">Receipts</a><a href="/teams/">Teams</a></nav>
 <nav aria-label="About"><span class="mono">About</span><a href="/how-it-works/">How it works</a><a href="/pricing/">Pricing</a><a href="/support/">Support</a><a href="${APP_STORE}">iPhone app</a></nav>
 <nav aria-label="Legal"><span class="mono">Legal</span><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="/refunds/">Refunds</a></nav>
 </div>
-<div class="fline"><span>No betting, no wagering, no cash prizes. Not affiliated with the NBA or any team.</span><span>© 2026 Clutch · Operated by Uğur Altunbaş</span></div>
+<div class="fline"><span>No betting. No wagering. Not affiliated with the NBA or any team.</span><span>© 2026 Clutch · Operated by Uğur Altunbaş</span></div>
 </div></footer>`;
 }
 
@@ -125,7 +144,7 @@ export function prose(text, { email } = {}) {
   const link = (s) => esc(s)
     .replace(/https:\/\/[^\s<]+[^\s<.,)]/g, (u) => `<a href="${u}">${u.replace(/^https:\/\//, "")}</a>`)
     .replace(email ? new RegExp(email.replace(/[.]/g, "\\."), "g") : /$^/, (m) => `<a href="mailto:${m}">${m}</a>`)
-    .replace(/(^|[\s(])(app\.clutchledger\.com)(?![\w/])/g, `$1<a href="${APP}/">$2</a>`)
+    .replace(/(^|[\s(])(app\.clutchledger\.com)(?![\w/])/g, (m, pre, host) => (WEB_APP_LIVE ? `${pre}<a href="${APP}/">${host}</a>` : m))
     .replace(/reportaproblem\.apple\.com(?![\w/<"])/g, '<a href="https://reportaproblem.apple.com">reportaproblem.apple.com</a>');
   const out = [];
   let list = [];

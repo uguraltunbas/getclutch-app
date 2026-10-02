@@ -3,6 +3,9 @@
 //   node site-src/build.mjs --out _site_v2 [--date 2026-10-03] [--days 7]
 //                           [--save-data f.json] [--load-data f.json]
 //
+// Game pages: every game of the season so far (a shared link never breaks);
+// --days N limits them to the last N nights for a quick local build.
+//
 // Reads with the public anon key what the free app shows (lib/data.mjs says
 // exactly which rows), writes static HTML + one CSS file + WOFF2 fonts +
 // sitemap.xml, robots.txt, 404.html, _headers and _redirects, then checks
@@ -11,7 +14,9 @@
 // nothing is deployed. Zero dependencies (Node 22+).
 //
 // Env: SUPABASE_URL, SUPABASE_ANON_KEY (required unless --load-data),
-// SITE_DATE (the ET date to build for; default today in New York).
+// SITE_DATE (the ET date to build for; default today in New York),
+// WEB_APP_LIVE (true once app.clutchledger.com is open: the "play" links and
+// the browser copy turn on; until then they point at the iPhone app).
 
 import { mkdirSync, writeFileSync, readFileSync, rmSync, copyFileSync, existsSync, readdirSync, statSync } from "node:fs";
 import { createHash } from "node:crypto";
@@ -20,15 +25,17 @@ import { fileURLToPath } from "node:url";
 
 import { supabase, loadAll } from "./lib/data.mjs";
 import { buildModel } from "./lib/model.mjs";
-import { etDate } from "./lib/time.mjs";
-import { FONTS, ORIGIN } from "./lib/html.mjs";
+import { etDate, seasonOf } from "./lib/time.mjs";
+import { FONTS, ORIGIN, WEB_APP_LIVE, WIN_TOTALS_RULES_URL } from "./lib/html.mjs";
 import { ttfToWoff2 } from "./lib/woff2.mjs";
+import { swatchOn } from "./lib/swatch.mjs";
 import { scanPages, selfTest } from "./lib/betting.mjs";
 import { homePage } from "./lib/pages/home.mjs";
 import { gamePage, nightPage } from "./lib/pages/game.mjs";
 import { ledgerPage, receiptsPage } from "./lib/pages/paper.mjs";
-import { howPage, pricingPage, termsPage, privacyPage, refundsPage, supportPage, winTotalsPage } from "./lib/pages/about.mjs";
-import { teamPages, notFoundPage, redirectPage } from "./lib/pages/teams.mjs";
+import { howPage, pricingPage, termsPage, privacyPage, refundsPage, supportPage } from "./lib/pages/about.mjs";
+import { teamPages, notFoundPage } from "./lib/pages/teams.mjs";
+import { TERMS, PRIVACY, REFUNDS, SUPPORT } from "./content/legal.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, "..");
@@ -36,7 +43,9 @@ const args = process.argv.slice(2);
 const arg = (k, d) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : d; };
 const OUT = resolve(arg("--out", join(ROOT, "_site_v2")));
 const TODAY = arg("--date", process.env.SITE_DATE || etDate());
-const DAYS = Number(arg("--days", 7));
+// The season's first possible game day (its games start in early October; August is safely before).
+const SEASON_FROM = `${seasonOf(TODAY).slice(0, 4)}-08-01`;
+const DAYS = arg("--days") ? Number(arg("--days")) : Math.max(1, Math.round((Date.parse(TODAY) - Date.parse(SEASON_FROM)) / 86400e3));
 const SB_URL = (process.env.SUPABASE_URL || "https://rgksgqnajvcsoftqncqe.supabase.co").replace(/\/$/, "");
 const KEY = process.env.SUPABASE_ANON_KEY || "";
 if (!/^\d{4}-\d{2}-\d{2}$/.test(TODAY)) { console.error(`--date: "${TODAY}" is not YYYY-MM-DD`); process.exit(1); }
@@ -59,11 +68,13 @@ const pages = [];
 pages.push(homePage(m));
 for (const g of m.pageGames) pages.push(gamePage(g, m));
 for (const d of Object.keys(m.nights)) pages.push(nightPage(d, m));
-pages.push(ledgerPage(m), receiptsPage(m), howPage(m), pricingPage(), termsPage(), privacyPage(), refundsPage(), supportPage(), winTotalsPage(m));
+pages.push(ledgerPage(m), receiptsPage(m), howPage(m), pricingPage(), termsPage(), privacyPage(), refundsPage(), supportPage());
 pages.push(...teamPages(m));
 pages.push(notFoundPage());
-const LEGACY = { "/terms.html": "/terms/", "/privacy.html": "/privacy/", "/support.html": "/support/", "/win-totals-rules.html": "/win-totals/"};
-for (const [from, to] of Object.entries(LEGACY)) pages.push(redirectPage(from, to));
+// Old GitHub Pages links on the new domain: 301s in _redirects only (no .html
+// stub pages: next to /terms/index.html a terms.html stub would answer /terms).
+// The Win Totals rules stay on GitHub Pages (the App Store links there).
+const LEGACY = { "/terms.html": "/terms/", "/privacy.html": "/privacy/", "/support.html": "/support/", "/win-totals-rules.html": WIN_TOTALS_RULES_URL, "/win-totals/": WIN_TOTALS_RULES_URL };
 
 // ── assets: fonts, the stylesheet, the live script, content-hashed under /assets/ ──
 rmSync(OUT, { recursive: true, force: true });
@@ -81,7 +92,10 @@ for (const f of FONTS) {
 for (const lic of ["OFL-fraunces.txt", "OFL-libre-franklin.txt", "OFL-ibm-plex-mono.txt", "OFL-doto.txt"]) copyFileSync(join(ROOT, "desk-src", "fonts", lic), join(OUT, "assets", lic));
 
 const fontCss = FONTS.map((f) => `@font-face{font-family:"${f.family}";font-style:${f.style};font-weight:${f.weight};font-display:swap;src:url(${fontFiles[f.file]}) format("woff2")}`).join("\n");
-const teamCss = raw.teams.map((t) => `.a-${t.abbreviation}{--ca:${t.primary_color || "#555"}}.h-${t.abbreviation}{--ch:${t.primary_color || "#555"}}`).join("");
+// Team colours as the app draws them on night paper: lifted to 3:1 when too dark to see (lib/swatch.mjs).
+const PAPER = "#15130F", INK = "#F1E9D8";
+const teamColour = (t) => swatchOn(t.primary_color || "#555555", PAPER, INK);
+const teamCss = raw.teams.map((t) => `.a-${t.abbreviation}{--ca:${teamColour(t)}}.h-${t.abbreviation}{--ch:${teamColour(t)}}`).join("");
 let css = readFileSync(join(HERE, "static", "site.css"), "utf8").replace("/*@fonts*/", fontCss).replace("/*@teams*/", teamCss + "\n[hidden]{display:none!important}");
 css = css.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\n+/g, "\n").replace(/\s*([{};:,>])\s*/g, "$1").replace(/;}/g, "}").trim() + "\n";
 // Short names for the tokens (the source keeps the readable ones).
@@ -121,6 +135,12 @@ writeFileSync(join(OUT, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?>\
 writeFileSync(join(OUT, "robots.txt"), `User-agent: *\nAllow: /\n\nSitemap: ${ORIGIN}/sitemap.xml\n`);
 
 // ── checks ──
+// Nothing unapproved goes out: a draft or todo marker in the content or in a page fails the build.
+for (const doc of [TERMS, PRIVACY, REFUNDS, SUPPORT]) {
+  if (doc.draft) fail.push(`${doc.title}: marked draft`);
+  for (const sec of doc.sections) if (sec.todo || sec.draft) fail.push(`${doc.title} › ${sec.title}: marked todo/draft`);
+}
+for (const p of pages) if (/<!--\s*(DRAFT|TODO)/i.test(p.html) || /TODO\(owner/i.test(p.html)) fail.push(`${p.path}: a draft or todo marker is in the page`);
 const st = selfTest();
 if (st.missed.length || st.wrong.length) fail.push(`betting-words self-test: missed ${JSON.stringify(st.missed)}, wrongly caught ${JSON.stringify(st.wrong)}`);
 const scan = scanPages(pages.filter((p) => !p.redirect));
@@ -147,10 +167,9 @@ if (liveKB > 5) fail.push(`live script ${liveKB.toFixed(1)} KB (budget 5)`);
 // ── report ──
 const sizes = indexed.map((p) => Buffer.byteLength(p.html));
 const kinds = { games: m.pageGames.length, nights: Object.keys(m.nights).length, teams: pages.filter((p) => p.path.startsWith("/teams/")).length };
-console.log(`site ${TODAY} → ${OUT}`);
+console.log(`site ${TODAY} → ${OUT} · web app ${WEB_APP_LIVE ? "LIVE (browser links on)" : "not live (play links → App Store)"}`);
 console.log(`  ${pages.length} pages (${indexed.length} indexed; ${kinds.games} game pages over ${kinds.nights} nights, ${kinds.teams} team pages), tonight = ${m.tonight ?? "none"}`);
 console.log(`  html ${(Math.min(...sizes) / 1024).toFixed(1)}–${(Math.max(...sizes) / 1024).toFixed(1)} KB · css ${cssKB.toFixed(1)} KB · live.js ${liveKB.toFixed(2)} KB · fonts ${(fontBytes / 1024).toFixed(0)} KB (${FONTS.length} woff2)`);
-for (const p of pages) if (p.html.startsWith("<!-- DRAFT")) warn.push(`${p.path} is a DRAFT: the owner must approve it before it is published`);
 for (const w of warn) console.warn(`  warn: ${w}`);
 if (fail.length) {
   for (const f of fail) console.error(`  FAIL: ${f}`);

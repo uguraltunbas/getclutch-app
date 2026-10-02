@@ -1,9 +1,9 @@
 // The front page (direction E, approved): the paper's language and the LED
 // scoreboard. Every number on it is tonight's real one, or says why not.
 
-import { page, esc, bar, APP, APP_STORE, ORIGIN } from "../html.mjs";
+import { page, esc, bar, APP_STORE, ORIGIN, PLAY, PLAY_PRO, WEB_APP_LIVE } from "../html.mjs";
 import { board, gameCard, scoreLine, statusText } from "../parts.mjs";
-import { pct, callPoints, comparisons, opener, verdictOf, rec, shortHash, RATE_FLOOR, REGULAR_SEASON_START, CALL_PAY } from "../copy.mjs";
+import { pct, callPoints, comparisons, opener, verdictOf, rec, shortHash, RATE_FLOOR, REGULAR_SEASON_START, CALL_RULE } from "../copy.mjs";
 import { longDate, dayLabel, shortDate, weekday, timeET, countWord, shift } from "../time.mjs";
 import { FRONT_FREE, FRONT_PRO, FREE_CARDS, FAQ, PLAN } from "../../content/features.mjs";
 import { worstMiss, lastGradedNight } from "../model.mjs";
@@ -43,7 +43,7 @@ function tickerItems(m, games, tonightIsToday) {
   } else if (sealed.length) it.push(`${sealed.length} OF ${games.length} SEALED BEFORE TIP`);
   for (const g of games.filter((g) => g.differs && g.status === "scheduled").slice(0, 2)) {
     const mTeam = g.market >= 0.5 ? g.home : g.away;
-    it.push(`CLUTCH HAS ${g.side.team.abbreviation} ${pct(g.side.prob)}, THE MARKET ${mTeam.abbreviation} ${pct(g.market >= 0.5 ? g.market : 1 - g.market)}`);
+    it.push(`${g.away.abbreviation} @ ${g.home.abbreviation}: CLUTCH ${g.side.team.abbreviation} ${pct(g.side.prob)} · MARKET ${mTeam.abbreviation} ${pct(g.market >= 0.5 ? g.market : 1 - g.market)}`);
   }
   for (const g of games.filter((g) => g.status === "scheduled")) {
     const out = g.absences.find((a) => /^out$/i.test(a.status));
@@ -57,7 +57,6 @@ function tickerItems(m, games, tonightIsToday) {
   if (yCalls.length) it.push(`LAST NIGHT ${yCalls.filter((c) => c.correct).length} OF ${yCalls.length}`);
   if (wm) it.push(`WORST MISS: ${wm.call.pick} AT ${Math.round(wm.call.claimed_pct)}`);
   if (m.sealed > 0) it.push(`${m.sealed.toLocaleString("en-US")} GAMES SEALED BEFORE TIP SO FAR`);
-  if (m.today >= "2026-09-30" && m.today < REGULAR_SEASON_START) it.push(`WIN TOTALS LOCK ${shortDate(REGULAR_SEASON_START).toUpperCase()} · 30 TEAMS, OVER OR UNDER`);
   return it;
 }
 
@@ -168,8 +167,11 @@ ${liveOne ? `<a class="livechip d" href="${liveOne.path}" data-gid="${liveOne.id
 <h1 class="h1">Call every game.<br><em>Beat Clutch.</em></h1>
 <div class="hero"><div class="hero-l">
 <p class="lede">Clutch puts a number on every NBA game, tells you why, and seals it before tip. Make your own call — the morning grades you both.</p>
-<div class="btns"><a class="btn lg" href="${APP}/">Play in your browser →</a><a class="store" href="${APP_STORE}"><small>Download on the</small><b>App Store</b></a></div>
-<div class="promise"><span>FREE</span><span>NO DOWNLOAD</span><span>NO BETTING</span></div>
+${WEB_APP_LIVE
+    ? `<div class="btns"><a class="btn lg" href="${PLAY}">Play in your browser →</a><a class="btn ghost lg" href="${APP_STORE}">Get the iPhone app</a></div>
+<div class="promise"><span>FREE</span><span>NO DOWNLOAD</span><span>NO BETTING</span></div>`
+    : `<div class="btns"><a class="btn lg" href="${APP_STORE}">Get the iPhone app →</a></div>
+<div class="promise"><span>FREE</span><span>NO BETTING</span><span>COMING TO YOUR BROWSER</span></div>`}
 </div>${leadBoard}</div></div>
 ${ticker}</section>
 
@@ -183,7 +185,7 @@ ${comingUp(m, tonight, games.length)}
 <h2 class="h2" id="how-h">Three moves a night. <em>That's the whole game.</em></h2>
 <div class="g3 mt">
 <div class="move"><span class="no" aria-hidden="true">01</span><h3>Clutch makes its call</h3><p>Every morning, a win probability for every game — built from form, rest, travel, the official injury report and the market. Sealed and published before the first tip.</p><span class="hash">${latestSeal ? `sha256 ${esc(shortHash(latestSeal.sha256))}` : "sha256 · the first seal lands Oct 3"}</span></div>
-<div class="move"><span class="no" aria-hidden="true">02</span><h3>You make yours</h3><p>Pick a side before tip. Right calls pay more the less likely they were: ${CALL_PAY.coinFlip} points for a coin flip, up to ${CALL_PAY.max} for an upset. Levels earn Free Pro days.</p>${pts ? `<span class="pills">${pts.map(([t, p, on]) => `<span class="pill${on ? " on" : ""}">${esc(t.abbreviation)} · ${p}</span>`).join("")}</span>` : ""}</div>
+<div class="move"><span class="no" aria-hidden="true">02</span><h3>You make yours</h3><p>Pick a side before tip. ${esc(CALL_RULE)} Levels earn Free Pro days.</p>${pts ? `<span class="pills">${pts.map(([t, p, on]) => `<span class="pill${on ? " on" : ""}">${esc(t.abbreviation)} · ${p}</span>`).join("")}</span>` : ""}</div>
 <div class="move"><span class="no" aria-hidden="true">03</span><h3>The morning grades you both</h3><p>Every call goes in the Ledger, misses included. Beat Clutch on a night and it goes in your Scrapbook.</p><span class="pills"><span class="chip win">RIGHT</span><span class="chip loss">MISSED</span></span></div>
 </div></div></section>
 
@@ -193,23 +195,27 @@ ${missBand(m)}
 </div></section>
 
 <section class="sec" aria-labelledby="free-h"><div class="wrap">
-<div class="shead"><div><h2 class="h2" id="free-h">The whole paper is free.</h2><p class="sub">No account needed to start. Sign in when you want your calls to follow you.</p></div></div>
+<div class="shead"><div><h2 class="h2" id="free-h">The whole paper is free.</h2><p class="sub">Read everything without an account. Sign in to keep your calls.</p></div></div>
 <div class="g3">${FREE_CARDS.map((f) => `<div class="feat"><span class="mk" aria-hidden="true">${esc(f.mark)}</span><h3>${esc(f.title)}</h3><p>${esc(f.body)}</p></div>`).join("")}</div>
 </div></section>
 
 <section class="sec" aria-label="In your browser or on iPhone"><div class="wrap">
 <div class="duo">
-<div><span class="kick">IN YOUR BROWSER</span><h3>Open a tab. You're in.</h3><p>Tonight's numbers and the why · calls, points and levels · the Ledger and receipts · What-If and Ask Clutch · leagues with friends.</p><a class="btn" href="${APP}/">Play in your browser →</a></div>
+${WEB_APP_LIVE
+    ? `<div><span class="kick">IN YOUR BROWSER</span><h3>Open a tab. You're in.</h3><p>Tonight's numbers and the why · calls, points and levels · the Ledger and receipts · What-If and Ask Clutch · leagues with friends.</p><a class="btn" href="${PLAY}">Play in your browser →</a></div>
 <div><span class="kick ink3">ON IPHONE, ALSO</span><h3>The best seat in the house.</h3><p>Live Activities on your lock screen · home screen widgets · Siri · iMessage challenges · game videos to share.</p><a class="btn ghost" href="${APP_STORE}">Get the iPhone app</a></div>
 </div>
-<p class="note gap">One account everywhere. Pro bought on one carries over to the other.</p>
+<p class="note gap">One account everywhere. Pro bought on one carries over to the other.</p>`
+    : `<div><span class="kick">ON IPHONE, TODAY</span><h3>The best seat in the house.</h3><p>Tonight's numbers and the why · calls, points and levels · the Ledger and receipts · What-If and Ask Clutch · leagues with friends · Live Activities, widgets and Siri.</p><a class="btn" href="${APP_STORE}">Get the iPhone app →</a></div>
+<div><span class="kick ink3">IN YOUR BROWSER, THIS OCTOBER</span><h3>No iPhone? Open a tab.</h3><p>The same paper and the same calls in any browser, on any computer or phone — opening this October. Until then, every number is right here on this site.</p></div>
+</div>`}
 </div></section>
 
 <section class="sec" id="pricing" aria-labelledby="price-h"><div class="wrap">
 <h2 class="h2 hm" id="price-h">Free for good. <em>Pro when you want the whole lab.</em></h2>
 <div class="plans">
-<div class="plan"><h3>Free</h3><div class="price"><span class="d">$0</span><span>for good</span></div><ul>${FRONT_FREE.map((x) => `<li>${esc(x)}</li>`).join("")}</ul><a class="btn ghost" href="${APP}/">Play free</a></div>
-<div class="plan pro"><span class="tag">${PLAN.trialDays} DAYS FREE ON ANNUAL</span><h3>Pro</h3><div class="price"><span class="d amber">${PLAN.monthly}</span><span>a month · or ${PLAN.annual} a year</span></div><ul>${FRONT_PRO.map((x) => `<li>${esc(x)}</li>`).join("")}</ul><a class="btn" href="${APP}/paywall">Try Pro free for ${PLAN.trialDays} days</a></div>
+<div class="plan"><h3>Free</h3><div class="price"><span class="d">$0</span><span>for good</span></div><ul>${FRONT_FREE.map((x) => `<li>${esc(x)}</li>`).join("")}</ul><a class="btn ghost" href="${PLAY}">${WEB_APP_LIVE ? "Play free" : "Get the free iPhone app"}</a></div>
+<div class="plan pro"><span class="tag">${PLAN.trialDays} DAYS FREE ON ANNUAL</span><h3>Pro</h3><div class="price"><span class="d amber">${PLAN.monthly}</span><span>a month · or ${PLAN.annual} a year</span></div><ul>${FRONT_PRO.map((x) => `<li>${esc(x)}</li>`).join("")}</ul><a class="btn" href="${PLAY_PRO}">Try Pro free for ${PLAN.trialDays} days${WEB_APP_LIVE ? "" : " on iPhone"}</a></div>
 </div>
 <p class="note gap">Prices in US dollars. Cancel any time; Pro runs to the end of the period you paid for. <a href="/pricing/">Everything in Free and Pro →</a> · <a href="/refunds/">Refunds</a> · <a href="/terms/">Terms</a></p>
 </div></section>
@@ -222,10 +228,10 @@ ${missBand(m)}
 <section class="sec" aria-labelledby="last-h"><div class="wrap"><div class="last">
 <span class="mono ink3">${nextTip ? `NEXT TIP ${esc(dayLabel(tonight).toUpperCase())} · ${esc(timeET(nextTip))}` : esc(longDate(m.today).toUpperCase())}</span>
 <h2 class="h2" id="last-h">${esc(lastH)}</h2>
-<div class="btns"><a class="btn lg" href="${APP}/">Play in your browser →</a><a class="btn ghost lg" href="${APP_STORE}">Get the iPhone app</a></div>
+<div class="btns">${WEB_APP_LIVE ? `<a class="btn lg" href="${PLAY}">Play in your browser →</a><a class="btn ghost lg" href="${APP_STORE}">Get the iPhone app</a>` : `<a class="btn lg" href="${APP_STORE}">Get the iPhone app →</a><a class="btn ghost lg" href="/ledger/">Read the Ledger</a>`}</div>
 </div></div></section>`;
 
-  const desc = "Clutch puts a win probability on every NBA game, tells you why, and seals it before tip. Call every game free in your browser or on iPhone — the public Ledger grades every call.";
+  const desc = `Clutch puts a win probability on every NBA game, tells you why, and seals it before tip. Call every game free ${WEB_APP_LIVE ? "in your browser or on iPhone" : "on iPhone"} — the public Ledger grades every call.`;
   const ld = [
     { "@context": "https://schema.org", "@type": "WebSite", name: "Clutch", url: ORIGIN + "/", description: desc },
     { "@context": "https://schema.org", "@type": "Organization", name: "Clutch", url: ORIGIN + "/", logo: ORIGIN + "/icon-512.png", email: "uguraltunbasai@gmail.com", founder: { "@type": "Person", name: "Uğur Altunbaş" }, sameAs: [APP_STORE] },

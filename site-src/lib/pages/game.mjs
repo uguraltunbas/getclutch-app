@@ -3,7 +3,7 @@
 // who's out, and the page grading itself after the final. And
 // /games/<date>/ — the night's games on one page.
 
-import { page, esc, APP, APP_STORE, ORIGIN } from "../html.mjs";
+import { page, esc, APP_STORE, ORIGIN, PLAY, playGame, WEB_APP_LIVE } from "../html.mjs";
 import { board, gameCard, statusText, gradeChip } from "../parts.mjs";
 import { pct, headlineFor, callPoints, receiptLine, shortHash, sealFileUrl, CALL_RULE, PRESEASON_DECK, rec, RATE_FLOOR, RECEIPTS_REPO } from "../copy.mjs";
 import { longDate, mediumDate, shortDate, weekday, timeET, isoET } from "../time.mjs";
@@ -114,18 +114,18 @@ function aside(g, m, night) {
   if (g.status === "scheduled" && g.hasCall) {
     const fav = s.team, dog = s.other;
     const pf = callPoints(s.prob), pd = callPoints(1 - s.prob);
-    call = `<section class="callcard" aria-labelledby="mk"><h2 id="mk">Make your call</h2><p>Call it before tip. ${esc(CALL_RULE.replace("Right calls", "Right calls"))}</p>
-<div class="two"><a href="${APP}/games/${g.id}">${esc(fav.nickname)} · ${pf}</a><a class="ghost" href="${APP}/games/${g.id}">${esc(dog.nickname)} · ${pd}</a></div>
-<small>Free, right here in your browser. No download.</small><a class="iph" href="${APP_STORE}"><span>On iPhone? Get the app</span><span class="amber">→</span></a></section>`;
+    call = `<section class="callcard" aria-labelledby="mk"><h2 id="mk">Make your call</h2><p>Call it before tip. ${esc(CALL_RULE)}</p>
+<div class="two"><a href="${playGame(g.id)}">${esc(fav.nickname)} · ${pf}</a><a class="ghost" href="${playGame(g.id)}">${esc(dog.nickname)} · ${pd}</a></div>
+${WEB_APP_LIVE ? `<small>Free, right here in your browser. No download.</small><a class="iph" href="${APP_STORE}"><span>On iPhone? Get the app</span><span class="amber">→</span></a>` : `<small>Free in the iPhone app. In your browser this October.</small>`}</section>`;
   } else {
-    call = `<section class="callcard" aria-labelledby="mk"><h2 id="mk">Call tonight's games</h2><p>Every game gets Clutch's call. Make yours before tip and the morning grades you both.</p><div class="two"><a href="${APP}/">Play free</a><a class="ghost" href="${APP_STORE}">iPhone app</a></div></section>`;
+    call = `<section class="callcard" aria-labelledby="mk"><h2 id="mk">Call tonight's games</h2><p>Every game gets Clutch's call. Make yours before tip and the morning grades you both.</p><div class="two">${WEB_APP_LIVE ? `<a href="${PLAY}">Play free</a><a class="ghost" href="${APP_STORE}">iPhone app</a>` : `<a href="${APP_STORE}">Get the iPhone app</a><a class="ghost" href="/ledger/">The Ledger</a>`}</div></section>`;
   }
   const mk = g.marketSide == null
     ? `<span class="ink3">${g.marketState === "none" ? "No number yet" : "Not on record"}</span>`
     : `<span class="d">${esc(s.team.abbreviation)} ${pct(g.marketSide)}</span>`;
   const vs = `<section aria-labelledby="vs"><h2 class="side-h" id="vs">Clutch and the market</h2>
 <div class="kv"><span>Clutch's call</span><span class="d amber">${s ? `${esc(s.team.abbreviation)} ${pct(s.prob)}` : "--"}</span></div>
-<div class="kv"><span>The market, cut taken out</span>${s ? mk : '<span class="ink3">--</span>'}</div>
+<div class="kv"><span>The market's number</span>${s ? mk : '<span class="ink3">--</span>'}</div>
 <div class="kv"><span>Projected final</span><a class="pro-tag" href="/pricing/">PRO</a></div></section>`;
   const r = m.record;
   const ledger = r
@@ -184,7 +184,11 @@ ${aside(g, m, night)}
 /** /games/<date>/ — one night. */
 export function nightPage(date, m) {
   const games = m.nights[date] ?? [];
-  const dates = Object.keys(m.nights).sort();
+  // The nav: the fifteen nights nearest this one (a whole season of links would bury the page).
+  const all = Object.keys(m.nights).sort();
+  const at = all.indexOf(date);
+  const start = Math.max(0, Math.min(at - 7, all.length - 15));
+  const dates = all.slice(start, start + 15);
   const isTonight = date === m.tonight;
   const finals = games.filter((g) => g.status === "final");
   const graded = finals.filter((g) => g.grade === "right" || g.grade === "missed");
@@ -199,7 +203,7 @@ export function nightPage(date, m) {
 <div class="rhead"><span class="kick">${esc(longDate(date).toUpperCase())}</span><h1 class="rh1">${esc(h1)}</h1><p class="rdeck">${esc(lines.join(" "))}</p>
 <nav class="nights" aria-label="Nights">${dates.map((d) => `<a href="/games/${d}/"${d === date ? ' aria-current="page"' : ""}>${esc(shortDate(d).toUpperCase())}</a>`).join("")}</nav></div>
 <div class="body"><div class="cards">${games.map(gameCard).join("")}</div>
-<p class="note">Amber is Clutch's number for the side it favours; the cream segment is the market's number for that side, the bookmaker's cut taken out. <a href="/how-it-works/">How it works →</a></p></div>
+<p class="note">Amber is Clutch's number for the side it favours; the cream segment is the market's number for that side. <a href="/how-it-works/">How it works →</a></p></div>
 </div>`;
   const path = `/games/${date}/`;
   const title = `NBA games, ${mediumDate(date)}: Clutch's call on every game · Clutch`;

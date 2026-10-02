@@ -2,15 +2,19 @@
 // app/privacy-policy.tsx, lib/wintotals/rules.ts, October 1, 2026), the same
 // words as the root terms.html / privacy.html App Store Connect links to,
 // plus what only the web needs: who operates Clutch, Paddle as the web's
-// merchant of record, this website itself. Every web-only sentence is marked
-// `todo` and printed with an HTML comment for the owner's review.
+// merchant of record, this website itself, and (Privacy) your rights and how
+// long things are kept. Approved by the owner in chat 9 (2026-10-01): the
+// operator line, the 14-day refund, replies within 48 hours. Nothing here may
+// carry a draft or todo marker: the build fails on one.
 //
 // A body is plain text: "\n" separates paragraphs, a line starting "• " is
 // a list item. The support e-mail and https links become links when rendered.
 
+import { WIN_TOTALS_RULES_URL } from "../lib/html.mjs";
+
 export const SUPPORT_EMAIL = "uguraltunbasai@gmail.com";
 export const OPERATOR = "Uğur Altunbaş";
-export const LEGAL_UPDATED = "October 1, 2026";
+export const LEGAL_UPDATED = "October 2, 2026";
 export const PADDLE_BUYER_TERMS = "https://www.paddle.com/legal/checkout-buyer-terms";
 
 export const TERMS = {
@@ -19,7 +23,7 @@ export const TERMS = {
   intro: "By using Clutch you agree to these terms. They are short on purpose.",
   sections: [
     { title: "What Clutch is", body: "An NBA analytics app: a model's win probabilities, the reasoning behind them, and a public record of every call it has made. Predictions are estimates, not guarantees, and the record shows how often they have been wrong." },
-    { title: "Who runs Clutch", body: `Clutch — the iPhone app, the web app at app.clutchledger.com and this website — is made and operated by ${OPERATOR}, a sole proprietor. "We" and "Clutch" in these terms mean him. Contact: ${SUPPORT_EMAIL}.`, todo: "Owner: confirm the legal name as registered, and add a business address if Paddle asks for one." },
+    { title: "Who runs Clutch", body: `Clutch — the iPhone app, the web app at app.clutchledger.com and this website — is made and operated by ${OPERATOR}, a sole proprietor. "We" and "Clutch" in these terms mean him. Contact: ${SUPPORT_EMAIL}.` },
     { title: "Analytics, not a wagering service", body: "Clutch does not take bets, process wagers or pay out money, and nothing in it is advice to gamble. Where the app shows a sportsbook's line, it is for comparison. You are responsible for following the law where you live." },
     { title: "Points", body: "Points are earned only by playing — your calls, the daily games, the Time Capsule and Win Totals — and when your favourite team wins a regular-season or playoff game. They only go up: they are never spent, cannot be bought, sold, transferred or exchanged for money, and have no cash value. Every level you reach earns a Free Pro day (24 hours of Pro at no charge), used when you choose, at most one a week. We may change how points are earned, and points earned by abusing the app may be removed. Your favourite team can be changed once per NBA season, and a call counts only for games that start at least 12 hours after it." },
     { title: "Accounts", body: "You must be 13 or older. Keep your sign-in to yourself; you are responsible for what happens on your account." },
@@ -35,7 +39,7 @@ export const TERMS = {
     {
       title: "Contests",
       body: "Clutch runs free contests inside the app: Win Totals, part two of the Time Capsule. They are free to enter, need no purchase, and nothing bought improves anyone's chances. Their prizes are Pro time inside Clutch: no cash value, not transferable, and not exchangeable for money. Apple is not a sponsor of any Clutch contest and is not involved in them. Each contest has official rules, which apply alongside these terms. Points themselves are not prizes: they are never paid out.",
-      link: { href: "/win-totals/", label: "Win Totals official rules →" },
+      link: { href: WIN_TOTALS_RULES_URL, label: "Win Totals official rules →" },
     },
     {
       title: "Subscriptions and passes",
@@ -57,7 +61,6 @@ export const TERMS = {
         "• A web subscription renews automatically at the end of each period until you cancel it. You can cancel any time; Pro runs to the end of the period you paid for. A trial cancelled before it ends is never charged.\n" +
         "• Refunds for web purchases: see the Refund Policy. Pro for 24 hours is sold only in the iPhone app.\n" +
         "• One account everywhere: Pro bought on the web opens in the iPhone app when you sign in with the same account, and the other way round.",
-      todo: "Owner: Paddle sentence — web purchases are processed by Paddle.com as merchant of record. Confirm with the live Paddle setup before launch.",
       link: { href: "/refunds/", label: "Refund Policy →" },
     },
     { title: "Fair use", body: "Don't use the app unlawfully, scrape or reverse-engineer its data or models, automate it, or try to get around its limits." },
@@ -86,7 +89,6 @@ export const PRIVACY = {
     {
       title: "Buying on the web",
       body: "Purchases on the web are processed by Paddle.com, our merchant of record. Paddle collects what it needs to take the payment and handle tax — your payment details, e-mail and billing country — under its own privacy notice. We receive the subscription's status and the e-mail on the order, through RevenueCat; we never see card details.",
-      todo: "Owner: Paddle sentence — web purchases are processed by Paddle.com as merchant of record. Confirm the data Paddle shares once the account is live.",
     },
     { title: "Why", body: "To run the features you use — keep your team, send the alerts you asked for, grade your calls, open what your plan or a Free Pro day includes. To find out which parts of the app work and which don't. To fix crashes." },
     {
@@ -113,18 +115,25 @@ export const PRIVACY = {
     },
     { title: "Made on your phone", body: "Game video, your yearbook (PDF) and the Front page (a share image) are made on your iPhone; nothing is sent to us to make them. A video or a yearbook leaves your phone only if you share or save it. Saving a video asks for permission to add to your Photos, and nothing is read from them." },
     { title: "This website", body: "clutchledger.com sets no cookies and runs no analytics or advertising. To show tonight's live scores your browser asks our database (Supabase) for them directly; Cloudflare, which serves the pages, keeps standard request logs." },
-    { title: "Your choices", body: "Alerts can be switched off in the app or in iOS Settings. You can delete your account from the You tab; that removes your profile, team, alert settings, calls, capsule, Win Totals sheet and points, and — if you signed in with Apple — revokes Clutch's access to your Apple ID. Subscriptions are managed by Apple and are not cancelled by deleting the account; a web subscription is cancelled from the web app or by writing to us." },
+    { title: "Your choices", body: "Alerts can be switched off in the app or in iOS Settings. You can delete your account from the You tab; that removes your profile, team, alert settings, calls, capsule, Win Totals sheet and points, and — if you signed in with Apple — revokes Clutch's access to your Apple ID. Subscriptions are not cancelled by deleting the account: one bought in the iPhone app is managed by Apple; one bought on the web is cancelled in the web app under You › Subscription, or from the link in Paddle's receipt e-mail (or write to us and we cancel it for you)." },
+    {
+      title: "Your rights",
+      body: `You can see, correct or delete what Clutch holds about you. Most of it is on the You tab, and deleting your account there removes it. To ask for a copy of your data, a correction, or anything the app can't do for you, write to ${SUPPORT_EMAIL}; we answer within 48 hours. Depending on where you live (for example the EU, the UK or California) these are your rights by law, and you can also complain to your data protection authority.`,
+    },
+    {
+      title: "How long we keep it",
+      body: "Your account and everything on it are kept while you have an account, and deleted when you delete it. Reports are kept for 180 days (see What we collect). Crash reports and usage events are kept by Sentry and PostHog under their own retention limits. Records of purchases are kept by Apple, Paddle and RevenueCat as the law requires them to.",
+    },
     { title: "Children", body: "Clutch is not directed to anyone under 13, and we don't knowingly collect their information." },
     { title: "Changes", body: "If this policy changes, the new version is posted here with a new date." },
     { title: "Contact", body: `${SUPPORT_EMAIL} · Clutch is operated by ${OPERATOR}.` },
   ],
 };
 
-/** DRAFT — the owner approves before Paddle sees it. */
+/** Approved by the owner (chat 9): a full refund within 14 days of a web purchase or renewal; replies within 48 hours. */
 export const REFUNDS = {
   title: "Refund Policy",
   updated: LEGAL_UPDATED,
-  draft: true,
   intro: "How refunds work for Clutch Pro, wherever you bought it. Short, like the rest.",
   sections: [
     {
@@ -135,7 +144,7 @@ export const REFUNDS = {
         "A refunded payment ends the Pro it paid for.",
       link: { href: PADDLE_BUYER_TERMS, label: "Paddle's buyer terms →" },
     },
-    { title: "The free trial", body: "The yearly plan starts with 7 days free the first time. Cancel before the trial ends and you are never charged." },
+    { title: "The free trial", body: "The yearly plan starts with 7 days free the first time. Cancel before the trial ends (on iPhone, at least 24 hours before) and you are not charged." },
     { title: "Cancelling", body: "You can cancel a subscription any time. It stops renewing, and Pro runs to the end of the period you paid for. Cancelling on its own doesn't refund the current period — ask within 14 days (above) if you want that." },
     { title: "Bought in the iPhone app", body: "Purchases made in the iPhone app are sold and refunded by Apple, under Apple's policies — we can't refund them ourselves. Ask Apple at reportaproblem.apple.com, or in Settings › your name › Media & Purchases.", link: { href: "https://reportaproblem.apple.com", label: "reportaproblem.apple.com →" } },
     { title: "Free Pro time", body: "Free Pro days earned with points and Pro won in a contest cost nothing and have no cash value, so there is nothing to refund; a refund of a purchase never takes them back." },
@@ -148,7 +157,7 @@ export const SUPPORT = {
   updated: LEGAL_UPDATED,
   intro: "Answers to the questions people actually ask. Anything else: write to us.",
   sections: [
-    { title: "Cancel a subscription", body: "Bought in the iPhone app: Settings › your name › Subscriptions › Clutch › Cancel. Those subscriptions are managed by Apple, not inside the app.\nBought on the web: use the manage-subscription link in the receipt Paddle e-mailed you, or write to us and we cancel it for you. Either way, Pro runs to the end of the period you paid for.", todo: "Owner: confirm the cancel path once web checkout is live (Paddle's receipt link, or a button in the web app)." },
+    { title: "Cancel a subscription", body: "Bought in the iPhone app: Settings › your name › Subscriptions › Clutch › Cancel. Those subscriptions are managed by Apple, not inside the app.\nBought on the web: in the web app under You › Subscription, or from the link in Paddle's receipt e-mail — or write to us and we cancel it for you. Either way, Pro runs to the end of the period you paid for." },
     { title: "Get a refund", body: "Web purchases: a full refund within 14 days of a purchase or renewal — see the Refund Policy. iPhone purchases: Apple handles refunds at reportaproblem.apple.com.", link: { href: "/refunds/", label: "Refund Policy →" } },
     { title: "Restore a purchase", body: "In the iPhone app: You › Restore purchases, signed in with the same account you bought with. On the web: sign in with the same account; Pro follows the account." },
     { title: "Delete your account", body: "Open the app › You › Delete account. It removes your profile, team, alert settings, calls, capsule, Win Totals sheet and points. You can also e-mail us to ask." },

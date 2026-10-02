@@ -34,7 +34,7 @@ export function headlineFor(homeProb, home, away, preseason) {
   return `${s.team.nickname}, comfortably.`;
 }
 
-/** Points a right call pays (lib/play/points callPoints). */
+/** Points a right call scores (lib/play/points callPoints). */
 export function callPoints(p) {
   if (typeof p !== "number" || !Number.isFinite(p) || p < 0 || p > 1) return null;
   const bp = Math.round(p * 10000);
@@ -44,7 +44,7 @@ export function callPoints(p) {
   return Math.min(CALL_PAY.max, Math.max(CALL_PAY.min, raw));
 }
 
-export const CALL_RULE = `Right calls pay more the less likely they were: ${CALL_PAY.coinFlip} for a coin flip, up to ${CALL_PAY.max} for an upset.`;
+export const CALL_RULE = `Right calls score more the less likely they were: ${CALL_PAY.coinFlip} for a coin flip, up to ${CALL_PAY.max} for an upset.`;
 
 /** A reason's label in plain words (Elo ratings read as "rated above"); the retired model's "(favors home)" tail dropped. */
 export function plainDriverLabel(key, label) {

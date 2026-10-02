@@ -1,7 +1,7 @@
 // Game pieces shared by the front page, the game pages and the team pages:
 // the scoreboard (the instrument), a Tonight card, status and score text.
 
-import { esc, rail, APP } from "./html.mjs";
+import { esc, rail, playGame } from "./html.mjs";
 import { pct, callPoints, liveLabel, finalLabel, plainDriverLabel } from "./copy.mjs";
 import { timeET, tipShort } from "./time.mjs";
 
@@ -18,7 +18,7 @@ export function statusText(g, short = false) {
 export const scoreLine = (g) => (g.homeScore == null ? "" : `${g.away.abbreviation} ${g.awayScore} · ${g.home.abbreviation} ${g.homeScore}`);
 
 const teamCls = (g) => `a-${g.away.abbreviation} h-${g.home.abbreviation}`;
-const appGame = (g) => `${APP}/games/${g.id}`;
+const appGame = (g) => playGame(g.id);
 
 /** What one grade reads like, as a chip. */
 export function gradeChip(g) {

@@ -97,8 +97,12 @@ export async function loadAll(db, { today, days = 7, warn = console.warn }) {
   ];
   const snaps = await soft("api_snapshots", () => snapshots(db, snapKeys), {});
 
+  // One RPC per night, eight at a time (a whole season is ~200 nights).
   const receiptsByDate = {};
-  for (const d of pageDates) receiptsByDate[d] = await soft(`receipts_for_date ${d}`, () => db.rpc("receipts_for_date", { p_date: d }));
+  for (const part of chunks(pageDates, 8)) {
+    const got = await Promise.all(part.map((d) => soft(`receipts_for_date ${d}`, () => db.rpc("receipts_for_date", { p_date: d }))));
+    part.forEach((d, i) => { receiptsByDate[d] = got[i]; });
+  }
   const receipts = await soft("receipts", () => db.get("receipts?select=kind,slate_date,sha256,prev_sha256,committed_at,n_games,commit_url,path&order=committed_at.desc&limit=2000"), []);
 
   // Who is on the injury report, for tonight's teams (the free strip's source when no explain row lists them).

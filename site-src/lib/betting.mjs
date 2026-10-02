@@ -29,15 +29,28 @@ export const BETTING_WORDS = [
   { id: "over_under_pick", re: /^(OVER|UNDER)$|\b(OVER|UNDER) \d{3}\.\d\b/ },
 ];
 
-export const bettingWordsIn = (text) => BETTING_WORDS.filter((b) => b.re.test(text)).map((b) => b.id);
+/**
+ * The site's own extra words, on top of the app's list (the app's list is not
+ * changed): the market-maker vocabulary a payment provider's review reads as
+ * wagering — "closing line", "the close", "bookmaker", "payout", "pays more".
+ * The site says "the market", "the market's final price" and "score".
+ */
+export const SITE_WORDS = [
+  { id: "closing_line", re: /\bclosing (line|lines|market|price)\b|\bthe close\b(?![-\w])|\bbeats? the close\b/i },
+  { id: "bookmaker", re: /\bbook ?makers?\b|\bbookies?\b|\bbookmaker's\b/i },
+  { id: "payout", re: /\bpay ?outs?\b|\bpays? out\b|\bpays? more\b/i },
+];
+
+const ALL_WORDS = [...BETTING_WORDS, ...SITE_WORDS];
+
+export const bettingWordsIn = (text) => ALL_WORDS.filter((b) => b.re.test(text)).map((b) => b.id);
 
 /** Deliberate uses: `page` is a path prefix ("" = every page), `phrase` a substring of the text segment. */
 export const ALLOW = [
-  { page: "", phrase: "No betting, no wagering, no cash prizes.", reason: "The footer's legal line on every page: what Clutch is not has to be named (Paddle's review and the app's Terms say the same)." },
+  { page: "", phrase: "No betting. No wagering.", reason: "The footer's legal line on every page: what Clutch is not has to be named (Paddle's review and the app's Terms say the same)." },
   { page: "/", phrase: "NO BETTING", reason: "The front page's promise under the buttons (the approved mockup): a statement of what Clutch is not." },
   { page: "/terms/", phrase: "Analytics, not a wagering service", reason: "Terms of Use: the legal statement of what the app is not has to name it (app/terms.tsx)." },
   { page: "/terms/", phrase: "Clutch does not take bets, process wagers or pay out money", reason: "Terms of Use: the same legal statement (app/terms.tsx, allow-listed in the app too)." },
-  { page: "/win-totals/", phrase: "Clutch takes no bets and nothing in it is advice to gamble", reason: "Win Totals official rules (lib/wintotals/rules.ts): a free contest's statement of what it is not." },
 ];
 
 const ENT = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ", rsquo: "’", lsquo: "‘", rdquo: "”", ldquo: "“", mdash: "—", ndash: "–", hellip: "…", middot: "·", rarr: "→", copy: "©" };
@@ -82,8 +95,10 @@ export function scanPages(pages) {
 
 /** The list's own self-test (the app's): banned forms caught, a time lock and look-alikes left alone. */
 export function selfTest() {
-  const bad = ["BOS COVERS", "home spread", "O/U 224.5", "Take the over", "Lock of the Night", "a lock tonight", "our best bet", "2 units", "sharp money", "Parlay it", "no stakes", "LAL ML", "UNDER", "OVER 224.5", "no vig"];
-  const good = ["Calls lock at tip-off.", "LOCKED AT TIP", "On your lock screen", "the book's line", "Over 1,200 graded calls", "Discover", "Recovered", "unitless", "OVERTIME NOT INCLUDED", "UNDER 100 CALLS", "html", "Over or under?", "between", "better", "anyone under 13"];
+  const bad = ["BOS COVERS", "home spread", "O/U 224.5", "Take the over", "Lock of the Night", "a lock tonight", "our best bet", "2 units", "sharp money", "Parlay it", "no stakes", "LAL ML", "UNDER", "OVER 224.5", "no vig",
+    "the closing line", "level with the close", "Clutch vs the close", "the bookmaker's cut", "bookies", "nothing to pay out", "Right calls pay more"];
+  const good = ["Calls lock at tip-off.", "LOCKED AT TIP", "On your lock screen", "the book's line", "Over 1,200 graded calls", "Discover", "Recovered", "unitless", "OVERTIME NOT INCLUDED", "UNDER 100 CALLS", "html", "Over or under?", "between", "better", "anyone under 13",
+    "the close-game alert", "Close games", "the market's final price", "Right calls score more", "payment", "closely"];
   const missed = bad.filter((t) => !bettingWordsIn(t).length);
   const wrong = good.filter((t) => bettingWordsIn(t).length);
   return { missed, wrong };
