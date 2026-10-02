@@ -145,7 +145,11 @@ function lastmod(path) {
   return today;
 }
 writeFileSync(join(OUT, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${indexed.map((p) => `<url><loc>${ORIGIN}${p.path}</loc><lastmod>${lastmod(p.path)}</lastmod><changefreq>${p.path === "/" || p.path.startsWith("/games/") ? "hourly" : "daily"}</changefreq><priority>${p.path === "/" ? "1.0" : p.path.startsWith("/games/") ? "0.8" : "0.6"}</priority></url>`).join("\n")}\n</urlset>\n`);
-writeFileSync(join(OUT, "robots.txt"), `User-agent: *\nAllow: /\n\nSitemap: ${ORIGIN}/sitemap.xml\n`);
+// Search engines and AI answers may read and cite the paper; model training may not
+// (owner decision, chat 13). Content-Signal is Cloudflare's robots.txt extension;
+// the named crawlers are the training-only ones, refused outright.
+const TRAINING_CRAWLERS = ["GPTBot", "ClaudeBot", "Google-Extended", "Applebot-Extended", "CCBot", "Meta-ExternalAgent", "Bytespider"];
+writeFileSync(join(OUT, "robots.txt"), `User-agent: *\nContent-Signal: search=yes, ai-input=yes, ai-train=no\nAllow: /\n\n${TRAINING_CRAWLERS.map((b) => `User-agent: ${b}`).join("\n")}\nDisallow: /\n\nSitemap: ${ORIGIN}/sitemap.xml\n`);
 
 // ── checks ──
 // Nothing unapproved goes out: a draft or todo marker in the content or in a page fails the build.
