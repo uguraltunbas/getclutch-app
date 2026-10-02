@@ -49,7 +49,7 @@ async function snapshots(db, keys) {
   return out;
 }
 
-const GAME_COLS = "id,game_date,game_time_utc,status,season_type,home_team_id,away_team_id,home_score,away_score,period,clock";
+const GAME_COLS = "id,game_date,game_time_utc,status,season_type,home_team_id,away_team_id,home_score,away_score,period,clock,neutral_site";
 
 /**
  * Everything one build needs. `today` is the ET date the build is for;
@@ -61,7 +61,7 @@ export async function loadAll(db, { today, days = 7, warn = console.warn }) {
   };
 
   // The essentials: a build without them fails, and the last deploy stays up.
-  const teams = await db.get("teams?select=id,abbreviation,name,nickname,city,conference,division,primary_color,secondary_color&order=name");
+  const teams = await db.get("teams?select=id,abbreviation,name,nickname,city,conference,division,primary_color,secondary_color,arena,arena_city,arena_state&order=name");
   if (teams.length < 30) throw new Error(`teams: ${teams.length} rows`);
   const from = shift(today, -days), to = shift(today, 14);
   let games = await db.get(`games?select=${GAME_COLS}&game_date=gte.${from}&game_date=lte.${to}&order=game_date,game_time_utc`);

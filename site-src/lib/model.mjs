@@ -80,7 +80,7 @@ export function buildModel(raw) {
     slugs.add(`${g.game_date}/${slug}`);
 
     return {
-      id: g.id, date: g.game_date, path: `/games/${g.game_date}/${slug}/`, home, away, tipUtc: g.game_time_utc, status, period: g.period, clock: g.clock,
+      id: g.id, date: g.game_date, path: `/games/${g.game_date}/${slug}/`, home, away, neutral: g.neutral_site === true, tipUtc: g.game_time_utc, status, period: g.period, clock: g.clock,
       homeScore: scored ? hs : null, awayScore: scored ? as : null, preseason, seasonType: g.season_type,
       hasCall, homeProb, side, market, marketSide, marketState, differs,
       reasons: hasCall ? topReasons(pred?.key_factors, explain) : [],

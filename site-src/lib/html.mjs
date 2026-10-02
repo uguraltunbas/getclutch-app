@@ -25,6 +25,17 @@ export const PLAY_PRO = WEB_APP_LIVE ? `${APP}/paywall` : APP_STORE;
 
 export const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 
+/** Search results cut a description near 160 characters: keep whole sentences up to that, else whole words and an ellipsis. */
+export const DESCRIPTION_MAX = 160;
+export function clipDescription(s, max = DESCRIPTION_MAX) {
+  if (s.length <= max) return s;
+  const sentences = s.match(/[^.!?]+[.!?]+(\s|$)/g) ?? [];
+  let out = "";
+  for (const x of sentences) { if ((out + x).trim().length > max) break; out += x; }
+  if (out.trim()) return out.trim();
+  return s.slice(0, s.lastIndexOf(" ", max - 1)).replace(/[,;:—–\s]+$/, "") + "…";
+}
+
 export const FONTS = [
   { file: "fraunces-900.woff2", family: "Fraunces", weight: 900, style: "normal", src: "desk-src/fonts/Fraunces_900Black.ttf", preload: true },
   { file: "fraunces-900i.woff2", family: "Fraunces", weight: 900, style: "italic", src: "site-src/fonts/Fraunces_900Black_Italic.ttf" },
@@ -77,7 +88,8 @@ function footer() {
  */
 export function page({ path, title, description, body, current = "", og = "default", ogType = "website", jsonld = null, live = false, noindex = false, cssHref = "/site.css" }) {
   const url = ORIGIN + path;
-  const ld = (Array.isArray(jsonld) ? jsonld : jsonld ? [jsonld] : []).map((o) => `<script type="application/ld+json">${JSON.stringify(o).replace(/</g, "\\u003c")}</script>`).join("\n");
+  description = clipDescription(description);
+  const ld =(Array.isArray(jsonld) ? jsonld : jsonld ? [jsonld] : []).map((o) => `<script type="application/ld+json">${JSON.stringify(o).replace(/</g, "\\u003c")}</script>`).join("\n");
   const pre = FONTS.filter((f) => f.preload).map((f) => `<link rel="preload" href="/fonts/${f.file}" as="font" type="font/woff2" crossorigin>`).join("\n");
   const img = `${ORIGIN}/og/${og}.jpg`;
   return `<!doctype html>
@@ -87,8 +99,8 @@ export function page({ path, title, description, body, current = "", og = "defau
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
-<link rel="canonical" href="${url}">
-${noindex ? '<meta name="robots" content="noindex">\n' : ""}<meta name="theme-color" content="#15130F">
+${noindex ? '<meta name="robots" content="noindex">' : `<link rel="canonical" href="${url}">`}
+<meta name="theme-color" content="#15130F">
 ${pre}
 <link rel="stylesheet" href="${cssHref}">
 <link rel="icon" href="/favicon.png" type="image/png" sizes="64x64">

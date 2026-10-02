@@ -55,7 +55,7 @@ ${sections.map(([h, p]) => `<section class="blk"><h2>${esc(h)}</h2><p>${esc(p)}<
 <section class="blk"><h2>What's free, what's Pro</h2><p>Free shows Clutch's call, the market's number and the top three reasons for every game, who's out, and the Ledger. Pro shows all of it: every factor and how much of the call it carries, Model only — the number before the market — the projected final, and the simulation. <a href="/pricing/">Pricing →</a></p></section>
 <p class="note">Past performance does not guarantee future results. Predictions are analytics for information and entertainment, not advice to spend money on a game. Model performance varies by sample size and league conditions.${ti.trained_at ? ` Model fit ${esc(mediumDate(ti.trained_at.slice(0, 10)))} on games through ${esc(mediumDate(ti.through))}.` : ""}</p>
 </div></div>`;
-  const desc = "How Clutch's NBA win probability is made: what the model knows, how it blends with the market, the two-season test against ESPN BPI and the market, and what it cannot do.";
+  const desc = "How Clutch's NBA win probability is made: what the model knows, how it meets the market, the two-season test against ESPN BPI, and its limits.";
   return { path: "/how-it-works/", title: "How it works: the model, the test, the limits · Clutch", html: page({ path: "/how-it-works/", title: "How it works: the model, the test, the limits · Clutch", description: desc, body, current: "how", og: "default" }) };
 }
 
@@ -78,8 +78,8 @@ export function pricingPage() {
 <p>${WEB_APP_LIVE ? "One account everywhere: Pro bought on the web opens in the iPhone app with the same account, and the other way round." : "When the web version opens, one account works everywhere: Pro bought on the web opens in the iPhone app with the same account, and the other way round."} Clutch is operated by ${esc(OPERATOR)}. Questions: <a href="mailto:${SUPPORT_EMAIL}">${SUPPORT_EMAIL}</a>.</p></section>
 <p class="note">No deposits and no cash prizes: Pro is analytics, and nothing bought changes a call or a point. <a href="/terms/">Terms</a> · <a href="/privacy/">Privacy</a> · <a href="/refunds/">Refunds</a></p>
 </div></div>`;
-  const desc = `Clutch is free for good: every NBA game's number, the market, the top reasons and the Ledger. Clutch Pro is ${PLAN.monthly} a month or ${PLAN.annual} a year with a ${PLAN.trialDays}-day free trial.`;
-  const ld = { "@context": "https://schema.org", "@type": "Product", name: PLAN.name, description: desc, brand: { "@type": "Brand", name: "Clutch" }, url: ORIGIN + "/pricing/", offers: [{ "@type": "Offer", name: "Monthly", price: "9.99", priceCurrency: "USD", url: ORIGIN + "/pricing/" }, { "@type": "Offer", name: "Yearly", price: "59.99", priceCurrency: "USD", url: ORIGIN + "/pricing/" }] };
+  const desc = `Clutch is free for good: every NBA game's number, the market, the top reasons and the Ledger. Clutch Pro: ${PLAN.monthly} a month or ${PLAN.annual} a year, ${PLAN.trialDays} days free.`;
+  const ld = { "@context": "https://schema.org", "@type": "Product", name: PLAN.name, description: desc, image: ORIGIN + "/og/pricing.jpg", brand: { "@type": "Brand", name: "Clutch" }, url: ORIGIN + "/pricing/", offers: [{ "@type": "Offer", name: "Monthly", price: "9.99", priceCurrency: "USD", url: ORIGIN + "/pricing/" }, { "@type": "Offer", name: "Yearly", price: "59.99", priceCurrency: "USD", url: ORIGIN + "/pricing/" }] };
   return { path: "/pricing/", title: "Pricing: Free for good, Clutch Pro $9.99 a month · Clutch", html: page({ path: "/pricing/", title: "Pricing: Free for good, Clutch Pro $9.99 a month · Clutch", description: desc, body, current: "pricing", og: "pricing", jsonld: ld }) };
 }
 
@@ -92,7 +92,7 @@ ${prose(s.body, { email: SUPPORT_EMAIL })}${s.link ? `<p class="lk"><a href="${s
   return { path, title, html: page({ path, title, description, body, og: "default" }) };
 }
 
-export const termsPage = () => legalPage(TERMS, { path: "/terms/", title: "Terms of Use · Clutch", description: `The terms for using Clutch, the NBA analytics app and website operated by ${OPERATOR}: points, contests, subscriptions in the app and on the web, and fair use.`, kick: "TERMS" });
+export const termsPage = () => legalPage(TERMS, { path: "/terms/", title: "Terms of Use · Clutch", description: `The terms for using Clutch, the NBA analytics app and website operated by ${OPERATOR}: points, contests, subscriptions and fair use.`, kick: "TERMS" });
 export const privacyPage = () => legalPage(PRIVACY, { path: "/privacy/", title: "Privacy Policy · Clutch", description: "What Clutch collects when you sign in or use a feature that needs an account, why, and who else handles it — including Paddle for web purchases.", kick: "PRIVACY" });
 export const refundsPage = () => legalPage(REFUNDS, { path: "/refunds/", title: "Refund Policy · Clutch", description: "Refunds for Clutch Pro: a full refund within 14 days of a web purchase or renewal, on request; App Store purchases are refunded by Apple.", kick: "REFUNDS" });
 export const supportPage = () => legalPage(SUPPORT, { path: "/support/", title: "Support · Clutch", description: "Cancel or restore Clutch Pro, get a refund, delete your account, fix alerts — and how to reach us.", kick: "SUPPORT" });

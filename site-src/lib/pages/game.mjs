@@ -29,7 +29,7 @@ export function deck(g) {
     return `Clutch's number for this game lands the morning of ${weekday(g.date)}, and it is sealed before tip.`;
   }
   const s = g.side, p = pct(s.prob);
-  const where = s.isHome ? "at home against" : "on the road against";
+  const where = g.neutral ? "against" : s.isHome ? "at home against" : "on the road against";
   const mk = g.market == null ? "" : (() => {
     const mHome = g.market >= 0.5, team = mHome ? g.home : g.away, mp = pct(mHome ? g.market : 1 - g.market);
     return team.id === s.team.id ? ` The market has ${mp}%.` : ` The market differs: it has ${the(team)} at ${mp}%.`;
@@ -174,11 +174,24 @@ ${aside(g, m, night)}
     eventStatus: g.status === "postponed" ? "https://schema.org/EventPostponed" : "https://schema.org/EventScheduled",
     eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
     homeTeam: team(g.home), awayTeam: team(g.away), competitor: [team(g.away), team(g.home)],
-    location: { "@type": "Place", name: g.home.city, address: { "@type": "PostalAddress", addressLocality: g.home.city } },
+    ...venue(g),
+    image: `${ORIGIN}/og/game.jpg`,
   };
   const live = g.status !== "final" && g.status !== "postponed" ? true : night.some((x) => x.status !== "final" && x.status !== "postponed");
   const description = `${g.away.name} at ${g.home.name}, ${mediumDate(g.date)}. ${dk}`;
   return { path: g.path, title, html: page({ path: g.path, title, description, body, current: "tonight", og: "game", ogType: "article", jsonld: ld, live }) };
+}
+
+/**
+ * Where a game is played, for its SportsEvent: the home team's arena. A
+ * neutral-site game (international games, the NBA Cup's Las Vegas rounds)
+ * has no location rather than the wrong one.
+ */
+function venue(g) {
+  if (g.neutral) return {};
+  const t = g.home;
+  const address = { "@type": "PostalAddress", addressLocality: t.arena_city || t.city, ...(t.arena_state ? { addressRegion: t.arena_state } : {}), addressCountry: t.abbreviation === "TOR" ? "CA" : "US" };
+  return { location: { "@type": "Place", name: t.arena || t.city, address } };
 }
 
 /** /games/<date>/ — one night. */

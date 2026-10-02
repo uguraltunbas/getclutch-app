@@ -26,7 +26,7 @@ import { fileURLToPath } from "node:url";
 import { supabase, loadAll } from "./lib/data.mjs";
 import { buildModel } from "./lib/model.mjs";
 import { etDate, seasonOf } from "./lib/time.mjs";
-import { FONTS, ORIGIN, WEB_APP_LIVE, WIN_TOTALS_RULES_URL } from "./lib/html.mjs";
+import { FONTS, ORIGIN, WEB_APP_LIVE, WIN_TOTALS_RULES_URL, DESCRIPTION_MAX } from "./lib/html.mjs";
 import { ttfToWoff2 } from "./lib/woff2.mjs";
 import { swatchOn } from "./lib/swatch.mjs";
 import { scanPages, selfTest } from "./lib/betting.mjs";
@@ -35,7 +35,7 @@ import { gamePage, nightPage } from "./lib/pages/game.mjs";
 import { ledgerPage, receiptsPage } from "./lib/pages/paper.mjs";
 import { howPage, pricingPage, termsPage, privacyPage, refundsPage, supportPage } from "./lib/pages/about.mjs";
 import { teamPages, notFoundPage } from "./lib/pages/teams.mjs";
-import { TERMS, PRIVACY, REFUNDS, SUPPORT } from "./content/legal.mjs";
+import { TERMS, PRIVACY, REFUNDS, SUPPORT, LEGAL_UPDATED } from "./content/legal.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, "..");
@@ -131,7 +131,18 @@ for (const p of pages) {
 }
 const indexed = pages.filter((p) => !p.redirect && p.path.endsWith("/"));
 const today = new Date().toISOString().slice(0, 10);
-writeFileSync(join(OUT, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${indexed.map((p) => `<url><loc>${ORIGIN}${p.path}</loc><lastmod>${today}</lastmod><changefreq>${p.path === "/" || p.path.startsWith("/games/") ? "hourly" : "daily"}</changefreq><priority>${p.path === "/" ? "1.0" : p.path.startsWith("/games/") ? "0.8" : "0.6"}</priority></url>`).join("\n")}\n</urlset>\n`);
+// lastmod only moves when a page really changes (search engines stop trusting a
+// sitemap whose every date is the build's): a past night is graded the morning
+// after and stays put; the legal pages change on their own date; the rest is live.
+const LEGAL_ISO = new Date(Date.parse(`${LEGAL_UPDATED} 12:00:00 GMT`)).toISOString().slice(0, 10);
+const nextDay = (d) => new Date(Date.parse(`${d}T12:00:00Z`) + 86400e3).toISOString().slice(0, 10);
+function lastmod(path) {
+  const night = path.match(/^\/games\/(\d{4}-\d{2}-\d{2})\//)?.[1];
+  if (night && nextDay(night) < TODAY) return nextDay(night);
+  if (["/terms/", "/privacy/", "/refunds/", "/support/"].includes(path)) return LEGAL_ISO;
+  return today;
+}
+writeFileSync(join(OUT, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${indexed.map((p) => `<url><loc>${ORIGIN}${p.path}</loc><lastmod>${lastmod(p.path)}</lastmod><changefreq>${p.path === "/" || p.path.startsWith("/games/") ? "hourly" : "daily"}</changefreq><priority>${p.path === "/" ? "1.0" : p.path.startsWith("/games/") ? "0.8" : "0.6"}</priority></url>`).join("\n")}\n</urlset>\n`);
 writeFileSync(join(OUT, "robots.txt"), `User-agent: *\nAllow: /\n\nSitemap: ${ORIGIN}/sitemap.xml\n`);
 
 // ── checks ──
@@ -151,7 +162,10 @@ for (const p of pages.filter((p) => !p.redirect)) {
   const t = p.html.match(/<title>([^<]*)<\/title>/)?.[1];
   const d = p.html.match(/<meta name="description" content="([^"]*)"/)?.[1];
   if (!t || !d) fail.push(`${p.path}: missing title or description`);
-  if (!p.html.includes('<link rel="canonical" href="https://clutchledger.com/')) fail.push(`${p.path}: no canonical`);
+  const noindex = p.html.includes('<meta name="robots" content="noindex">');
+  if (!noindex && !p.html.includes('<link rel="canonical" href="https://clutchledger.com/')) fail.push(`${p.path}: no canonical`);
+  if (noindex && p.html.includes('rel="canonical"')) fail.push(`${p.path}: a canonical on a noindex page`);
+  if (d && d.length > DESCRIPTION_MAX) fail.push(`${p.path}: description ${d.length} characters (search results cut at ${DESCRIPTION_MAX})`);
   if (seenTitle.has(t)) fail.push(`${p.path}: title also on ${seenTitle.get(t)}`); else seenTitle.set(t, p.path);
   if (seenDesc.has(d)) fail.push(`${p.path}: description also on ${seenDesc.get(d)}`); else seenDesc.set(d, p.path);
   if (/\sstyle="/.test(p.html) || /<script>(?!\s*$)/.test(p.html.replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/g, ""))) fail.push(`${p.path}: inline style or script (the CSP forbids both)`);
