@@ -10,6 +10,10 @@
 # WEB_APP_LIVE (a repository variable, Settings › Variables): "true" once
 # app.clutchledger.com is open — the "play" links and the browser copy turn
 # on. Unset or anything else: they point at the iPhone app.
+# APP_STORE_PT (a repository variable): App Store Connect's provider token
+# (App Analytics › Campaigns › Generate a campaign link, the pt= number). Set,
+# every App Store link carries it and ct=site-<kind of page>, so App Analytics
+# shows installs from the website per page type. Unset: plain links.
 #
 # Actions are pinned to a commit (the tag in the comment); checkout keeps no
 # credentials; wrangler is pinned (wrangler.jsonc and Workers _headers /
@@ -52,6 +56,7 @@ jobs:
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
           SITE_DATE: ${{ github.event.inputs.date }}
           WEB_APP_LIVE: ${{ vars.WEB_APP_LIVE }}
+          APP_STORE_PT: ${{ vars.APP_STORE_PT }}
         run: node site-src/build.mjs --out _site_v2
       - name: Cloudflare credentials?
         id: cf

@@ -23,6 +23,24 @@ export const playGame = (id) => (WEB_APP_LIVE ? `${APP}/games/${id}` : APP_STORE
 /** Pro's checkout: the web app's paywall, or the iPhone app. */
 export const PLAY_PRO = WEB_APP_LIVE ? `${APP}/paywall` : APP_STORE;
 
+/**
+ * App Store Connect counts installs per campaign when a link carries the
+ * provider token and a campaign name (App Analytics › Campaigns). APP_STORE_PT
+ * (a repository variable) is that token; unset, the links stay plain. The
+ * campaign is the kind of page the link was on — a campaign shows in App
+ * Analytics only from 5 installs, so finer cuts would never appear.
+ */
+const APP_STORE_PT = (process.env.APP_STORE_PT ?? "").trim();
+export function appStoreCampaign(path) {
+  if (path === "/") return "site-home";
+  if (/^\/games\/[^/]+\/[^/]+\/$/.test(path)) return "site-game";
+  if (path.startsWith("/games/")) return "site-night";
+  if (path.startsWith("/teams/")) return "site-team";
+  const known = { "/pricing/": "site-pricing", "/ledger/": "site-ledger", "/receipts/": "site-ledger", "/how-it-works/": "site-how" };
+  return known[path] ?? "site-other";
+}
+export const appStoreLink = (path) => (/^\d+$/.test(APP_STORE_PT) ? `https://apps.apple.com/app/apple-store/id6761838099?pt=${APP_STORE_PT}&ct=${appStoreCampaign(path)}&mt=8` : APP_STORE);
+
 export const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 
 /** Search results cut a description near 160 characters: keep whole sentences up to that, else whole words and an ellipsis. */
@@ -89,10 +107,10 @@ function footer() {
 export function page({ path, title, description, body, current = "", og = "default", ogType = "website", jsonld = null, live = false, noindex = false, cssHref = "/site.css" }) {
   const url = ORIGIN + path;
   description = clipDescription(description);
-  const ld =(Array.isArray(jsonld) ? jsonld : jsonld ? [jsonld] : []).map((o) => `<script type="application/ld+json">${JSON.stringify(o).replace(/</g, "\\u003c")}</script>`).join("\n");
+  const ld = (Array.isArray(jsonld) ? jsonld : jsonld ? [jsonld] : []).map((o) => `<script type="application/ld+json">${JSON.stringify(o).replace(/</g, "\\u003c")}</script>`).join("\n");
   const pre = FONTS.filter((f) => f.preload).map((f) => `<link rel="preload" href="/fonts/${f.file}" as="font" type="font/woff2" crossorigin>`).join("\n");
   const img = `${ORIGIN}/og/${og}.jpg`;
-  return `<!doctype html>
+  const html = `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -132,6 +150,8 @@ ${live ? '<script src="/live.js" defer></script>' : ""}
 </body>
 </html>
 `;
+  // Every link to the App Store on this page carries the page's campaign (when the token is set).
+  return html.replaceAll(`href="${APP_STORE}"`, `href="${esc(appStoreLink(path))}"`);
 }
 
 /**

@@ -16,7 +16,9 @@
 // Env: SUPABASE_URL, SUPABASE_ANON_KEY (required unless --load-data),
 // SITE_DATE (the ET date to build for; default today in New York),
 // WEB_APP_LIVE (true once app.clutchledger.com is open: the "play" links and
-// the browser copy turn on; until then they point at the iPhone app).
+// the browser copy turn on; until then they point at the iPhone app),
+// APP_STORE_PT (App Store Connect's provider token: App Store links then
+// carry pt= and ct=site-<kind of page>, counted in App Analytics › Campaigns).
 
 import { mkdirSync, writeFileSync, readFileSync, rmSync, copyFileSync, existsSync, readdirSync, statSync } from "node:fs";
 import { createHash } from "node:crypto";
