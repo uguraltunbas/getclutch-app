@@ -108,9 +108,9 @@ if (tonight.length) {
   const top = tonight.slice().sort((a, b) => lineOf(b.home) + lineOf(b.away) - (lineOf(a.home) + lineOf(a.away))).slice(0, 3);
   top.forEach((x, i) => {
     const h = `${x.fav.nickname} over <em>${x.dog.nickname}.</em>`;
-    items.push({ kind: `Tonight's number · ${x.away.abbreviation} @ ${x.home.abbreviation}`, when: "Before tip · X (with a poll), Threads", img: card(`jumbo-${i + 1}.png`, { t: "jumbo", num: `${x.pct}%`, e: "Clutch's call", d: `${nice(TODAY)} · ${tipET(x.g.game_time_utc)}`, h, b: `${x.why ? x.why.replace(/\s*\((favors|favours) (home|away)\)\s*$/i, "") + ". " : ""}Sealed before tip. <b>Your call?</b>` }),
-      en: `Clutch: ${x.fav.nickname} ${x.pct}% over the ${x.dog.nickname} tonight (${tipET(x.g.game_time_utc)}).\n\nSealed before tip, graded after the final. Your call?`,
-      tr: `Clutch: bu gece ${x.fav.nickname} %${x.pct}, rakip ${x.dog.nickname} (${tipTR(x.g.game_time_utc)}).\n\nMaçtan önce mühürlü, maçtan sonra notlanıyor. Sen ne diyorsun?`,
+    items.push({ kind: `Tonight's number · ${x.away.abbreviation} @ ${x.home.abbreviation}`, when: "Before tip · X (with a poll), Threads", img: card(`jumbo-${i + 1}.png`, { t: "jumbo", num: `${x.pct}%`, e: "Clutch's call", d: `${nice(TODAY)}${pre ? " · preseason" : ""} · ${tipET(x.g.game_time_utc)}`, h, b: `${x.why ? x.why.replace(/\s*\((favors|favours) (home|away)\)\s*$/i, "") + ". " : ""}Sealed before tip. <b>Your call?</b>` }),
+      en: `Clutch: ${x.fav.nickname} ${x.pct}% over the ${x.dog.nickname} tonight (${tipET(x.g.game_time_utc)}).\n\n${pre ? "Preseason: sealed before tip, never graded." : "Sealed before tip, graded after the final."} Your call?`,
+      tr: `Clutch: bu gece ${x.fav.nickname} %${x.pct}, rakip ${x.dog.nickname} (${tipTR(x.g.game_time_utc)}).\n\n${pre ? "Hazırlık maçı: maçtan önce mühürlü, notlanmıyor." : "Maçtan önce mühürlü, maçtan sonra notlanıyor."} Sen ne diyorsun?`,
       poll: [x.fav.nickname, x.dog.nickname] });
   });
 }
