@@ -1,0 +1,41 @@
+<!doctype html>
+<!-- The site's Open Graph images, one per page type (1200×630). Rendered once
+     with desk-src/render.mjs by site-src/og/render.mjs; the JPEGs are committed
+     under site-src/static/og/. Per-game images come later. -->
+<html lang="en"><head><meta charset="utf-8">
+<style>
+@font-face{font-family:F;font-weight:900;src:url(../../desk-src/fonts/Fraunces_900Black.ttf)}
+@font-face{font-family:F;font-weight:900;font-style:italic;src:url(../fonts/Fraunces_900Black_Italic.ttf)}
+@font-face{font-family:M;font-weight:500;src:url(../../desk-src/fonts/IBMPlexMono_500Medium.ttf)}
+@font-face{font-family:D;font-weight:900;src:url(../../desk-src/fonts/Doto_900Black.ttf)}
+@font-face{font-family:B;font-weight:400;src:url(../../desk-src/fonts/LibreFranklin_400Regular.ttf)}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1200px;height:630px;overflow:hidden;background:#15130F;color:#F1E9D8}
+.p{position:relative;width:1200px;height:630px;padding:56px 72px;display:flex;flex-direction:column}
+.dots{position:absolute;right:-80px;top:-60px;width:760px;height:760px;background-image:radial-gradient(rgba(241,233,216,.12) 1.3px,transparent 1.7px);background-size:8px 8px;-webkit-mask-image:radial-gradient(closest-side,#000 30%,transparent 100%)}
+.top{position:relative;display:flex;justify-content:space-between;align-items:flex-end;border-bottom:4px double #F1E9D8;padding-bottom:10px}
+.logo{font-family:F;font-weight:900;font-size:56px;letter-spacing:-2px;line-height:1}
+.ed{font-family:M;font-size:17px;letter-spacing:3px;color:#B4AA97;padding-bottom:6px}
+h1{position:relative;font-family:F;font-weight:900;font-size:104px;line-height:.95;letter-spacing:-4px;margin-top:46px}
+h1 em{font-style:italic;color:#FFB020}
+.sub{position:relative;font-family:B;font-size:28px;color:#CFC4AE;margin-top:22px;max-width:900px;line-height:1.35}
+.rail{position:absolute;left:72px;right:72px;bottom:96px;display:grid;grid-template-columns:repeat(24,1fr);gap:7px}
+.rail i{height:20px;background:#2A251E}.rail i.on{background:#FFB020;box-shadow:0 0 12px rgba(255,176,32,.6)}.rail i.mk{background:#F1E9D8}
+.foot{position:absolute;left:72px;right:72px;bottom:44px;display:flex;justify-content:space-between;font-family:D;font-weight:900;font-size:24px;letter-spacing:3px;color:#B4AA97}
+.foot b{color:#FFB020;font-weight:900}
+.big{position:absolute;right:72px;top:150px;font-family:D;font-weight:900;font-size:230px;line-height:1;color:#FFB020;text-shadow:0 0 40px rgba(255,176,32,.5)}
+.big small{font-size:70px}
+</style></head><body><div class="p" id="p"></div>
+<script>
+const t = new URLSearchParams(location.search).get("t") || "default";
+const V = {
+  home: { h: 'Call every game.<br><em>Beat Clutch.</em>', s: "A number on every NBA game, the reasons why, sealed before tip. Free in your browser.", big: "", l: "SEALED BEFORE TIP · GRADED IN PUBLIC", on: 14, mk: 12 },
+  game: { h: "Tonight's call,<br><em>sealed before tip.</em>", s: "Clutch's win probability, the market beside it, the top three reasons and who's out.", big: "", l: "THE CALL · GRADED AFTER THE FINAL", on: 14, mk: 12 },
+  ledger: { h: "Every call,<br><em>graded in public.</em>", s: "Sealed with a SHA-256 hash before tip, graded after the final, misses included.", big: "", l: "THE LEDGER · THE RECEIPTS", on: 15, mk: 13 },
+  pricing: { h: "Free for good.<br><em>Pro when you want it.</em>", s: "Clutch Pro: $9.99 a month or $59.99 a year, 7 days free on the yearly plan.", big: "", l: "FREE · NO DOWNLOAD · NO DEPOSIT", on: 24, mk: -1 },
+  default: { h: "NBA analytics<br><em>for fans.</em>", s: "A number for every game, the reasons behind it, and a public record of every call.", big: "", l: "CLUTCHLEDGER.COM", on: 13, mk: 11 },
+}[t];
+let rail = ""; for (let i = 0; i < 24; i++) rail += i === V.mk ? '<i class="mk"></i>' : i < V.on ? '<i class="on"></i>' : "<i></i>";
+document.getElementById("p").innerHTML = `<div class="dots"></div><div class="top"><span class="logo">Clutch</span><span class="ed">NIGHT EDITION · 2026-27</span></div>
+<h1>${V.h}</h1><p class="sub">${V.s}</p>${V.big ? `<div class="big">${V.big}</div>` : ""}<div class="rail">${rail}</div><div class="foot"><span>${V.l}</span><b>CLUTCHLEDGER.COM</b></div>`;
+</script></body></html>

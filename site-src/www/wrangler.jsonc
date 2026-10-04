@@ -1,0 +1,12 @@
+// www.clutchledger.com → https://clutchledger.com, path and query kept (301).
+// Its own Worker so the apex stays pure static assets (no request runs code).
+// A Cloudflare Redirect Rule on the zone does the same with no Worker at all;
+// either is fine — this one deploys from the repo.
+{
+  "name": "clutchledger-www",
+  "main": "worker.js",
+  "compatibility_date": "2026-09-01",
+  "routes": [{ "pattern": "www.clutchledger.com", "custom_domain": true }],
+  "workers_dev": false,
+  "preview_urls": false
+}

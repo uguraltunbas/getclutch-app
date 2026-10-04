@@ -1,0 +1,93 @@
+# clutchledger.com — the public website, rebuilt from public data and
+# deployed to Cloudflare (Workers Static Assets, wrangler.jsonc).
+# The GitHub Pages site and the desk (desk.yml) are separate and unchanged.
+#
+# When: every push to main, four times a day — after the morning seal
+# (10:30 UTC), before the first tips (16:00), during games (22:30), after
+# the late finals (07:30; 3:30 AM ET in EDT, 2:30 AM in EST) — and by hand
+# (an ET date to build for, optional).
+#
+# WEB_APP_LIVE (a repository variable, Settings › Variables): "true" once
+# app.clutchledger.com is open — the "play" links and the browser copy turn
+# on. Unset or anything else: they point at the iPhone app.
+# APP_STORE_PT (a repository variable): App Store Connect's provider token
+# (App Analytics › Campaigns › Generate a campaign link, the pt= number). Set,
+# every App Store link carries it and ct=site-<kind of page>, so App Analytics
+# shows installs from the website per page type. Unset: plain links.
+#
+# Actions are pinned to a commit (the tag in the comment); checkout keeps no
+# credentials; wrangler is pinned (wrangler.jsonc and Workers _headers /
+# _redirects need wrangler 4; the action's own default is 3).
+# A build that fails a check (a betting word, a duplicate title, a page or
+# the stylesheet over budget, a data read failing) stops here and the last
+# deploy stays up. Without CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID
+# the site is built and checked, kept as an artifact, and not deployed.
+name: Website (clutchledger.com)
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "30 10 * * *"
+    - cron: "0 16 * * *"
+    - cron: "30 22 * * *"
+    - cron: "30 7 * * *"
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "ET date to build for (YYYY-MM-DD, empty = today)"
+        required: false
+permissions:
+  contents: read
+concurrency:
+  group: website
+  cancel-in-progress: false
+jobs:
+  site:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+      - name: Build and check
+        env:
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SITE_DATE: ${{ github.event.inputs.date }}
+          WEB_APP_LIVE: ${{ vars.WEB_APP_LIVE }}
+          APP_STORE_PT: ${{ vars.APP_STORE_PT }}
+        run: node site-src/build.mjs --out _site_v2
+      - name: Cloudflare credentials?
+        id: cf
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -n "$CF_TOKEN" ] && [ -n "$CF_ACCOUNT" ]; then
+            echo "deploy=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "deploy=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::No CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID secret: built and checked, not deployed."
+          fi
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: site
+          path: _site_v2
+          retention-days: 7
+      - name: Deploy the site
+        if: steps.cf.outputs.deploy == 'true'
+        uses: cloudflare/wrangler-action@9acf94ace14e7dc412b076f2c5c20b8ce93c79cd # v3.15.0
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "4.146.0"
+          command: deploy
+      - name: Deploy the www redirect
+        if: steps.cf.outputs.deploy == 'true'
+        uses: cloudflare/wrangler-action@9acf94ace14e7dc412b076f2c5c20b8ce93c79cd # v3.15.0
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "4.146.0"
+          command: deploy --config site-src/www/wrangler.jsonc
