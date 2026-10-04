@@ -1,6 +1,7 @@
 # The site and the Clutch desk, deployed together to GitHub Pages.
 # The desk (desk/) is rebuilt from public data three times a day; the rest of
-# the site is copied as it is in main. If the desk build fails, the site still
+# the site is copied as it is in main (minus clutchledger.com's source, site-src/,
+# which site.yml deploys to Cloudflare). If the desk build fails, the site still
 # deploys (the desk step is allowed to fail).
 name: Site and desk
 on:
@@ -35,7 +36,7 @@ jobs:
       - name: Site
         run: |
           mkdir -p _site
-          rsync -a --exclude '.git' --exclude '.github' --exclude 'desk-src' --exclude '_site' ./ _site/
+          rsync -a --exclude '.git' --exclude '.github' --exclude 'desk-src' --exclude '_site' --exclude '_site_v2' --exclude 'site-src' --exclude 'wrangler.jsonc' ./ _site/
       - name: Desk
         continue-on-error: true
         env:
