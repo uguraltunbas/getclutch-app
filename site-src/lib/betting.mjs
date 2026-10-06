@@ -47,8 +47,6 @@ export const bettingWordsIn = (text) => ALL_WORDS.filter((b) => b.re.test(text))
 
 /** Deliberate uses: `page` is a path prefix ("" = every page), `phrase` a substring of the text segment. */
 export const ALLOW = [
-  { page: "", phrase: "No betting. No wagering.", reason: "The footer's legal line on every page: what Clutch is not has to be named (Paddle's review and the app's Terms say the same)." },
-  { page: "/", phrase: "NO BETTING", reason: "The front page's promise under the buttons (the approved mockup): a statement of what Clutch is not." },
   { page: "/terms/", phrase: "Analytics, not a wagering service", reason: "Terms of Use: the legal statement of what the app is not has to name it (app/terms.tsx)." },
   { page: "/terms/", phrase: "Clutch does not take bets, process wagers or pay out money", reason: "Terms of Use: the same legal statement (app/terms.tsx, allow-listed in the app too)." },
 ];

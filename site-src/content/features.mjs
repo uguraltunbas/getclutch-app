@@ -61,7 +61,7 @@ export const FREE_CARDS = [
 ];
 
 export const FAQ = [
-  { q: "Can I win money?", a: "No. Clutch is analytics for fans: no deposit and no cash prizes. Points and levels earn Free Pro days — time in Pro, never money." },
+  { q: "What do points get me?", a: "Free Pro days: every level you reach is 24 hours of Pro. Points come from your calls and your team's wins; they can't be bought or sold and have no cash value." },
   { q: "Where does the number come from?", a: "A model trained on past seasons — form, rest, travel and the official injury report — blended with the market's price. How it works shows every piece." },
   { q: "Is Clutch any good?", a: "Look at the Ledger. Every call is there, graded beside the market, ESPN and picking the home team, misses included. Where the sample is too small, it says so." },
   WEB_APP_LIVE

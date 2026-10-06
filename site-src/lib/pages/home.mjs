@@ -3,7 +3,7 @@
 
 import { page, esc, bar, APP_STORE, ORIGIN, PLAY, PLAY_PRO, WEB_APP_LIVE } from "../html.mjs";
 import { board, gameCard, scoreLine, statusText } from "../parts.mjs";
-import { pct, callPoints, comparisons, opener, verdictOf, rec, shortHash, RATE_FLOOR, REGULAR_SEASON_START, CALL_RULE } from "../copy.mjs";
+import { pct, callPoints, comparisons, opener, verdictOf, rec, shortHash, RATE_FLOOR, REGULAR_SEASON_START } from "../copy.mjs";
 import { longDate, dayLabel, shortDate, weekday, timeET, countWord, shift } from "../time.mjs";
 import { FRONT_FREE, FRONT_PRO, FREE_CARDS, FAQ, PLAN } from "../../content/features.mjs";
 import { worstMiss, lastGradedNight } from "../model.mjs";
@@ -169,9 +169,9 @@ ${liveOne ? `<a class="livechip d" href="${liveOne.path}" data-gid="${liveOne.id
 <p class="lede">Clutch puts a number on every NBA game, tells you why, and seals it before tip. Make your own call — the morning grades you both.</p>
 ${WEB_APP_LIVE
     ? `<div class="btns"><a class="btn lg" href="${PLAY}">Play in your browser →</a><a class="btn ghost lg" href="${APP_STORE}">Get the iPhone app</a></div>
-<div class="promise"><span>FREE</span><span>NO DOWNLOAD</span><span>NO BETTING</span></div>`
+<div class="promise"><span>FREE</span><span>NO DOWNLOAD</span><span>PUBLIC LEDGER</span></div>`
     : `<div class="btns"><a class="btn lg" href="${APP_STORE}">Get the iPhone app →</a></div>
-<div class="promise"><span>FREE</span><span>NO BETTING</span><span>COMING TO YOUR BROWSER</span></div>`}
+<div class="promise"><span>FREE</span><span>PUBLIC LEDGER</span><span>COMING TO YOUR BROWSER</span></div>`}
 </div>${leadBoard}</div></div>
 ${ticker}</section>
 
@@ -185,7 +185,7 @@ ${comingUp(m, tonight, games.length)}
 <h2 class="h2" id="how-h">Three moves a night. <em>That's the whole game.</em></h2>
 <div class="g3 mt">
 <div class="move"><span class="no" aria-hidden="true">01</span><h3>Clutch makes its call</h3><p>Every morning, a win probability for every game — built from form, rest, travel, the official injury report and the market. Sealed and published before the first tip.</p><span class="hash">${latestSeal ? `sha256 ${esc(shortHash(latestSeal.sha256))}` : "sha256 · the first seal lands Oct 3"}</span></div>
-<div class="move"><span class="no" aria-hidden="true">02</span><h3>You make yours</h3><p>Pick a side before tip. ${esc(CALL_RULE)} Levels earn Free Pro days.</p>${pts ? `<span class="pills">${pts.map(([t, p, on]) => `<span class="pill${on ? " on" : ""}">${esc(t.abbreviation)} · ${p}</span>`).join("")}</span>` : ""}</div>
+<div class="move"><span class="no" aria-hidden="true">02</span><h3>You make yours</h3><p>Pick a side before tip. Upsets you call score more, and every level is a Free Pro day.</p>${pts ? `<span class="pills">${pts.map(([t, p, on]) => `<span class="pill${on ? " on" : ""}">${esc(t.abbreviation)} · ${p}</span>`).join("")}</span>` : ""}</div>
 <div class="move"><span class="no" aria-hidden="true">03</span><h3>The morning grades you both</h3><p>Every call goes in the Ledger, misses included. Beat Clutch on a night and it goes in your Scrapbook.</p><span class="pills"><span class="chip win">RIGHT</span><span class="chip loss">MISSED</span></span></div>
 </div></div></section>
 

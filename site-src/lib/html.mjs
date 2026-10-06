@@ -95,7 +95,7 @@ function footer() {
 <nav aria-label="About"><span class="mono">About</span><a href="/how-it-works/">How it works</a><a href="/pricing/">Pricing</a><a href="/support/">Support</a><a href="${APP_STORE}">iPhone app</a></nav>
 <nav aria-label="Legal"><span class="mono">Legal</span><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="/refunds/">Refunds</a></nav>
 </div>
-<div class="fline"><span>No betting. No wagering. Not affiliated with the NBA or any team.</span><span>© 2026 Clutch · Operated by Uğur Altunbaş</span></div>
+<div class="fline"><span>Sports analytics for fans. Not affiliated with the NBA or any team.</span><span>© 2026 Clutch · Operated by Uğur Altunbaş</span></div>
 </div></footer>`;
 }
 
