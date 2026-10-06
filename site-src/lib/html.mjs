@@ -68,7 +68,7 @@ export const FONTS = [
 const NAV = [
   ["/#tonight", "Tonight", "tonight"],
   ["/ledger/", "The Ledger", "ledger"],
-  ["/receipts/", "Receipts", "receipts"],
+  ["/receipts/", "Proof", "receipts"],
   ["/teams/", "Teams", "teams"],
   ["/how-it-works/", "How it works", "how"],
   ["/pricing/", "Pricing", "pricing"],
@@ -91,7 +91,7 @@ function footer() {
   return `<footer class="foot"><div class="wrap">
 <div class="fgrid">
 <div class="fbrand"><span class="logo">Clutch</span><p>NBA analytics for fans. A number for every game, the reasons behind it, and a public record of every call.</p></div>
-<nav aria-label="The paper"><span class="mono">The paper</span><a href="/#tonight">Tonight</a><a href="/ledger/">The Ledger</a><a href="/receipts/">Receipts</a><a href="/teams/">Teams</a></nav>
+<nav aria-label="The paper"><span class="mono">The paper</span><a href="/#tonight">Tonight</a><a href="/ledger/">The Ledger</a><a href="/receipts/">Proof</a><a href="/teams/">Teams</a></nav>
 <nav aria-label="About"><span class="mono">About</span><a href="/how-it-works/">How it works</a><a href="/pricing/">Pricing</a><a href="/support/">Support</a><a href="${APP_STORE}">iPhone app</a></nav>
 <nav aria-label="Legal"><span class="mono">Legal</span><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="/refunds/">Refunds</a></nav>
 </div>

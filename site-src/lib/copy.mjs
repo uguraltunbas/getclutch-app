@@ -131,7 +131,7 @@ function repoOf(commitUrl) {
 /** The seal file at the commit that added it. */
 export const sealFileUrl = (s) => (s.commitSha && s.path ? `${repoOf(s.commitUrl)}/blob/${s.commitSha}/${s.path}` : s.commitUrl || RECEIPTS_REPO);
 
-function leadText(fromIso, toIso) {
+export function leadText(fromIso, toIso) {
   if (!toIso) return null;
   const mins = Math.floor((Date.parse(toIso) - Date.parse(fromIso)) / 60000);
   if (!Number.isFinite(mins) || mins < 0) return null;

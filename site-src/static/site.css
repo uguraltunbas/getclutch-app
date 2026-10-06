@@ -22,7 +22,7 @@ p a,li a{text-decoration:underline;text-decoration-thickness:1px;text-underline-
 .wrap.r{max-width:880px}
 .mono{font-family:var(--mono);font-weight:500;font-size:12px;letter-spacing:.14em;text-transform:uppercase}
 .d{font-family:var(--num);font-weight:900}
-.amber{color:var(--amber)}.cream{color:var(--ink)}.dim{color:var(--dim)}.hot{color:var(--hot)}.ink3{color:var(--ink3)}
+.amber{color:var(--amber)}.cream{color:var(--ink)}.dim{color:var(--dim)}.hot{color:var(--hot)}.ink3{color:var(--ink3)}.win{color:var(--win)}
 b{font-weight:inherit}
 .show-s{display:none}
 
@@ -296,7 +296,7 @@ a.bk:hover{color:var(--ink)}
 .also .mono{font-size:11px;letter-spacing:.08em;color:var(--ink3)}
 .also .d{font-size:18px;color:var(--amber)}
 
-/* reading pages: Ledger, receipts, how it works, pricing, legal */
+/* reading pages: Ledger, proof, how it works, pricing, legal */
 .rhead{padding:40px 0 24px;border-bottom:3px double var(--ink);display:flex;flex-direction:column;gap:14px}
 .rh1{font-family:var(--display);font-weight:900;font-size:72px;line-height:.95;letter-spacing:-2px;text-wrap:balance}
 .rdeck{font-size:19px;line-height:1.55;color:var(--ink2);max-width:760px}
@@ -326,6 +326,7 @@ a.bk:hover{color:var(--ink)}
 .rnight .d{font-size:22px}
 .rfile{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--ink2)}
 .rfile+.rfile{margin-top:10px}
+.fp summary{cursor:pointer}
 .callrow{display:grid;grid-template-columns:92px minmax(0,1fr) 110px 86px;gap:12px;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--rule2);font-size:14.5px}
 .callrow .mono{font-size:11.5px;color:var(--ink3)}
 .callrow .d{font-size:16px;text-align:right}
@@ -370,6 +371,7 @@ a.bk:hover{color:var(--ink)}
 .rh1{font-size:44px;letter-spacing:-1px}.rdeck{font-size:17px}
 .crow{grid-template-columns:96px minmax(0,1fr) 54px}
 .rnight{grid-template-columns:minmax(0,1fr);gap:6px}
+.steps .move{display:grid;grid-template-columns:48px minmax(0,1fr);gap:6px 12px}.steps .no{font-size:44px;grid-row:span 2}.steps h3{font-size:22px}
 .callrow{grid-template-columns:72px minmax(0,1fr) 76px;font-size:14px}.callrow .hide-xs{display:none}
 .edition{font-size:10.5px;letter-spacing:.1em}
 .foot{margin-top:72px}
