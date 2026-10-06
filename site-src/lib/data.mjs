@@ -2,7 +2,8 @@
 // free app reads, and nothing else:
 //
 //   teams, games, win_total_lines (line, source, as_of — never the prices),
-//   players (who is listed on the injury report), receipts
+//   players (who is listed on the injury report), receipts,
+//   receipt_games (game id + the sealed home win probability; 049, public)
 //   game_predictions        only the columns migration 031 grants to anon:
 //                           home_win_prob, key_factors, generated_at,
 //                           model_version, is_latest — never the projection
@@ -34,6 +35,21 @@ export function supabase(url, key) {
     return r.json();
   }
   return { get, rpc };
+}
+
+/**
+ * Every row of an ordered read, a page at a time until an empty page — so a
+ * server row cap lower than `size` never cuts the list short. `path` carries
+ * its own ?select and an order on a unique key.
+ */
+async function getAll(db, path, size = 1000, maxPages = 200) {
+  const out = [];
+  for (let i = 0; i < maxPages; i++) {
+    const rows = await db.get(`${path}&limit=${size}&offset=${out.length}`);
+    if (!rows.length) return out;
+    out.push(...rows);
+  }
+  throw new Error(`${path.split("?")[0]}: more than ${maxPages} pages`);
 }
 
 const inList = (xs) => `in.(${xs.map((x) => `"${x}"`).join(",")})`;
@@ -103,7 +119,14 @@ export async function loadAll(db, { today, days = 7, warn = console.warn }) {
     const got = await Promise.all(part.map((d) => soft(`receipts_for_date ${d}`, () => db.rpc("receipts_for_date", { p_date: d }))));
     part.forEach((d, i) => { receiptsByDate[d] = got[i]; });
   }
-  const receipts = await soft("receipts", () => db.get("receipts?select=kind,slate_date,sha256,prev_sha256,committed_at,n_games,commit_url,path&order=committed_at.desc&limit=2000"), []);
+  // Every receipt (a season is ~1,000 files; the server returns at most 1,000 rows a read).
+  const receipts = await soft("receipts", () => getAll(db, "receipts?select=id,kind,slate_date,sha256,prev_sha256,committed_at,n_games,commit_url,path&order=committed_at.desc,id.desc"), []);
+  // What each file holds (receipt_games, 049; public, the files' own rows): the
+  // games a seal carries with their numbers, the games a reveal opens — so the
+  // Proof page can say each file in words. Every page, whatever the server's row cap.
+  const receiptGames = receipts.length
+    ? await soft("receipt_games", () => getAll(db, "receipt_games?select=receipt_id,game_id,home_win_prob&order=receipt_id,prediction_id"), [])
+    : [];
 
   // Who is on the injury report, for tonight's teams (the free strip's source when no explain row lists them).
   const tonightTeams = [...new Set(pageGames.filter((g) => g.game_date >= today).flatMap((g) => [g.home_team_id, g.away_team_id]))];
@@ -124,5 +147,5 @@ export async function loadAll(db, { today, days = 7, warn = console.warn }) {
     for (const p of rows) preds[p.game_id] = p;
   }
 
-  return { today, days, teams, games, tonight, pageDates, preds, lines, snaps, receiptsByDate, receipts, players, recent, upcoming, season, builtAt: new Date().toISOString() };
+  return { today, days, teams, games, tonight, pageDates, preds, lines, snaps, receiptsByDate, receipts, receiptGames, players, recent, upcoming, season, builtAt: new Date().toISOString() };
 }

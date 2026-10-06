@@ -100,6 +100,9 @@ export function buildModel(raw) {
   const record = ledger && ledgerStage(ledger, current) === "season" ? headlineRecord(ledger) : null;
   const last = lastSeasonOf(ledger, current);
   const sealed = sealedGames(raw.receipts, PRESEASON_START);
+  // What each receipt holds, by receipt id: [{ gameId, homeWinProb }] (the Proof page).
+  const receiptGames = {};
+  for (const r of raw.receiptGames ?? []) (receiptGames[r.receipt_id] ??= []).push({ gameId: r.game_id, homeWinProb: r.home_win_prob == null ? null : Number(r.home_win_prob) });
 
   return {
     raw, T, byAbbr, today: raw.today, tonight: raw.tonight, nights, games, pageGames,
@@ -107,7 +110,7 @@ export function buildModel(raw) {
     corrections: snap("corrections/latest")?.body ?? null,
     seasonBoard: snap(`season/${current}`)?.body ?? null,
     accuracy: snap("model/accuracy")?.body ?? null,
-    receipts: raw.receipts ?? [], current, now,
+    receipts: raw.receipts ?? [], receiptGames, gameById: Object.fromEntries(games.map((g) => [g.id, g])), current, now,
     teamPath: (t) => `/teams/${teamSlug(t)}/`,
     retired: (g) => isRetiredModel(g.modelVersion),
   };
