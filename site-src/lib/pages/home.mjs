@@ -234,7 +234,7 @@ ${WEB_APP_LIVE
   const desc = `Clutch puts a win probability on every NBA game, tells you why, and seals it before tip. Call every game free ${WEB_APP_LIVE ? "in your browser or on iPhone" : "on iPhone"} — the public Ledger grades every call.`;
   const ld = [
     { "@context": "https://schema.org", "@type": "WebSite", name: "Clutch", url: ORIGIN + "/", description: desc },
-    { "@context": "https://schema.org", "@type": "Organization", name: "Clutch", url: ORIGIN + "/", logo: ORIGIN + "/icon-512.png", email: "uguraltunbasai@gmail.com", founder: { "@type": "Person", name: "Uğur Altunbaş" }, sameAs: [APP_STORE] },
+    { "@context": "https://schema.org", "@type": "Organization", name: "Clutch", url: ORIGIN + "/", logo: ORIGIN + "/icon-512.png", email: "uguraltunbasai@gmail.com", founder: { "@type": "Person", name: "Uğur Altunbaş" }, sameAs: [APP_STORE, "https://x.com/getclutchledger"] },
   ];
   return { path: "/", title: "Clutch — call every NBA game, beat Clutch", html: page({ path: "/", title: "Clutch — call every NBA game, beat Clutch", description: desc, body, current: "", og: "home", jsonld: ld, live: games.some((g) => g.status !== "final" && g.status !== "postponed") }) };
 }

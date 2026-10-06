@@ -133,6 +133,7 @@ ${pre}
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Clutch — call every game, beat Clutch.">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@getclutchledger">
 <meta name="twitter:title" content="${esc(title)}">
 <meta name="twitter:description" content="${esc(description)}">
 <meta name="twitter:image" content="${img}">
