@@ -7,6 +7,11 @@
 // operator line, the 14-day refund, replies within 48 hours. Nothing here may
 // carry a draft or todo marker: the build fails on one.
 //
+// Terms differ from the app on purpose since October 6, 2026 (Paddle's domain
+// review): "the market's number" for comparison (the app never shows a line),
+// and contests are named iPhone-only — the web app hides Win Totals
+// (mobile lib/wintotals/offered.ts). The app's Terms catch up in 1.0.8.
+//
 // A body is plain text: "\n" separates paragraphs, a line starting "• " is
 // a list item. The support e-mail and https links become links when rendered.
 
@@ -19,12 +24,12 @@ export const PADDLE_BUYER_TERMS = "https://www.paddle.com/legal/checkout-buyer-t
 
 export const TERMS = {
   title: "Terms",
-  updated: LEGAL_UPDATED,
+  updated: "October 6, 2026",
   intro: "By using Clutch you agree to these terms. They are short on purpose.",
   sections: [
     { title: "What Clutch is", body: "An NBA analytics app: a model's win probabilities, the reasoning behind them, and a public record of every call it has made. Predictions are estimates, not guarantees, and the record shows how often they have been wrong." },
     { title: "Who runs Clutch", body: `Clutch — the iPhone app, the web app at app.clutchledger.com and this website — is made and operated by ${OPERATOR}, a sole proprietor. "We" and "Clutch" in these terms mean him. Contact: ${SUPPORT_EMAIL}.` },
-    { title: "Analytics, not a wagering service", body: "Clutch does not take bets, process wagers or pay out money, and nothing in it is advice to gamble. Where the app shows a sportsbook's line, it is for comparison. You are responsible for following the law where you live." },
+    { title: "Analytics, not a wagering service", body: "Clutch does not take bets, process wagers or pay out money, and nothing in it is advice to gamble. Where Clutch shows the market's number, it is there for comparison. You are responsible for following the law where you live." },
     { title: "Points", body: "Points are earned only by playing — your calls, the daily games, the Time Capsule and Win Totals — and when your favourite team wins a regular-season or playoff game. They only go up: they are never spent, cannot be bought, sold, transferred or exchanged for money, and have no cash value. Every level you reach earns a Free Pro day (24 hours of Pro at no charge), used when you choose, at most one a week. We may change how points are earned, and points earned by abusing the app may be removed. Your favourite team can be changed once per NBA season, and a call counts only for games that start at least 12 hours after it." },
     { title: "Accounts", body: "You must be 13 or older. Keep your sign-in to yourself; you are responsible for what happens on your account." },
     {
@@ -38,7 +43,7 @@ export const TERMS = {
     },
     {
       title: "Contests",
-      body: "Clutch runs free contests inside the app: Win Totals, part two of the Time Capsule. They are free to enter, need no purchase, and nothing bought improves anyone's chances. Their prizes are Pro time inside Clutch: no cash value, not transferable, and not exchangeable for money. Apple is not a sponsor of any Clutch contest and is not involved in them. Each contest has official rules, which apply alongside these terms. Points themselves are not prizes: they are never paid out.",
+      body: "Clutch runs free contests inside the iPhone app only — they are not offered on the web: Win Totals, part two of the Time Capsule. They are free to enter, need no purchase, and nothing bought improves anyone's chances. Their prizes are Pro time inside Clutch: no cash value, not transferable, and not exchangeable for money. Apple is not a sponsor of any Clutch contest and is not involved in them. Each contest has official rules, which apply alongside these terms. Points themselves are not prizes: they are never paid out.",
       link: { href: WIN_TOTALS_RULES_URL, label: "Win Totals official rules →" },
     },
     {
