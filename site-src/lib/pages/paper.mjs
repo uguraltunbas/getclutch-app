@@ -140,7 +140,7 @@ function fullNight(d, files, m) {
     const games = views ? views.slice().sort((a, b) => String(a.tipUtc ?? "").localeCompare(String(b.tipUtc ?? "")) || a.id.localeCompare(b.id)) : [];
     html += `<div class="rfile"><p><b class="cream">Opened ${esc(timeET(f.committed_at))}, after the ${f.n_games === 1 ? "final" : "finals"}</b>${f.n_games ? ` · ${gameCount(f.n_games)}` : ""}</p>${games.length ? `<ul class="spots">${games.map(openedGame).join("")}</ul>` : ""}${details(f)}</div>`;
   }
-  if (!files.some((f) => f.kind === "reveal")) html += `<p class="note gap">Opened overnight, after the finals.</p>`;
+  if (!files.some((f) => f.kind === "reveal")) html += `<p class="note gap">Not opened yet: the check against the results comes overnight, after the finals.</p>`;
   const night = m.nights[d] ? `<a class="more" href="/games/${d}/">THE NIGHT'S GAMES →</a>` : "";
   return `<div class="rnight"><div><span class="d">${esc(shortDate(d).toUpperCase())}</span><br>${night}</div><div>${html}</div></div>`;
 }
