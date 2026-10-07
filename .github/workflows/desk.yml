@@ -3,6 +3,14 @@
 # the site is copied as it is in main (minus clutchledger.com's source, site-src/,
 # which site.yml deploys to Cloudflare). If the desk build fails, the site still
 # deploys (the desk step is allowed to fail).
+#
+# Hardened like site.yml (security review 2026-10-07, L7): actions pinned to a
+# commit (the tag in the comment; checkout / setup-node = site.yml's SHAs), the
+# checkout keeps no credentials (nothing here pushes), and only the deploy job
+# may write to Pages or mint an OIDC token — the build job, which runs the desk
+# generator and ffmpeg, reads the repository and nothing else.
+# (upload-pages-artifact itself calls actions/upload-artifact@v4 by tag; that
+# inner step is GitHub's own and cannot be pinned from here.)
 name: Site and desk
 on:
   push:
@@ -18,8 +26,6 @@ on:
         required: false
 permissions:
   contents: read
-  pages: write
-  id-token: write
 concurrency:
   group: pages
   cancel-in-progress: false
@@ -27,8 +33,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
       - name: ffmpeg
@@ -44,15 +52,18 @@ jobs:
           CHROME_PATH: /usr/bin/google-chrome
           DESK_DATE: ${{ github.event.inputs.date }}
         run: node desk-src/make.mjs --out _site/desk
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
         with:
           path: _site
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5
