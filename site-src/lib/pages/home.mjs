@@ -1,7 +1,7 @@
 // The front page (direction E, approved): the paper's language and the LED
 // scoreboard. Every number on it is tonight's real one, or says why not.
 
-import { page, esc, bar, APP_STORE, ORIGIN, PLAY, PLAY_PRO, PLAY_PASS, WEB_APP_LIVE, LAUNCH_DAY } from "../html.mjs";
+import { page, esc, bar, APP_STORE, ORIGIN, PLAY, PLAY_PRO, WEB_APP_LIVE, LAUNCH_DAY, passLink, webAppLink } from "../html.mjs";
 import { board, gameCard, lineIsWhy, scoreLine, statusText } from "../parts.mjs";
 import { pct, callPoints, comparisons, opener, verdictOf, rec, shortHash, RATE_FLOOR, REGULAR_SEASON_START } from "../copy.mjs";
 import { longDate, dayLabel, shortDate, weekday, timeET, countWord, shift } from "../time.mjs";
@@ -151,9 +151,9 @@ function guide(lead, isToday) {
     ["ledger", "Every number is sealed before tip.", "Graded after the final, in public — misses included."],
   ];
   const [endLine, endLinks] = LAUNCH_DAY
-    ? [`Sign in with Apple or Google and claim your Launch Pass: every Pro feature free on the web until ${LAUNCH_DAY}.`, `<a class="btn" href="${PLAY_PASS}">Claim your Launch Pass →</a><a class="btn ghost" href="${APP_STORE}">Get the iPhone app</a>`]
+    ? [`Sign in with Apple or Google and claim your Launch Pass: every Pro feature free on the web until ${LAUNCH_DAY}.`, `<a class="btn" href="${passLink("tour-end")}">Claim your Launch Pass →</a><a class="btn ghost" href="${APP_STORE}">Get the iPhone app</a>`]
     : WEB_APP_LIVE
-      ? ["Call every game in your browser, or on iPhone.", `<a class="btn" href="${PLAY}">Open Clutch in your browser →</a><a class="btn ghost" href="${APP_STORE}">Get the iPhone app</a>`]
+      ? ["Call every game in your browser, or on iPhone.", `<a class="btn" href="${webAppLink("tour-end")}">Open Clutch in your browser →</a><a class="btn ghost" href="${APP_STORE}">Get the iPhone app</a>`]
       : ["Call every game in the iPhone app. Every number is on this site too.", `<a class="btn" href="${APP_STORE}">Get the iPhone app →</a>`];
   return `<template id="tour"><div class="tour">
 <div class="tdim"></div><div class="tdim"></div><div class="tdim"></div><div class="tdim"></div><div class="tring"></div>
@@ -206,8 +206,8 @@ ${liveOne ? `<a class="livechip gl d" href="${liveOne.path}" data-gid="${liveOne
 <div class="hero"><div class="hero-l">
 <p class="lede">Clutch puts a number on every NBA game, tells you why, and seals it before tip. Make your own call — the morning grades you both.</p>
 ${LAUNCH_DAY
-    ? `<div class="btns"><a class="btn lg" href="${PLAY_PASS}">Claim your free Launch Pass →</a><a class="btn ghost lg" href="${APP_STORE}">Get the iPhone app</a></div>
-<div class="promise"><span class="o">LAUNCH PASS</span><span>PRO FREE ON THE WEB UNTIL ${esc(LAUNCH_DAY.toUpperCase())}</span></div>`
+    ? `<div class="btns"><a class="btn lg" href="${passLink("hero")}">Claim your free Launch Pass →</a><a class="btn ghost lg" href="${APP_STORE}">Get the iPhone app</a></div>
+<div class="promise"><span><b class="o">LAUNCH PASS</b> · PRO FREE ON THE WEB UNTIL ${esc(LAUNCH_DAY.toUpperCase())}</span></div>`
     : WEB_APP_LIVE
       ? `<div class="btns"><a class="btn lg" href="${PLAY}">Play in your browser →</a><a class="btn ghost lg" href="${APP_STORE}">Get the iPhone app</a></div>
 <div class="promise"><span>FREE</span><span>NO DOWNLOAD</span><span>PUBLIC LEDGER</span></div>`
@@ -245,7 +245,7 @@ ${missBand(m)}
 <section class="sec" aria-label="In your browser or on iPhone"><div class="wrap">
 <div class="duo">
 ${WEB_APP_LIVE
-    ? `<div><span class="kick">IN YOUR BROWSER${LAUNCH_DAY ? " · OPEN NOW" : ""}</span><h3>Open a tab. You're in.</h3><p>Tonight's numbers and the why · calls, points and levels · the Ledger and receipts · What-If and Ask Clutch · leagues with friends.</p>${LAUNCH_DAY ? `<p class="offer"><strong>Sign in with Apple or Google and claim your Launch Pass: every Pro feature free on the web until ${esc(LAUNCH_DAY)}.</strong> Claim before ${esc(LAUNCH_DAY)} and keep the Founding fan stamp for good.</p><a class="btn" href="${PLAY_PASS}">Claim your free Launch Pass →</a>` : `<a class="btn" href="${PLAY}">Play in your browser →</a>`}</div>
+    ? `<div><span class="kick">IN YOUR BROWSER${LAUNCH_DAY ? " · OPEN NOW" : ""}</span><h3>Open a tab. You're in.</h3><p>Tonight's numbers and the why · calls, points and levels · the Ledger and receipts · What-If and Ask Clutch · leagues with friends.</p>${LAUNCH_DAY ? `<p class="offer"><strong>Sign in with Apple or Google and claim your Launch Pass: every Pro feature free on the web until ${esc(LAUNCH_DAY)}.</strong> Claim by ${esc(LAUNCH_DAY)} and keep the Founding fan stamp for good.</p><a class="btn" href="${passLink("browser")}">Claim your free Launch Pass →</a>` : `<a class="btn" href="${PLAY}">Play in your browser →</a>`}</div>
 <div><span class="kick ink3">ON IPHONE, ALSO</span><h3>The best seat in the house.</h3><p>Live Activities on your lock screen · home screen widgets · Siri · iMessage challenges · game videos to share.</p><a class="btn ghost" href="${APP_STORE}">Get the iPhone app</a></div>
 </div>
 <p class="note gap">One account everywhere. Pro bought on one carries over to the other.</p>`
@@ -258,7 +258,7 @@ ${WEB_APP_LIVE
 <h2 class="h2 hm" id="price-h">Free for good. <em>Pro when you want the whole lab.</em></h2>
 <div class="plans">
 <div class="plan"><h3>Free</h3><div class="price"><span class="d">$0</span><span>for good</span></div><ul>${FRONT_FREE.map((x) => `<li>${esc(x)}</li>`).join("")}</ul><a class="btn ghost" href="${PLAY}">${WEB_APP_LIVE ? "Play free" : "Get the free iPhone app"}</a></div>
-<div class="plan pro"><span class="tag">${PLAN.trialDays} DAYS FREE ON ANNUAL</span><h3>Pro</h3><div class="price"><span class="d amber">${PLAN.monthly}</span><span>a month · or ${PLAN.annual} a year</span></div>${LAUNCH_DAY ? `<p class="offer">Free on the web until ${esc(LAUNCH_DAY)} with the Launch Pass.</p>` : ""}<ul>${FRONT_PRO.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>${LAUNCH_DAY ? `<a class="btn" href="${PLAY_PASS}">Claim your Launch Pass</a>` : `<a class="btn" href="${PLAY_PRO}">Try Pro free for ${PLAN.trialDays} days${WEB_APP_LIVE ? "" : " on iPhone"}</a>`}</div>
+<div class="plan pro"><span class="tag">${PLAN.trialDays} DAYS FREE ON ANNUAL</span><h3>Pro</h3><div class="price"><span class="d amber">${PLAN.monthly}</span><span>a month · or ${PLAN.annual} a year</span></div>${LAUNCH_DAY ? `<p class="offer">Free on the web until ${esc(LAUNCH_DAY)} with the Launch Pass.</p>` : ""}<ul>${FRONT_PRO.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>${LAUNCH_DAY ? `<a class="btn" href="${passLink("pricing")}">Claim your Launch Pass</a>` : `<a class="btn" href="${PLAY_PRO}">Try Pro free for ${PLAN.trialDays} days${WEB_APP_LIVE ? "" : " on iPhone"}</a>`}</div>
 </div>
 <p class="note gap">Prices in US dollars. Cancel any time; Pro runs to the end of the period you paid for. <a href="/pricing/">Everything in Free and Pro →</a> · <a href="/refunds/">Refunds</a> · <a href="/terms/">Terms</a></p>
 </div></section>
@@ -271,7 +271,7 @@ ${WEB_APP_LIVE
 <section class="sec" aria-labelledby="last-h"><div class="wrap"><div class="last">
 <span class="mono ink3">${nextTip ? `NEXT TIP ${esc(dayLabel(tonight).toUpperCase())} · ${esc(timeET(nextTip))}` : esc(longDate(m.today).toUpperCase())}</span>
 <h2 class="h2" id="last-h">${esc(lastH)}</h2>
-<div class="btns">${LAUNCH_DAY ? `<a class="btn lg" href="${PLAY_PASS}">Claim your free Launch Pass →</a><a class="btn ghost lg" href="${APP_STORE}">Get the iPhone app</a>` : WEB_APP_LIVE ? `<a class="btn lg" href="${PLAY}">Play in your browser →</a><a class="btn ghost lg" href="${APP_STORE}">Get the iPhone app</a>` : `<a class="btn lg" href="${APP_STORE}">Get the iPhone app →</a><a class="btn ghost lg" href="/ledger/">Read the Ledger</a>`}</div>
+<div class="btns">${LAUNCH_DAY ? `<a class="btn lg" href="${passLink("closing")}">Claim your free Launch Pass →</a><a class="btn ghost lg" href="${APP_STORE}">Get the iPhone app</a>` : WEB_APP_LIVE ? `<a class="btn lg" href="${PLAY}">Play in your browser →</a><a class="btn ghost lg" href="${APP_STORE}">Get the iPhone app</a>` : `<a class="btn lg" href="${APP_STORE}">Get the iPhone app →</a><a class="btn ghost lg" href="/ledger/">Read the Ledger</a>`}</div>
 </div></div></section>
 ${guide(lead, isToday)}`;
 

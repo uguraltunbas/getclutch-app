@@ -19,8 +19,9 @@
 // WEB_APP_LIVE (true once app.clutchledger.com is open: the "play" links and
 // the browser copy turn on; until then they point at the iPhone app),
 // WEB_LAUNCH_PRO_UNTIL (an ISO date: with WEB_APP_LIVE, the Launch Pass copy —
-// Pro free on the web until that date — shows while the date is ahead on New
-// York's clock; then the plain web-app copy comes back at the next build),
+// Pro free on the web through that date — shows while New York's date is on
+// or before it; from the day after, the plain web-app copy comes back at the
+// next build),
 // APP_STORE_PT (App Store Connect's provider token: App Store links then
 // carry pt= and ct=site-<kind of page>, counted in App Analytics › Campaigns).
 
@@ -240,7 +241,7 @@ if (!pages[0].html.includes(`<script src="${tourName}" defer></script>`) || !pag
 if (LAUNCH_INPUT) {
   if (!LAUNCH_VALID) warn.push(`WEB_LAUNCH_PRO_UNTIL "${LAUNCH_INPUT}" is not a date (YYYY-MM-DD): no Launch Pass copy`);
   else if (!WEB_APP_LIVE) warn.push(`WEB_LAUNCH_PRO_UNTIL is ${LAUNCH_INPUT} but WEB_APP_LIVE is off: no Launch Pass copy`);
-  else if (!LAUNCH_UNTIL) warn.push(`the Launch Pass is over (WEB_LAUNCH_PRO_UNTIL ${LAUNCH_INPUT}, today ${etDate()} ET): the plain web-app copy is back; the variable can go`);
+  else if (!LAUNCH_UNTIL) warn.push(`the Launch Pass is over (it ran through WEB_LAUNCH_PRO_UNTIL ${LAUNCH_INPUT}; today is ${etDate()} ET): the plain web-app copy is back; the variable can go`);
 }
 const cssKB = Buffer.byteLength(css) / 1024, liveKB = Buffer.byteLength(live) / 1024, themeB = Buffer.byteLength(themeJs);
 const tourB = Buffer.byteLength(tourJs), tourGz = gzipSync(tourJs, { level: 9 }).length;

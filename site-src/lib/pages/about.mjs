@@ -3,7 +3,7 @@
 // the legal pages and Support. (Win Totals' official rules live on the
 // GitHub Pages site the App Store links to, not on this domain.)
 
-import { page, esc, prose, APP_STORE, ORIGIN, PLAY, PLAY_PRO, PLAY_PASS, WEB_APP_LIVE, LAUNCH_DAY } from "../html.mjs";
+import { page, esc, prose, APP_STORE, ORIGIN, PLAY, PLAY_PRO, WEB_APP_LIVE, LAUNCH_DAY, passLink } from "../html.mjs";
 import { FEATURES, PLAN } from "../../content/features.mjs";
 import { TERMS, PRIVACY, REFUNDS, SUPPORT, SUPPORT_EMAIL, OPERATOR, PADDLE_BUYER_TERMS } from "../../content/legal.mjs";
 import { mediumDate } from "../time.mjs";
@@ -68,7 +68,7 @@ export function pricingPage() {
 <div class="body">
 <div class="plans">
 <div class="plan"><h2 class="side-h">Free</h2><div class="price"><span class="d">$0</span><span>for good · no card · sign in to keep your calls</span></div><ul><li>Every game's number, the market's beside it, and the top three reasons</li><li>Call any game for points; every level is a Free Pro day</li><li>The Ledger and the receipts, for everyone</li></ul><a class="btn ghost" href="${PLAY}">${WEB_APP_LIVE ? "Play free in your browser" : "Get the free iPhone app"}</a></div>
-<div class="plan pro"><span class="tag">${PLAN.trialDays} DAYS FREE ON ANNUAL</span><h2 class="side-h">${esc(PLAN.name)}</h2><div class="price"><span class="d amber">${PLAN.monthly}</span><span>a month</span></div><div class="price"><span class="d amber">${PLAN.annual}</span><span>a year — ${PLAN.annualPerMonth} a month, ${PLAN.trialDays} days free the first time</span></div>${LAUNCH_DAY ? `<p class="offer">Free on the web until ${esc(LAUNCH_DAY)} with the Launch Pass.</p>` : ""}<ul><li>Model only, the projected final and every factor</li><li>Late-news alerts and every close game</li><li>The simulation, and the season simulated nightly</li></ul>${LAUNCH_DAY ? `<a class="btn" href="${PLAY_PASS}">Claim your Launch Pass</a>` : `<a class="btn" href="${PLAY_PRO}">Try Pro free for ${PLAN.trialDays} days${WEB_APP_LIVE ? "" : " on iPhone"}</a>`}</div>
+<div class="plan pro"><span class="tag">${PLAN.trialDays} DAYS FREE ON ANNUAL</span><h2 class="side-h">${esc(PLAN.name)}</h2><div class="price"><span class="d amber">${PLAN.monthly}</span><span>a month</span></div><div class="price"><span class="d amber">${PLAN.annual}</span><span>a year — ${PLAN.annualPerMonth} a month, ${PLAN.trialDays} days free the first time</span></div>${LAUNCH_DAY ? `<p class="offer">Free on the web until ${esc(LAUNCH_DAY)} with the Launch Pass.</p>` : ""}<ul><li>Model only, the projected final and every factor</li><li>Late-news alerts and every close game</li><li>The simulation, and the season simulated nightly</li></ul>${LAUNCH_DAY ? `<a class="btn" href="${passLink("pricing-page")}">Claim your Launch Pass</a>` : `<a class="btn" href="${PLAY_PRO}">Try Pro free for ${PLAN.trialDays} days${WEB_APP_LIVE ? "" : " on iPhone"}</a>`}</div>
 </div>
 <section aria-labelledby="all"><h2 class="sh" id="all">Everything in Free and Pro</h2><div class="scroll"><table class="ftable"><thead><tr><th scope="col">What you get</th><th scope="col" class="c">Free</th><th scope="col" class="c">Pro</th></tr></thead><tbody>${rows}</tbody></table></div></section>
 <section class="blk" aria-labelledby="bill"><h2 id="bill">Billing, plainly</h2>

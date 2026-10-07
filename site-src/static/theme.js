@@ -5,8 +5,9 @@
    stylesheet's prefers-color-scheme block. The Theme buttons (masthead, menu)
    cycle Auto → Day → Night; the browser bar's colour follows the pick.
    It also puts data-toured on <html> once the front page's guide has been
-   taken (localStorage.tour, set by tour.js), so its "New here?" chip is gone
-   before the first paint — no flash, no layout shift.
+   taken, or its chip offered on three visits (localStorage.tour, set by
+   tour.js), so the "New here?" chip is gone before the first paint — no
+   flash, no layout shift.
    Kept tiny on purpose: it blocks the first paint (the build's budget: 700 B). */
 (function () {
   var d = document, r = d.documentElement, P = ["auto", "light", "dark"], W = ["Auto", "Day", "Night"], t;

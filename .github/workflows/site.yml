@@ -10,13 +10,14 @@
 # WEB_APP_LIVE (a repository variable, Settings › Variables): "true" once
 # app.clutchledger.com is open — the "play" links and the browser copy turn
 # on. Unset or anything else: they point at the iPhone app.
-# WEB_LAUNCH_PRO_UNTIL (a repository variable): the Launch Pass's last date,
-# YYYY-MM-DD (e.g. 2026-11-03). With WEB_APP_LIVE "true", the site offers the
-# Launch Pass (sign in on the web app, claim it: Pro free on the web until that
-# date) while the date is still ahead in New York when the site is built; from
-# that day the plain web-app copy comes back by itself at the next scheduled
-# build. Unset, not a date, or WEB_APP_LIVE off: no Launch Pass (the build log
-# warns when it is set but not shown).
+# WEB_LAUNCH_PRO_UNTIL (a repository variable): the Launch Pass's last day,
+# YYYY-MM-DD (e.g. 2026-11-03: Pro through Nov 3 in New York, claims allowed
+# that day). With WEB_APP_LIVE "true", the site offers the Launch Pass (sign in
+# on the web app, claim it: Pro free on the web) while New York's date when the
+# site is built is on or before that day; from the day after, the plain web-app
+# copy comes back by itself at the next scheduled build (07:30 UTC). Unset, not
+# a date, or WEB_APP_LIVE off: no Launch Pass (the build log warns when it is
+# set but not shown).
 # APP_STORE_PT (a repository variable): App Store Connect's provider token
 # (App Analytics › Campaigns › Generate a campaign link, the pt= number). Set,
 # every App Store link carries it and ct=site-<kind of page>, so App Analytics

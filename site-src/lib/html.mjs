@@ -28,10 +28,11 @@ export const PLAY_PRO = WEB_APP_LIVE ? `${APP}/paywall` : APP_STORE;
 
 /**
  * The Launch Pass (owner, 2026-10-07): sign in on the web app, tap Claim, and
- * every Pro feature is free on the web until a date — WEB_LAUNCH_PRO_UNTIL,
- * an ISO date (a repository variable, like WEB_APP_LIVE). It shows only while
- * the web app is live and the date is still ahead on New York's clock when
- * the site is built (the real clock, not --date): from that day on the copy
+ * every Pro feature is free on the web through a date — WEB_LAUNCH_PRO_UNTIL,
+ * an ISO date (a repository variable, like WEB_APP_LIVE): the pass is Pro
+ * through that day in New York and can still be claimed on it. It shows only
+ * while the web app is live and New York's date when the site is built (the
+ * real clock, not --date) is on or before it: from the day after, the copy
  * falls back to the plain web-app wording by itself, at the next build.
  * Unset, malformed or past: no Launch Pass anywhere (build.mjs warns).
  * The prices stay on the page either way.
@@ -40,11 +41,22 @@ export const LAUNCH_INPUT = (process.env.WEB_LAUNCH_PRO_UNTIL ?? "").trim();
 const isDay = (s) => { const t = Date.parse(`${s}T12:00:00Z`); return /^\d{4}-\d{2}-\d{2}$/.test(s) && !Number.isNaN(t) && new Date(t).toISOString().slice(0, 10) === s; };
 export const LAUNCH_VALID = isDay(LAUNCH_INPUT);
 /** The Launch Pass's last date ("2026-11-03") while it is on, else null. */
-export const LAUNCH_UNTIL = WEB_APP_LIVE && LAUNCH_VALID && etDate() < LAUNCH_INPUT ? LAUNCH_INPUT : null;
+export const LAUNCH_UNTIL = WEB_APP_LIVE && LAUNCH_VALID && etDate() <= LAUNCH_INPUT ? LAUNCH_INPUT : null;
 /** "Nov 3", the site's short date ("" when the Launch Pass is off). */
 export const LAUNCH_DAY = LAUNCH_UNTIL ? shortDate(LAUNCH_UNTIL) : "";
-/** Where the Launch Pass is claimed (signed in on the web app). */
-export const PLAY_PASS = `${APP}/pass`;
+/**
+ * Links into the web app from this site carry UTM tags (owner, 2026-10-07),
+ * so the app can count where readers came from: the Launch Pass claim page
+ * (utm_campaign=launch_pass) and the plain "Open Clutch in your browser"
+ * links (utm_campaign=web_app). `placement` says where on the site the link
+ * sits (hero, browser, pricing, faq, closing, tour-end). Already escaped for
+ * an attribute (&amp;).
+ */
+const utm = (campaign, placement) => `?utm_source=clutchledger&amp;utm_medium=site&amp;utm_campaign=${campaign}&amp;utm_content=${placement}`;
+/** The Launch Pass claim page (signed in on the web app), tagged with where the link sits. */
+export const passLink = (placement) => `${APP}/pass${utm("launch_pass", placement)}`;
+/** The web app's front door, tagged (the "Open Clutch in your browser" links). */
+export const webAppLink = (placement) => `${APP}/${utm("web_app", placement)}`;
 
 /**
  * App Store Connect counts installs per campaign when a link carries the

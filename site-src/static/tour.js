@@ -12,7 +12,9 @@
    = no smooth scroll, no fade. Everything moves by transform (no layout
    shift while the reader scrolls). Without this script the page is whole (the
    chip and the link only show where theme.js ran). localStorage.tour keeps
-   "done" or "skipped"; every access is wrapped. */
+   "done" or "skipped" — or "offered": the chip is offered on three visits
+   (a visit = a browser session; localStorage.tourVisits counts them) and
+   then retires by itself, the replay link staying. Every access is wrapped. */
 (function () {
   "use strict";
   var d = document, tpl = d.getElementById("tour");
@@ -165,4 +167,14 @@
     var g = e.target.closest && e.target.closest("[data-tour-go]");
     if (g) { e.preventDefault(); open(); }
   });
+
+  /* This visit is the chip's 1st, 2nd or 3rd: from the 4th, theme.js finds the flag and hides it before the first paint. */
+  try {
+    if (!localStorage.tour && !sessionStorage.tourSeen) {
+      sessionStorage.tourSeen = 1;
+      var n = (+localStorage.tourVisits || 0) + 1;
+      if (n < 3) localStorage.tourVisits = n;
+      else { localStorage.tour = "offered"; localStorage.removeItem("tourVisits"); }
+    }
+  } catch (e) {}
 })();
