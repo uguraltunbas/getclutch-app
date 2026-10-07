@@ -8,7 +8,7 @@
 //
 // Reads with the public anon key what the free app shows (lib/data.mjs says
 // exactly which rows), writes static HTML + one CSS file (both editions, Night
-// and Day) + the theme script + WOFF2 fonts + sitemap.xml, robots.txt,
+// and Day) + the theme, live and guide scripts + WOFF2 fonts + sitemap.xml, robots.txt,
 // 404.html, _headers and _redirects, then checks every page: no betting word
 // (the app's list), a unique title and description, a canonical, sizes in
 // budget, and both editions' contrast (check-contrast.mjs). Any failure exits
@@ -26,6 +26,7 @@
 
 import { mkdirSync, writeFileSync, readFileSync, rmSync, copyFileSync, existsSync, readdirSync, statSync } from "node:fs";
 import { createHash } from "node:crypto";
+import { gzipSync } from "node:zlib";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -83,7 +84,7 @@ pages.push(notFoundPage());
 // The Win Totals rules stay on GitHub Pages (the App Store links there).
 const LEGACY = { "/terms.html": "/terms/", "/privacy.html": "/privacy/", "/support.html": "/support/", "/win-totals-rules.html": WIN_TOTALS_RULES_URL, "/win-totals/": WIN_TOTALS_RULES_URL };
 
-// ── assets: fonts, the stylesheet, the theme and live scripts, content-hashed under /assets/ ──
+// ── assets: fonts, the stylesheet, the theme, live and guide scripts, content-hashed under /assets/ ──
 rmSync(OUT, { recursive: true, force: true });
 mkdirSync(join(OUT, "assets"), { recursive: true });
 const hash = (buf) => createHash("sha256").update(buf).digest("hex").slice(0, 10);
@@ -150,9 +151,16 @@ try { new Function(themeJs); } catch (e) { console.error(`theme.js: squeezed int
 const themeName = `/assets/theme.${hash(themeJs)}.js`;
 writeFileSync(join(OUT, themeName), themeJs);
 
+// The front page's guide ("Clutch in a minute"): deferred, on the front page only. Comments
+// and indentation out, as in live.js (its words are in the page's <template>, not here).
+const tourJs = readFileSync(join(HERE, "static", "tour.js"), "utf8").replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s+/gm, "").replace(/\n+/g, "\n").trim() + "\n";
+try { new Function(tourJs); } catch (e) { console.error(`tour.js: trimmed into something that does not parse (${e.message})`); process.exit(1); }
+const tourName = `/assets/tour.${hash(tourJs)}.js`;
+writeFileSync(join(OUT, tourName), tourJs);
+
 // Wire the hashed names into every page.
 for (const p of pages) {
-  p.html = p.html.replaceAll('href="/site.css"', `href="${cssName}"`).replaceAll('src="/live.js"', `src="${liveName}"`).replaceAll('src="/theme.js"', `src="${themeName}"`);
+  p.html = p.html.replaceAll('href="/site.css"', `href="${cssName}"`).replaceAll('src="/live.js"', `src="${liveName}"`).replaceAll('src="/theme.js"', `src="${themeName}"`).replaceAll('src="/tour.js"', `src="${tourName}"`);
   for (const [plain, hashed] of Object.entries(fontFiles)) p.html = p.html.replaceAll(`/fonts/${plain}`, hashed);
 }
 
@@ -227,6 +235,7 @@ for (const c of [ed.night.paper, ed.day.paper]) {
   if (!pages[0].html.includes(`<meta name="theme-color" content="${c}"`)) fail.push(`the page head: no theme-color ${c}`);
 }
 if (!pages.filter((p) => !p.redirect).every((p) => p.html.includes(`<script src="${themeName}"></script>`))) fail.push("a page without the theme script");
+if (!pages[0].html.includes(`<script src="${tourName}" defer></script>`) || !pages[0].html.includes('<template id="tour">')) fail.push("the front page without its guide (tour.js and its template)");
 // The Launch Pass input: said out loud when it is set but not shown.
 if (LAUNCH_INPUT) {
   if (!LAUNCH_VALID) warn.push(`WEB_LAUNCH_PRO_UNTIL "${LAUNCH_INPUT}" is not a date (YYYY-MM-DD): no Launch Pass copy`);
@@ -234,16 +243,18 @@ if (LAUNCH_INPUT) {
   else if (!LAUNCH_UNTIL) warn.push(`the Launch Pass is over (WEB_LAUNCH_PRO_UNTIL ${LAUNCH_INPUT}, today ${etDate()} ET): the plain web-app copy is back; the variable can go`);
 }
 const cssKB = Buffer.byteLength(css) / 1024, liveKB = Buffer.byteLength(live) / 1024, themeB = Buffer.byteLength(themeJs);
+const tourB = Buffer.byteLength(tourJs), tourGz = gzipSync(tourJs, { level: 9 }).length;
 if (cssKB > 32) fail.push(`CSS ${cssKB.toFixed(1)} KB (budget 32 KB, 32,768 bytes)`);
 if (liveKB > 5) fail.push(`live script ${liveKB.toFixed(1)} KB (budget 5)`);
 if (themeB > 700) fail.push(`theme script ${themeB} bytes (budget 700: it blocks the first paint)`);
+if (tourGz > 3072) fail.push(`guide script ${tourGz} bytes gzipped (budget 3 KB)`);
 
 // ── report ──
 const sizes = indexed.map((p) => Buffer.byteLength(p.html));
 const kinds = { games: m.pageGames.length, nights: Object.keys(m.nights).length, teams: pages.filter((p) => p.path.startsWith("/teams/")).length };
 console.log(`site ${TODAY} → ${OUT} · web app ${WEB_APP_LIVE ? "LIVE (browser links on)" : "not live (play links → App Store)"}${LAUNCH_UNTIL ? ` · Launch Pass on: Pro free on the web until ${LAUNCH_DAY}` : ""}`);
 console.log(`  ${pages.length} pages (${indexed.length} indexed; ${kinds.games} game pages over ${kinds.nights} nights, ${kinds.teams} team pages), tonight = ${m.tonight ?? "none"}`);
-console.log(`  html ${(Math.min(...sizes) / 1024).toFixed(1)}–${(Math.max(...sizes) / 1024).toFixed(1)} KB · css ${cssKB.toFixed(1)} KB · live.js ${liveKB.toFixed(2)} KB · theme.js ${themeB} B · fonts ${(fontBytes / 1024).toFixed(0)} KB (${FONTS.length} woff2)`);
+console.log(`  html ${(Math.min(...sizes) / 1024).toFixed(1)}–${(Math.max(...sizes) / 1024).toFixed(1)} KB · css ${cssKB.toFixed(1)} KB · live.js ${liveKB.toFixed(2)} KB · theme.js ${themeB} B · tour.js ${tourB} B (${tourGz} B gzip) · fonts ${(fontBytes / 1024).toFixed(0)} KB (${FONTS.length} woff2)`);
 for (const w of warn) console.warn(`  warn: ${w}`);
 if (fail.length) {
   for (const f of fail) console.error(`  FAIL: ${f}`);

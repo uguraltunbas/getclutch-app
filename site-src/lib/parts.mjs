@@ -37,9 +37,11 @@ export function gradeChip(g) {
  * The instrument — black glass in both editions (class "gl"): both teams,
  * Clutch's number big for the side it favours, the LED rail (amber =
  * Clutch, the cream segment = the market), the legend, and the two call
- * buttons (or the final).
+ * buttons (or the final). `tour`: the front page's guide hooks — data-tour on
+ * a plain wrapper round the head, numbers and rail (layout-neutral: .board>*
+ * only sets position) and on the call buttons, only where they are there.
  */
-export function board(g, { kicker = "THE CALL", link = null, headingLevel = 0 } = {}) {
+export function board(g, { kicker = "THE CALL", link = null, headingLevel = 0, tour = false } = {}) {
   const s = g.side;
   const favHome = s ? s.isHome : true;
   const awayPct = s ? pct(1 - g.homeProb) : null, homePct = s ? pct(g.homeProb) : null;
@@ -59,18 +61,18 @@ export function board(g, { kicker = "THE CALL", link = null, headingLevel = 0 } 
   } else if (g.hasCall) {
     const pa = callPoints(1 - g.homeProb), ph = callPoints(g.homeProb);
     const btn = (t, pts, fav) => `<a class="cbtn${fav ? "" : " ghost"}" href="${appGame(g)}">CALL ${esc(t.abbreviation)} · ${pts}<span class="vh"> points if right: call the ${esc(t.nickname)} in the app</span></a>`;
-    foot = `<div class="bcall">${btn(g.away, pa, !favHome)}${btn(g.home, ph, favHome)}</div>`;
+    foot = `<div class="bcall"${tour ? ' data-tour="call"' : ""}>${btn(g.away, pa, !favHome)}${btn(g.home, ph, favHome)}</div>`;
   } else {
-    foot = `<div class="bcall"><a class="cbtn ghost wide" href="${appGame(g)}">CALL IT IN THE APP</a></div>`;
+    foot = `<div class="bcall"${tour ? ' data-tour="call"' : ""}><a class="cbtn ghost wide" href="${appGame(g)}">CALL IT IN THE APP</a></div>`;
   }
   const head = link ? `<a class="bk" href="${link}">${kicker}</a>` : `<span class="bk">${kicker}</span>`;
   return `<div class="board gl ${teamCls(g)}${live ? " is-live" : ""}" data-gid="${g.id}" data-a="${g.away.abbreviation}" data-h="${g.home.abbreviation}"><span class="rs" aria-hidden="true"></span>
-<div class="bhead">${headingLevel ? `<h${headingLevel} class="bk-h">${head}</h${headingLevel}>` : head}<span class="amber" data-live="st">${esc(statusText(g))}</span></div>
+${tour && s ? '<div data-tour="num">' : ""}<div class="bhead">${headingLevel ? `<h${headingLevel} class="bk-h">${head}</h${headingLevel}>` : head}<span class="amber" data-live="st">${esc(statusText(g))}</span></div>
 <div class="bteams">
 <div class="side"><span class="ab">${esc(g.away.abbreviation)}</span>${nm(g.away, "AWAY")}${num(awayPct, !favHome && !!s)}</div>
 <div class="side r"><span class="ab">${esc(g.home.abbreviation)}</span>${nm(g.home, "HOME")}${num(homePct, favHome && !!s)}</div>
 </div>
-<div class="brail">${rail(s ? s.prob : null, g.marketSide)}<div class="legend">${legend}</div></div>
+<div class="brail">${rail(s ? s.prob : null, g.marketSide)}<div class="legend">${legend}</div></div>${tour && s ? "</div>" : ""}
 ${foot}
 </div>`;
 }
@@ -91,8 +93,15 @@ export function cardLine(g) {
   return "";
 }
 
-/** A Tonight card (a link to the game page). */
-export function gameCard(g) {
+/**
+ * Does a card's line say why the number is what it is? (The front page's
+ * guide points at it: a reason, or the preseason's near-50/50 — not a score,
+ * the market's other side, or a number still to come.)
+ */
+export const lineIsWhy = (g) => g.status === "scheduled" && g.hasCall && (g.preseason || (!g.differs && !!g.reasons[0]));
+
+/** A Tonight card (a link to the game page). `why`: the guide's hook on its line. */
+export function gameCard(g, why = false) {
   const live = g.status === "live" || g.status === "halftime";
   const final = g.status === "final";
   const cls = `gcard ${teamCls(g)}${live ? " is-live" : g.differs && !final ? " differs" : ""}`;
@@ -104,7 +113,7 @@ export function gameCard(g) {
 <span class="gtop"><span class="d m">${esc(g.away.abbreviation)} @ ${esc(g.home.abbreviation)}</span><span class="d t" data-live="st">${esc(statusText(g, true))}</span></span>
 <span class="gnum">${big}</span>
 ${rail(g.side ? g.side.prob : null, g.marketSide, true)}
-<span class="gline">${esc(cardLine(g))}</span>
+<span class="gline"${why === true ? ' data-tour="why"' : ""}>${esc(cardLine(g))}</span>
 <span class="mono cta">${cta}</span>
 </a>`;
 }

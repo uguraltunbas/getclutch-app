@@ -128,9 +128,9 @@ function footer() {
 /**
  * A whole page. `path` is the URL path ("/", "/ledger/"); `og` the image
  * name under /og/; `jsonld` one object or a list; `live` adds the small
- * live-score script.
+ * live-score script; `tour` the front page's guide (static/tour.js).
  */
-export function page({ path, title, description, body, current = "", og = "default", ogType = "website", jsonld = null, live = false, noindex = false, cssHref = "/site.css" }) {
+export function page({ path, title, description, body, current = "", og = "default", ogType = "website", jsonld = null, live = false, tour = false, noindex = false, cssHref = "/site.css" }) {
   const url = ORIGIN + path;
   description = clipDescription(description);
   const ld = (Array.isArray(jsonld) ? jsonld : jsonld ? [jsonld] : []).map((o) => `<script type="application/ld+json">${JSON.stringify(o).replace(/</g, "\\u003c")}</script>`).join("\n");
@@ -176,7 +176,7 @@ ${masthead(current)}
 ${body}
 </main>
 ${footer()}
-${live ? '<script src="/live.js" defer></script>' : ""}
+${live ? '<script src="/live.js" defer></script>' : ""}${tour ? '<script src="/tour.js" defer></script>' : ""}
 </body>
 </html>
 `;

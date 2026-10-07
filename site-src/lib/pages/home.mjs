@@ -2,7 +2,7 @@
 // scoreboard. Every number on it is tonight's real one, or says why not.
 
 import { page, esc, bar, APP_STORE, ORIGIN, PLAY, PLAY_PRO, PLAY_PASS, WEB_APP_LIVE, LAUNCH_DAY } from "../html.mjs";
-import { board, gameCard, scoreLine, statusText } from "../parts.mjs";
+import { board, gameCard, lineIsWhy, scoreLine, statusText } from "../parts.mjs";
 import { pct, callPoints, comparisons, opener, verdictOf, rec, shortHash, RATE_FLOOR, REGULAR_SEASON_START } from "../copy.mjs";
 import { longDate, dayLabel, shortDate, weekday, timeET, countWord, shift } from "../time.mjs";
 import { FRONT_FREE, FRONT_PRO, FREE_CARDS, FAQ, PLAN } from "../../content/features.mjs";
@@ -90,7 +90,7 @@ function proof(m) {
     }
   }
   right += `<div class="boxlink"><span><b>Every morning has a receipt</b>The night's calls are hashed and published to a public repository before the first tip. Nobody can change them after — not even us.</span><a href="/receipts/">CHECK IT →</a></div>`;
-  return `<div class="proof"><div class="proof-l">${left}</div><div class="proof-r">${right}</div></div>`;
+  return `<div class="proof"><div class="proof-l" data-tour="ledger">${left}</div><div class="proof-r">${right}</div></div>`;
 }
 
 function missBand(m) {
@@ -130,6 +130,44 @@ function comingUp(m, tonight, n) {
   }).join("")}<p class="note gap">Each night's numbers land that morning and are sealed before tip.</p></div>`;
 }
 
+/**
+ * "Clutch in a minute", the front page's guide (static/tour.js runs it). Its
+ * words live here, in a <template>, so the betting-words check reads them and
+ * the App Store link carries the page's campaign. Four stops, each on a real
+ * element the page marks with data-tour (the script leaves out any that isn't
+ * on tonight's page and counts the rest), then the end card.
+ */
+function guide(lead, isToday) {
+  const after = lead && lead.status !== "scheduled";
+  const num = after
+    ? "How likely Clutch thought each team was to take the game — set that morning, before tip."
+    : isToday
+      ? "How likely Clutch thinks each team is to take tonight's game — set every morning, before tip."
+      : "How likely Clutch thinks each team is to take the game — set that morning, before tip.";
+  const stops = [
+    ["num", "This is Clutch's number.", num],
+    ["why", "And this is why.", "The key reasons behind the number, in plain words."],
+    ["call", "Now make your call.", "Pick a side before tip. Upsets you call score more."],
+    ["ledger", "Every number is sealed before tip.", "Graded after the final, in public — misses included."],
+  ];
+  const [endLine, endLinks] = LAUNCH_DAY
+    ? [`Sign in with Apple or Google and claim your Launch Pass: every Pro feature free on the web until ${LAUNCH_DAY}.`, `<a class="btn" href="${PLAY_PASS}">Claim your Launch Pass →</a><a class="btn ghost" href="${APP_STORE}">Get the iPhone app</a>`]
+    : WEB_APP_LIVE
+      ? ["Call every game in your browser, or on iPhone.", `<a class="btn" href="${PLAY}">Open Clutch in your browser →</a><a class="btn ghost" href="${APP_STORE}">Get the iPhone app</a>`]
+      : ["Call every game in the iPhone app. Every number is on this site too.", `<a class="btn" href="${APP_STORE}">Get the iPhone app →</a>`];
+  return `<template id="tour"><div class="tour">
+<div class="tdim"></div><div class="tdim"></div><div class="tdim"></div><div class="tdim"></div><div class="tring"></div>
+<div class="tcard gl" role="dialog" aria-modal="true" aria-labelledby="tour-h" aria-describedby="tour-p" tabindex="-1">
+<p class="tn"><span class="tc"></span>CLUTCH IN A MINUTE<span class="te"> · DONE</span></p>
+<h2 id="tour-h"></h2>
+<p id="tour-p"></p>
+<div class="tb"><button type="button" class="tsk" data-a="skip">Skip</button><button type="button" class="btn ghost" data-a="back">Back</button><button type="button" class="btn" data-a="next">Next</button></div>
+<div class="tend">${endLinks}<button type="button" class="btn ghost" data-a="done">Done</button><p class="note">Replay it any time: 1-minute tour, under Three moves a night.</p></div>
+</div>
+<ol hidden>${stops.map(([k, h, p]) => `<li data-s="${k}"><b>${esc(h)}</b><i>${esc(p)}</i></li>`).join("")}<li class="end"><b>That's Clutch.</b><i>${esc(endLine)}</i></li></ol>
+</div></template>`;
+}
+
 export function homePage(m) {
   const tonight = m.tonight;
   const games = tonight ? m.nights[tonight] ?? [] : [];
@@ -141,7 +179,7 @@ export function homePage(m) {
 
   const leadBoard = lead
     ? `<div class="inst a-${lead.away.abbreviation} h-${lead.home.abbreviation}"><span class="blob l" aria-hidden="true"></span><span class="blob r" aria-hidden="true"></span>
-${board(lead, { kicker: isToday ? "GAME OF THE NIGHT" : `NEXT UP<span class="hide-s"> · ${esc(dayLabel(lead.date).toUpperCase())}</span>`, link: lead.path })}
+${board(lead, { kicker: isToday ? "GAME OF THE NIGHT" : `NEXT UP<span class="hide-s"> · ${esc(dayLabel(lead.date).toUpperCase())}</span>`, link: lead.path, tour: true })}
 ${liveOne ? `<a class="livechip gl d" href="${liveOne.path}" data-gid="${liveOne.id}" data-a="${liveOne.away.abbreviation}" data-h="${liveOne.home.abbreviation}"><span class="pulse" aria-hidden="true"></span><span data-live="sc">${esc(scoreLine(liveOne))}</span><span class="hot" data-live="st">${esc(statusText(liveOne))}</span></a>` : ""}</div>`
     : `<div class="panel"><h2>The schedule isn't out yet.</h2><p class="sub">Clutch's numbers return with the next night of games.</p></div>`;
 
@@ -175,17 +213,19 @@ ${LAUNCH_DAY
 <div class="promise"><span>FREE</span><span>NO DOWNLOAD</span><span>PUBLIC LEDGER</span></div>`
       : `<div class="btns"><a class="btn lg" href="${APP_STORE}">Get the iPhone app →</a></div>
 <div class="promise"><span>FREE</span><span>PUBLIC LEDGER</span><span>COMING TO YOUR BROWSER</span></div>`}
+<button class="tchip" type="button" data-tour-go>New here? <strong>Take the 1-minute tour</strong><span class="amber" aria-hidden="true">→</span></button>
 </div>${leadBoard}</div></div>
 ${ticker}</section>
 
 <section class="sec t" id="tonight" aria-labelledby="tonight-h"><div class="wrap">
 <div class="shead"><div><h2 class="h2" id="tonight-h">${isToday ? "Tonight, in numbers" : "Next up, in numbers"}</h2><p class="sub">${esc(tonightSub)}</p></div>${tonight ? `<a class="more" href="/games/${tonight}/">ALL OF ${isToday ? "TONIGHT" : esc(dayLabel(tonight).toUpperCase())} →</a>` : ""}</div>
-<div class="cards">${games.map(gameCard).join("")}</div>
+<div class="cards">${games.map((g) => gameCard(g, g.id === lead?.id && lineIsWhy(g))).join("")}</div>
 ${comingUp(m, tonight, games.length)}
 </div></section>
 
 <section class="sec" id="how" aria-labelledby="how-h"><div class="wrap">
 <h2 class="h2" id="how-h">Three moves a night. <em>That's the whole game.</em></h2>
+<button class="tl" type="button" data-tour-go>1-minute tour</button>
 <div class="g3 mt">
 <div class="move"><span class="no" aria-hidden="true">01</span><h3>Clutch makes its call</h3><p>Every morning, a win probability for every game — built from form, rest, travel, the official injury report and the market. Sealed and published before the first tip.</p><span class="hash">${latestSeal ? `sha256 ${esc(shortHash(latestSeal.sha256))}` : "sha256 · the first seal lands Oct 3"}</span></div>
 <div class="move"><span class="no" aria-hidden="true">02</span><h3>You make yours</h3><p>Pick a side before tip. Upsets you call score more, and every level is a Free Pro day.</p>${pts ? `<span class="pills">${pts.map(([t, p, on]) => `<span class="pill${on ? " on" : ""}">${esc(t.abbreviation)} · ${p}</span>`).join("")}</span>` : ""}</div>
@@ -232,12 +272,13 @@ ${WEB_APP_LIVE
 <span class="mono ink3">${nextTip ? `NEXT TIP ${esc(dayLabel(tonight).toUpperCase())} · ${esc(timeET(nextTip))}` : esc(longDate(m.today).toUpperCase())}</span>
 <h2 class="h2" id="last-h">${esc(lastH)}</h2>
 <div class="btns">${LAUNCH_DAY ? `<a class="btn lg" href="${PLAY_PASS}">Claim your free Launch Pass →</a><a class="btn ghost lg" href="${APP_STORE}">Get the iPhone app</a>` : WEB_APP_LIVE ? `<a class="btn lg" href="${PLAY}">Play in your browser →</a><a class="btn ghost lg" href="${APP_STORE}">Get the iPhone app</a>` : `<a class="btn lg" href="${APP_STORE}">Get the iPhone app →</a><a class="btn ghost lg" href="/ledger/">Read the Ledger</a>`}</div>
-</div></div></section>`;
+</div></div></section>
+${guide(lead, isToday)}`;
 
   const desc = `Clutch puts a win probability on every NBA game, tells you why, and seals it before tip. Call every game free ${WEB_APP_LIVE ? "in your browser or on iPhone" : "on iPhone"} — the public Ledger grades every call.`;
   const ld = [
     { "@context": "https://schema.org", "@type": "WebSite", name: "Clutch", url: ORIGIN + "/", description: desc },
     { "@context": "https://schema.org", "@type": "Organization", name: "Clutch", url: ORIGIN + "/", logo: ORIGIN + "/icon-512.png", email: "uguraltunbasai@gmail.com", founder: { "@type": "Person", name: "Uğur Altunbaş" }, sameAs: [APP_STORE, "https://x.com/getclutchledger"] },
   ];
-  return { path: "/", title: "Clutch — call every NBA game, beat Clutch", html: page({ path: "/", title: "Clutch — call every NBA game, beat Clutch", description: desc, body, current: "", og: "home", jsonld: ld, live: games.some((g) => g.status !== "final" && g.status !== "postponed") }) };
+  return { path: "/", title: "Clutch — call every NBA game, beat Clutch", html: page({ path: "/", title: "Clutch — call every NBA game, beat Clutch", description: desc, body, current: "", og: "home", jsonld: ld, live: games.some((g) => g.status !== "final" && g.status !== "postponed"), tour: true }) };
 }
