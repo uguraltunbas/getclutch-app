@@ -306,13 +306,13 @@ S.wt30 = () => {
   const order = Q.get("focus") ? [TEAMS.find((x) => x.abbr === Q.get("focus")), ...TEAMS.filter((x) => x.abbr !== Q.get("focus"))] : TEAMS;
   el(`<div class="x eb" style="left:70px;right:70px;top:200px;display:flex;justify-content:space-between"><span>Win Totals · 2026-27</span><span class="r">${tr ? "Ücretsiz yarışma" : "Free contest"}</span></div>`);
   el(`<div class="x rule2" style="left:70px;right:70px;top:252px"></div>`);
-  el(`<div class="x hd" style="left:70px;right:70px;top:300px;font-size:104px">${tr ? "30 takım. <em>Üst mü, alt mı?</em>" : "30 teams. <em>Over or under?</em>"}</div>`);
+  el(`<div class="x hd" style="left:70px;right:70px;top:300px;font-size:104px">${tr ? "30 takım. <em>Fazla mı, az mı?</em>" : "30 teams. <em>Over or under?</em>"}</div>`);
   const bar = el(`<div class="x" style="left:70px;top:660px;width:30px;height:150px"></div>`);
   const city = el(`<div class="x eb" style="left:130px;top:668px;color:var(--ink3);font-size:30px"></div>`);
   const nick = el(`<div class="x" style="left:128px;top:712px;font:900 118px/1 var(--display);color:var(--ink);white-space:nowrap"></div>`);
   const glass = el(`<div class="x glass" style="left:70px;right:70px;top:880px;height:380px"></div>`);
   const cnt = el(`<div class="x eb" style="left:70px;right:70px;top:1290px;display:flex;justify-content:space-between;color:var(--ink3);font-size:26px"><span>${tr ? "Piyasanın galibiyet sayısı" : "The market's win total"}</span><span id="n"></span></div>`);
-  const ou = el(`<div class="x" style="left:70px;right:70px;top:1350px;display:grid;grid-template-columns:1fr 1fr;gap:18px"><div id="o" style="border:3px solid var(--ink);padding:28px 0;text-align:center;font:900 64px/1 var(--display)">${tr ? "Üst" : "Over"}</div><div id="u" style="border:3px solid var(--ink);padding:28px 0;text-align:center;font:900 64px/1 var(--display)">${tr ? "Alt" : "Under"}</div></div>`);
+  const ou = el(`<div class="x" style="left:70px;right:70px;top:1350px;display:grid;grid-template-columns:1fr 1fr;gap:18px"><div id="o" style="border:3px solid var(--ink);padding:28px 0;text-align:center;font:900 64px/1 var(--display)">${tr ? "Fazla" : "Over"}</div><div id="u" style="border:3px solid var(--ink);padding:28px 0;text-align:center;font:900 64px/1 var(--display)">${tr ? "Az" : "Under"}</div></div>`);
   const out = el(`<div class="x" style="left:70px;right:70px;top:660px;opacity:0">
     <div class="hd" style="font-size:84px">${tr ? "30'unu da seç. <em>20 Ekim'de ilk hücumdan önce mühürle.</em>" : "Call all 30. <em>Seal it before the first tip on Oct 20.</em>"}</div>
     <div class="bd" style="margin-top:40px">${tr ? "Ücretsiz. <b>Birinciye 1 yıl Clutch Pro.</b> 30'da 30 yapana ömür boyu Pro." : "Free. <b>First place wins a year of Clutch Pro.</b> Go 30 for 30 and it's Pro for life."}</div>

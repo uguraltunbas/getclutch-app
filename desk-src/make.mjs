@@ -135,7 +135,7 @@ if (now < LOCK) {
     const d = days <= 1 ? "0" : String(days);
     items.push({ kind: `Win Totals · ${days <= 1 ? "last day" : days + " days left"}`, when: "Morning · IG and X stories", img: card(`count-${d}.png`, { t: "count", d }, 1080, 1920), imgTr: card(`count-${d}-tr.png`, { t: "count", d, lang: "tr" }, 1080, 1920),
       en: days <= 1 ? `Last call. Win Totals locks at today's first tip (3 PM ET). 30 teams, over or under, three stars. ${lock}` : `${days} days to seal your Win Totals. 30 teams, over or under, three stars. First place wins a year of Clutch Pro. ${lock}`,
-      tr: days <= 1 ? `Son çağrı. Win Totals bugün 22:00'de (TSİ) ilk hücumla kilitleniyor. 30 takım, üst ya da alt. Katılım ücretsiz · ödül Pro süresidir · Apple sponsor değildir.` : `Win Totals'ı mühürlemek için ${days} gün. 30 takım, üst ya da alt, üç yıldız. Birinciye 1 yıl Clutch Pro. Katılım ücretsiz · ödül Pro süresidir · Apple sponsor değildir.` });
+      tr: days <= 1 ? `Son çağrı. Win Totals bugün 22:00'de (TSİ) ilk hücumla kilitleniyor. 30 takım, fazla ya da az. Katılım ücretsiz · ödül Pro süresidir · Apple sponsor değildir.` : `Win Totals'ı mühürlemek için ${days} gün. 30 takım, fazla ya da az, üç yıldız. Birinciye 1 yıl Clutch Pro. Katılım ücretsiz · ödül Pro süresidir · Apple sponsor değildir.` });
   }
   const start = Date.parse("2026-10-03T16:00:00Z");
   const k = Math.floor((now - start) / 86400000);
@@ -143,7 +143,7 @@ if (now < LOCK) {
     teamsJs.slice(k * 2, k * 2 + 2).forEach((t) => {
       items.push({ kind: `Win Totals · ${t.nickname} ${t.line}`, when: "Morning · X, Threads, IG", img: card(`wt-${t.abbr.toLowerCase()}.png`, { t: "tote", team: t.abbr }),
         en: `The market has the ${t.nickname} at ${t.line} wins. Over or under?\n\nCall all 30 in Clutch before the first tip on Oct 20. ${lock}`,
-        tr: `Piyasa ${t.nickname} için ${t.line.replace(".", ",")} galibiyet diyor. Üst mü, alt mı?\n\n30 takımın hepsini 20 Ekim 22:00'ye (TSİ) kadar Clutch'ta mühürle. Katılım ücretsiz · ödül Pro süresidir · Apple sponsor değildir.` });
+        tr: `Piyasa ${t.nickname} için ${t.line.replace(".", ",")} galibiyet diyor. Fazla mı, az mı?\n\n30 takımın hepsini 20 Ekim 22:00'ye (TSİ) kadar Clutch'ta mühürle. Katılım ücretsiz · ödül Pro süresidir · Apple sponsor değildir.` });
     });
   }
 }

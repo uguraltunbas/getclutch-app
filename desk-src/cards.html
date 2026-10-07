@@ -124,8 +124,8 @@ T.tote = () => {
     <div class="glass" id="g" style="margin-top:44px;height:430px"></div>
     <div class="mono" style="font-size:24px;color:var(--ink3);margin-top:18px;display:flex;justify-content:space-between"><span>${tr ? "Piyasanın galibiyet sayısı" : "The market's win total"}</span><span>${tr ? "82 maç" : "82 games"}</span></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:40px">
-      <div style="border:3px solid var(--ink);padding:26px 0;text-align:center;font:900 60px/1 var(--display)">${tr ? "Üst" : "Over"}</div>
-      <div style="border:3px solid var(--ink);padding:26px 0;text-align:center;font:900 60px/1 var(--display)">${tr ? "Alt" : "Under"}</div>
+      <div style="border:3px solid var(--ink);padding:26px 0;text-align:center;font:900 60px/1 var(--display)">${tr ? "Fazla" : "Over"}</div>
+      <div style="border:3px solid var(--ink);padding:26px 0;text-align:center;font:900 60px/1 var(--display)">${tr ? "Az" : "Under"}</div>
     </div>
     <div class="lede" style="margin-top:36px;max-width:none;font-size:31px">${tr ? `30 takımın hepsini Clutch'ta seç, 20 Ekim'deki ilk hücumdan önce mühürle. <b>Ücretsiz. Birinciye 1 yıl Clutch Pro.</b>` : `Call all 30 in Clutch and seal it before the first tip on Oct 20. <b>Free. First place wins a year of Clutch Pro.</b>`}</div>
   </div>`));
@@ -141,7 +141,7 @@ T.board = () => {
   root.appendChild($(`<div class="pad" style="inset:64px 64px">
     <div class="top"><span>${tr ? "Win Totals · 2026-27" : "Win Totals · 2026-27"}</span><span class="r">${tr ? "Piyasa · 30 Eylül" : "The market · Sep 30"}</span></div>
     <div class="dbl"></div>
-    <div class="h2" style="margin-top:34px;font-size:78px">${tr ? "30 takım. <em class='amber' style='font-style:normal'>Üst mü, alt mı?</em>" : "30 teams. <em class='amber' style='font-style:normal'>Over or under?</em>"}</div>
+    <div class="h2" style="margin-top:34px;font-size:78px">${tr ? "30 takım. <em class='amber' style='font-style:normal'>Fazla mı, az mı?</em>" : "30 teams. <em class='amber' style='font-style:normal'>Over or under?</em>"}</div>
     <div id="cols" style="display:grid;grid-template-columns:1fr 1fr;gap:0 40px;margin-top:30px"></div>
     <div class="lede" style="margin-top:24px;max-width:none;font-size:29px">${tr ? `Clutch'ta hepsini seç, en emin olduğun üçüne yıldız koy, 20 Ekim'de ilk hücumdan önce mühürle. <b>Ücretsiz. Birinciye 1 yıl Pro.</b>` : `Call every one in Clutch, star your three surest, seal it before the first tip on Oct 20. <b>Free. First place wins a year of Pro.</b>`}</div>
   </div>`));
@@ -337,7 +337,7 @@ T.count = () => {
     <div class="dbl"></div>
     <div class="glass" id="g" style="margin-top:70px;height:560px"></div>
     <div class="h1" style="margin-top:60px;font-size:104px">${last ? (tr ? "Bu gece <em>kilitleniyor.</em>" : "Locks <em>tonight.</em>") : tr ? `${d} gün kaldı. <em>30'unu mühürle.</em>` : `${d} days left. <em>Seal your 30.</em>`}</div>
-    <div class="lede" style="margin-top:40px;max-width:none">${last ? (tr ? "İlk hücum 22:00'de (TSİ). Sonrasında sezon notlar." : "First tip at 3 PM ET. After that, the season grades you.") : tr ? "30 takım, üst ya da alt, üç yıldız. <b>Birinciye 1 yıl Clutch Pro.</b>" : "30 teams, over or under, three stars. <b>First place wins a year of Clutch Pro.</b>"}</div>
+    <div class="lede" style="margin-top:40px;max-width:none">${last ? (tr ? "İlk hücum 22:00'de (TSİ). Sonrasında sezon notlar." : "First tip at 3 PM ET. After that, the season grades you.") : tr ? "30 takım, fazla ya da az, üç yıldız. <b>Birinciye 1 yıl Clutch Pro.</b>" : "30 teams, over or under, three stars. <b>First place wins a year of Clutch Pro.</b>"}</div>
     <div style="margin-top:50px"><span class="cta">${tr ? "Clutch'ta mühürle" : "Seal it in Clutch"}</span></div>
   </div>`));
   root.appendChild($(`<div class="foot" style="bottom:120px"><span class="legal">${tr ? "Katılım ücretsiz · ödül Pro süresidir · Apple sponsor değildir" : "Free to enter · prizes are Pro time · Apple is not a sponsor"}</span><span>@getclutchledger</span></div>`));
