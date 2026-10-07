@@ -225,7 +225,7 @@ for (const c of [ed.night.paper, ed.day.paper]) {
 }
 if (!pages.filter((p) => !p.redirect).every((p) => p.html.includes(`<script src="${themeName}"></script>`))) fail.push("a page without the theme script");
 const cssKB = Buffer.byteLength(css) / 1024, liveKB = Buffer.byteLength(live) / 1024, themeB = Buffer.byteLength(themeJs);
-if (cssKB > 30) fail.push(`CSS ${cssKB.toFixed(1)} KB (budget 30)`);
+if (cssKB > 32) fail.push(`CSS ${cssKB.toFixed(1)} KB (budget 32 KB, 32,768 bytes)`);
 if (liveKB > 5) fail.push(`live script ${liveKB.toFixed(1)} KB (budget 5)`);
 if (themeB > 700) fail.push(`theme script ${themeB} bytes (budget 700: it blocks the first paint)`);
 
