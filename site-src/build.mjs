@@ -18,6 +18,9 @@
 // SITE_DATE (the ET date to build for; default today in New York),
 // WEB_APP_LIVE (true once app.clutchledger.com is open: the "play" links and
 // the browser copy turn on; until then they point at the iPhone app),
+// WEB_LAUNCH_PRO_UNTIL (an ISO date: with WEB_APP_LIVE, the Launch Pass copy —
+// Pro free on the web until that date — shows while the date is ahead on New
+// York's clock; then the plain web-app copy comes back at the next build),
 // APP_STORE_PT (App Store Connect's provider token: App Store links then
 // carry pt= and ct=site-<kind of page>, counted in App Analytics › Campaigns).
 
@@ -29,7 +32,7 @@ import { fileURLToPath } from "node:url";
 import { supabase, loadAll } from "./lib/data.mjs";
 import { buildModel } from "./lib/model.mjs";
 import { etDate, seasonOf } from "./lib/time.mjs";
-import { FONTS, ORIGIN, WEB_APP_LIVE, WIN_TOTALS_RULES_URL, DESCRIPTION_MAX } from "./lib/html.mjs";
+import { FONTS, ORIGIN, WEB_APP_LIVE, WIN_TOTALS_RULES_URL, DESCRIPTION_MAX, LAUNCH_INPUT, LAUNCH_VALID, LAUNCH_UNTIL, LAUNCH_DAY } from "./lib/html.mjs";
 import { ttfToWoff2 } from "./lib/woff2.mjs";
 import { swatchOn } from "./lib/swatch.mjs";
 import { checkContrast, editions } from "./check-contrast.mjs";
@@ -224,6 +227,12 @@ for (const c of [ed.night.paper, ed.day.paper]) {
   if (!pages[0].html.includes(`<meta name="theme-color" content="${c}"`)) fail.push(`the page head: no theme-color ${c}`);
 }
 if (!pages.filter((p) => !p.redirect).every((p) => p.html.includes(`<script src="${themeName}"></script>`))) fail.push("a page without the theme script");
+// The Launch Pass input: said out loud when it is set but not shown.
+if (LAUNCH_INPUT) {
+  if (!LAUNCH_VALID) warn.push(`WEB_LAUNCH_PRO_UNTIL "${LAUNCH_INPUT}" is not a date (YYYY-MM-DD): no Launch Pass copy`);
+  else if (!WEB_APP_LIVE) warn.push(`WEB_LAUNCH_PRO_UNTIL is ${LAUNCH_INPUT} but WEB_APP_LIVE is off: no Launch Pass copy`);
+  else if (!LAUNCH_UNTIL) warn.push(`the Launch Pass is over (WEB_LAUNCH_PRO_UNTIL ${LAUNCH_INPUT}, today ${etDate()} ET): the plain web-app copy is back; the variable can go`);
+}
 const cssKB = Buffer.byteLength(css) / 1024, liveKB = Buffer.byteLength(live) / 1024, themeB = Buffer.byteLength(themeJs);
 if (cssKB > 32) fail.push(`CSS ${cssKB.toFixed(1)} KB (budget 32 KB, 32,768 bytes)`);
 if (liveKB > 5) fail.push(`live script ${liveKB.toFixed(1)} KB (budget 5)`);
@@ -232,7 +241,7 @@ if (themeB > 700) fail.push(`theme script ${themeB} bytes (budget 700: it blocks
 // ── report ──
 const sizes = indexed.map((p) => Buffer.byteLength(p.html));
 const kinds = { games: m.pageGames.length, nights: Object.keys(m.nights).length, teams: pages.filter((p) => p.path.startsWith("/teams/")).length };
-console.log(`site ${TODAY} → ${OUT} · web app ${WEB_APP_LIVE ? "LIVE (browser links on)" : "not live (play links → App Store)"}`);
+console.log(`site ${TODAY} → ${OUT} · web app ${WEB_APP_LIVE ? "LIVE (browser links on)" : "not live (play links → App Store)"}${LAUNCH_UNTIL ? ` · Launch Pass on: Pro free on the web until ${LAUNCH_DAY}` : ""}`);
 console.log(`  ${pages.length} pages (${indexed.length} indexed; ${kinds.games} game pages over ${kinds.nights} nights, ${kinds.teams} team pages), tonight = ${m.tonight ?? "none"}`);
 console.log(`  html ${(Math.min(...sizes) / 1024).toFixed(1)}–${(Math.max(...sizes) / 1024).toFixed(1)} KB · css ${cssKB.toFixed(1)} KB · live.js ${liveKB.toFixed(2)} KB · theme.js ${themeB} B · fonts ${(fontBytes / 1024).toFixed(0)} KB (${FONTS.length} woff2)`);
 for (const w of warn) console.warn(`  warn: ${w}`);

@@ -4,6 +4,8 @@
 // neither — so team colours are classes in the stylesheet, widths are SVG
 // attributes, and Day or Night is set by a tiny external script in <head>.
 
+import { etDate, shortDate } from "./time.mjs";
+
 export const ORIGIN = "https://clutchledger.com";
 export const APP = "https://app.clutchledger.com";
 export const APP_STORE = "https://apps.apple.com/app/id6761838099";
@@ -23,6 +25,26 @@ export const PLAY = WEB_APP_LIVE ? `${APP}/` : APP_STORE;
 export const playGame = (id) => (WEB_APP_LIVE ? `${APP}/games/${id}` : APP_STORE);
 /** Pro's checkout: the web app's paywall, or the iPhone app. */
 export const PLAY_PRO = WEB_APP_LIVE ? `${APP}/paywall` : APP_STORE;
+
+/**
+ * The Launch Pass (owner, 2026-10-07): sign in on the web app, tap Claim, and
+ * every Pro feature is free on the web until a date — WEB_LAUNCH_PRO_UNTIL,
+ * an ISO date (a repository variable, like WEB_APP_LIVE). It shows only while
+ * the web app is live and the date is still ahead on New York's clock when
+ * the site is built (the real clock, not --date): from that day on the copy
+ * falls back to the plain web-app wording by itself, at the next build.
+ * Unset, malformed or past: no Launch Pass anywhere (build.mjs warns).
+ * The prices stay on the page either way.
+ */
+export const LAUNCH_INPUT = (process.env.WEB_LAUNCH_PRO_UNTIL ?? "").trim();
+const isDay = (s) => { const t = Date.parse(`${s}T12:00:00Z`); return /^\d{4}-\d{2}-\d{2}$/.test(s) && !Number.isNaN(t) && new Date(t).toISOString().slice(0, 10) === s; };
+export const LAUNCH_VALID = isDay(LAUNCH_INPUT);
+/** The Launch Pass's last date ("2026-11-03") while it is on, else null. */
+export const LAUNCH_UNTIL = WEB_APP_LIVE && LAUNCH_VALID && etDate() < LAUNCH_INPUT ? LAUNCH_INPUT : null;
+/** "Nov 3", the site's short date ("" when the Launch Pass is off). */
+export const LAUNCH_DAY = LAUNCH_UNTIL ? shortDate(LAUNCH_UNTIL) : "";
+/** Where the Launch Pass is claimed (signed in on the web app). */
+export const PLAY_PASS = `${APP}/pass`;
 
 /**
  * App Store Connect counts installs per campaign when a link carries the
