@@ -7,11 +7,12 @@
 // --days N limits them to the last N nights for a quick local build.
 //
 // Reads with the public anon key what the free app shows (lib/data.mjs says
-// exactly which rows), writes static HTML + one CSS file + WOFF2 fonts +
-// sitemap.xml, robots.txt, 404.html, _headers and _redirects, then checks
-// every page: no betting word (the app's list), a unique title and
-// description, a canonical, sizes in budget. Any failure exits non-zero and
-// nothing is deployed. Zero dependencies (Node 22+).
+// exactly which rows), writes static HTML + one CSS file (both editions, Night
+// and Day) + the theme script + WOFF2 fonts + sitemap.xml, robots.txt,
+// 404.html, _headers and _redirects, then checks every page: no betting word
+// (the app's list), a unique title and description, a canonical, sizes in
+// budget, and both editions' contrast (check-contrast.mjs). Any failure exits
+// non-zero and nothing is deployed. Zero dependencies (Node 22+).
 //
 // Env: SUPABASE_URL, SUPABASE_ANON_KEY (required unless --load-data),
 // SITE_DATE (the ET date to build for; default today in New York),
@@ -31,6 +32,7 @@ import { etDate, seasonOf } from "./lib/time.mjs";
 import { FONTS, ORIGIN, WEB_APP_LIVE, WIN_TOTALS_RULES_URL, DESCRIPTION_MAX } from "./lib/html.mjs";
 import { ttfToWoff2 } from "./lib/woff2.mjs";
 import { swatchOn } from "./lib/swatch.mjs";
+import { checkContrast, editions } from "./check-contrast.mjs";
 import { scanPages, selfTest } from "./lib/betting.mjs";
 import { homePage } from "./lib/pages/home.mjs";
 import { gamePage, nightPage } from "./lib/pages/game.mjs";
@@ -78,7 +80,7 @@ pages.push(notFoundPage());
 // The Win Totals rules stay on GitHub Pages (the App Store links there).
 const LEGACY = { "/terms.html": "/terms/", "/privacy.html": "/privacy/", "/support.html": "/support/", "/win-totals-rules.html": WIN_TOTALS_RULES_URL, "/win-totals/": WIN_TOTALS_RULES_URL };
 
-// ── assets: fonts, the stylesheet, the live script, content-hashed under /assets/ ──
+// ── assets: fonts, the stylesheet, the theme and live scripts, content-hashed under /assets/ ──
 rmSync(OUT, { recursive: true, force: true });
 mkdirSync(join(OUT, "assets"), { recursive: true });
 const hash = (buf) => createHash("sha256").update(buf).digest("hex").slice(0, 10);
@@ -93,17 +95,41 @@ for (const f of FONTS) {
 }
 for (const lic of ["OFL-fraunces.txt", "OFL-libre-franklin.txt", "OFL-ibm-plex-mono.txt", "OFL-doto.txt"]) copyFileSync(join(ROOT, "desk-src", "fonts", lic), join(OUT, "assets", lic));
 
-const fontCss = FONTS.map((f) => `@font-face{font-family:"${f.family}";font-style:${f.style};font-weight:${f.weight};font-display:swap;src:url(${fontFiles[f.file]}) format("woff2")}`).join("\n");
-// Team colours as the app draws them on night paper: lifted to 3:1 when too dark to see (lib/swatch.mjs).
-const PAPER = "#15130F", INK = "#F1E9D8";
-const teamColour = (t) => swatchOn(t.primary_color || "#555555", PAPER, INK);
-const teamCss = raw.teams.map((t) => `.a-${t.abbreviation}{--ca:${teamColour(t)}}.h-${t.abbreviation}{--ch:${teamColour(t)}}`).join("");
-let css = readFileSync(join(HERE, "static", "site.css"), "utf8").replace("/*@fonts*/", fontCss).replace("/*@teams*/", teamCss + "\n[hidden]{display:none!important}");
+// The stylesheet sits in /assets/ next to the fonts: relative urls, and no format() hint (every browser that runs this CSS reads WOFF2).
+// font-style normal and weight 400 are the descriptors' defaults: left out.
+const fontCss = FONTS.map((f) => `@font-face{font-family:"${f.family}";${f.style === "normal" ? "" : `font-style:${f.style};`}${f.weight === 400 ? "" : `font-weight:${f.weight};`}font-display:swap;src:url(${fontFiles[f.file].replace("/assets/", "")})}`).join("\n");
+const cssSource = readFileSync(join(HERE, "static", "site.css"), "utf8");
+const ed = editions(cssSource);
+// Team colours are marks, never text: 3:1 on every ground they are drawn on, lifted toward the
+// ink in tenths when too dark (night) or too light (day) to see (lib/swatch.mjs, the app's rule).
+// Night: the paper and the cards (the glass is the card's colour at night). Day: the night shade
+// holds on the day paper, card and glass for almost every team (it was lifted to a mid tone);
+// a team whose night shade is too light for day paper gets a Day shade, drawn on the glass too:
+// its class reads var(--d<TEAM>, <night shade>) and the Day block sets --d<TEAM>.
+const swatches = raw.teams.map((t) => {
+  const night = swatchOn(t.primary_color || "#555555", [ed.night.paper, ed.night.panel], ed.night.ink);
+  const holds = swatchOn(night, [ed.day.paper, ed.day.panel], ed.day.ink) === night;
+  return { team: t.abbreviation, night, day: holds ? night : swatchOn(t.primary_color || "#555555", [ed.day.paper, ed.day.panel], ed.day.ink) };
+});
+const shade = (s) => (s.day === s.night ? s.night : `var(--d${s.team},${s.night})`);
+// One rule per colour (several teams share one).
+const by = new Map();
+for (const s of swatches) by.set(shade(s), [...(by.get(shade(s)) ?? []), s.team]);
+const teamCss = [...by].map(([c, teams]) => `${teams.map((t) => `.a-${t}`).join(",")}{--ca:${c}}${teams.map((t) => `.h-${t}`).join(",")}{--ch:${c}}`).join("");
+const teamDayCss = swatches.filter((s) => s.day !== s.night).map((s) => `;--d${s.team}:${s.day}`).join("");
+let css = cssSource.replace("/*@fonts*/", fontCss).replace("/*@teams*/", teamCss + "\n[hidden]{display:none!important}").replace("/*@teams-day*/", teamDayCss);
+// The Day Edition is written once (inside @media (prefers-color-scheme:light), for Auto); a
+// pinned Day (<html data-theme="light">) gets the same rules, outside the media query.
+const dayRules = css.match(/\/\*@day\*\/([\s\S]*?)\/\*@day-end\*\//)?.[1];
+if (!dayRules || !css.includes("/*@day-pinned*/")) { console.error("site.css: the /*@day*/ … /*@day-end*/ block or /*@day-pinned*/ is missing"); process.exit(1); }
+css = css.replace("/*@day-pinned*/", dayRules.replaceAll(":root:not([data-theme=dark])", ":root[data-theme=light]"));
 css = css.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\n+/g, "\n").replace(/\s*([{};:,>])\s*/g, "$1").replace(/;}/g, "}").trim() + "\n";
 // Short names for the tokens (the source keeps the readable ones).
-const VARS = { amberHi: "ah", display: "fd", paper: "p", panel: "q", rule2: "r2", rule: "r", ink2: "i2", ink3: "i3", ink: "i", amber: "a", body: "fb", mono: "fm", num: "fn", glow: "g", led: "l", dim: "dm", hot: "h", win: "w" };
+const VARS = { amberHi: "ah", amberText: "at", linkHi: "lh", onAmber: "oa", display: "fd", paper: "p", panel: "q", rule2: "r2", rule3: "r3", rule: "r", ink2: "i2", ink3: "i3", ink: "i", amber: "a", body: "fb", mono: "fm", num: "fn", glow: "g", led: "l", dim: "dm", hot: "h", win: "w", shadow: "sh" };
 for (const [k, v] of Object.entries(VARS)) css = css.replace(new RegExp(`--${k}(?![\\w-])`, "g"), `--${v}`);
-css = css.replace(/font-style:normal;/g, "");
+// Shorter colour spellings, same colours: rgba() as #rrggbbaa, transparent as #0000.
+const hex2 = (n) => Math.round(n).toString(16).padStart(2, "0").toUpperCase();
+css = css.replace(/rgba\((\d+),(\d+),(\d+),([\d.]+)\)/g, (_, r, g, b, a) => `#${hex2(r)}${hex2(g)}${hex2(b)}${hex2(a * 255)}`).replace(/\btransparent\b/g, "#0000");
 const cssName = `/assets/site.${hash(css)}.css`;
 writeFileSync(join(OUT, cssName), css);
 
@@ -112,9 +138,18 @@ live = live.replace(/^\s*\/\*[\s\S]*?\*\/\s*/, "").replace(/^\s+/gm, "").replace
 const liveName = `/assets/live.${hash(live)}.js`;
 writeFileSync(join(OUT, liveName), live);
 
+// Day or Night before the first paint: a tiny synchronous script in <head> (the CSP forbids inline ones).
+// It is squeezed harder than live.js: no space around punctuation outside its string and regex
+// literals (the file keeps to that: no comments inside, a semicolon after every statement).
+const squeeze = (js) => js.split(/("(?:[^"\\\n]|\\.)*"|\/(?![*/])(?:[^/\\\n]|\\.)+\/)/).map((part, i) => (i % 2 ? part : part.replace(/\s*([=,;{}()<>?:!+%|&[\]])\s*/g, "$1").replace(/\s+/g, " "))).join("").trim() + "\n";
+const themeJs = squeeze(readFileSync(join(HERE, "static", "theme.js"), "utf8").replace(/^\s*\/\*[\s\S]*?\*\/\s*/, ""));
+try { new Function(themeJs); } catch (e) { console.error(`theme.js: squeezed into something that does not parse (${e.message})`); process.exit(1); }
+const themeName = `/assets/theme.${hash(themeJs)}.js`;
+writeFileSync(join(OUT, themeName), themeJs);
+
 // Wire the hashed names into every page.
 for (const p of pages) {
-  p.html = p.html.replaceAll('href="/site.css"', `href="${cssName}"`).replaceAll('src="/live.js"', `src="${liveName}"`);
+  p.html = p.html.replaceAll('href="/site.css"', `href="${cssName}"`).replaceAll('src="/live.js"', `src="${liveName}"`).replaceAll('src="/theme.js"', `src="${themeName}"`);
   for (const [plain, hashed] of Object.entries(fontFiles)) p.html = p.html.replaceAll(`/fonts/${plain}`, hashed);
 }
 
@@ -180,19 +215,29 @@ for (const p of pages.filter((p) => !p.redirect)) {
   if (kb > 60) warn.push(`${p.path}: ${kb.toFixed(1)} KB (budget 60)`);
   if (kb > 120) fail.push(`${p.path}: ${kb.toFixed(1)} KB`);
 }
-const cssKB = Buffer.byteLength(css) / 1024, liveKB = Buffer.byteLength(live) / 1024;
+// Both editions: every text pair at its floor, every team swatch 3:1 on its grounds (check-contrast.mjs).
+const contrast = checkContrast(cssSource, { swatches });
+for (const f of contrast.failures) fail.push(`contrast: ${f}`);
+// The browser bar's colour is each edition's paper, in the page head and in theme.js.
+for (const c of [ed.night.paper, ed.day.paper]) {
+  if (!themeJs.includes(c)) fail.push(`theme.js: the paper ${c} is not its theme-color`);
+  if (!pages[0].html.includes(`<meta name="theme-color" content="${c}"`)) fail.push(`the page head: no theme-color ${c}`);
+}
+if (!pages.filter((p) => !p.redirect).every((p) => p.html.includes(`<script src="${themeName}"></script>`))) fail.push("a page without the theme script");
+const cssKB = Buffer.byteLength(css) / 1024, liveKB = Buffer.byteLength(live) / 1024, themeB = Buffer.byteLength(themeJs);
 if (cssKB > 30) fail.push(`CSS ${cssKB.toFixed(1)} KB (budget 30)`);
 if (liveKB > 5) fail.push(`live script ${liveKB.toFixed(1)} KB (budget 5)`);
+if (themeB > 700) fail.push(`theme script ${themeB} bytes (budget 700: it blocks the first paint)`);
 
 // ── report ──
 const sizes = indexed.map((p) => Buffer.byteLength(p.html));
 const kinds = { games: m.pageGames.length, nights: Object.keys(m.nights).length, teams: pages.filter((p) => p.path.startsWith("/teams/")).length };
 console.log(`site ${TODAY} → ${OUT} · web app ${WEB_APP_LIVE ? "LIVE (browser links on)" : "not live (play links → App Store)"}`);
 console.log(`  ${pages.length} pages (${indexed.length} indexed; ${kinds.games} game pages over ${kinds.nights} nights, ${kinds.teams} team pages), tonight = ${m.tonight ?? "none"}`);
-console.log(`  html ${(Math.min(...sizes) / 1024).toFixed(1)}–${(Math.max(...sizes) / 1024).toFixed(1)} KB · css ${cssKB.toFixed(1)} KB · live.js ${liveKB.toFixed(2)} KB · fonts ${(fontBytes / 1024).toFixed(0)} KB (${FONTS.length} woff2)`);
+console.log(`  html ${(Math.min(...sizes) / 1024).toFixed(1)}–${(Math.max(...sizes) / 1024).toFixed(1)} KB · css ${cssKB.toFixed(1)} KB · live.js ${liveKB.toFixed(2)} KB · theme.js ${themeB} B · fonts ${(fontBytes / 1024).toFixed(0)} KB (${FONTS.length} woff2)`);
 for (const w of warn) console.warn(`  warn: ${w}`);
 if (fail.length) {
   for (const f of fail) console.error(`  FAIL: ${f}`);
   process.exit(1);
 }
-console.log("  checks: betting words clean · titles/descriptions unique · canonicals · no inline style/script · budgets OK");
+console.log(`  checks: betting words clean · titles/descriptions unique · canonicals · no inline style/script · budgets OK · contrast ${contrast.lines.length} pairs in both editions`);

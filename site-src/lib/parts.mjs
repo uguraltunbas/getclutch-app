@@ -34,9 +34,10 @@ export function gradeChip(g) {
 }
 
 /**
- * The instrument: both teams, Clutch's number big for the side it favours,
- * the LED rail (amber = Clutch, the cream segment = the market), the
- * legend, and the two call buttons (or the final).
+ * The instrument — black glass in both editions (class "gl"): both teams,
+ * Clutch's number big for the side it favours, the LED rail (amber =
+ * Clutch, the cream segment = the market), the legend, and the two call
+ * buttons (or the final).
  */
 export function board(g, { kicker = "THE CALL", link = null, headingLevel = 0 } = {}) {
   const s = g.side;
@@ -63,7 +64,7 @@ export function board(g, { kicker = "THE CALL", link = null, headingLevel = 0 } 
     foot = `<div class="bcall"><a class="cbtn ghost wide" href="${appGame(g)}">CALL IT IN THE APP</a></div>`;
   }
   const head = link ? `<a class="bk" href="${link}">${kicker}</a>` : `<span class="bk">${kicker}</span>`;
-  return `<div class="board ${teamCls(g)}${live ? " is-live" : ""}" data-gid="${g.id}" data-a="${g.away.abbreviation}" data-h="${g.home.abbreviation}"><span class="rs" aria-hidden="true"></span>
+  return `<div class="board gl ${teamCls(g)}${live ? " is-live" : ""}" data-gid="${g.id}" data-a="${g.away.abbreviation}" data-h="${g.home.abbreviation}"><span class="rs" aria-hidden="true"></span>
 <div class="bhead">${headingLevel ? `<h${headingLevel} class="bk-h">${head}</h${headingLevel}>` : head}<span class="amber" data-live="st">${esc(statusText(g))}</span></div>
 <div class="bteams">
 <div class="side"><span class="ab">${esc(g.away.abbreviation)}</span>${nm(g.away, "AWAY")}${num(awayPct, !favHome && !!s)}</div>

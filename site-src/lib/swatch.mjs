@@ -1,8 +1,9 @@
-// A team colour that can be seen on the night paper — the app's own rule
-// (mobile lib/theme/teamSwatch.ts, ported): team colours are marks, never
-// text, so the floor is WCAG's 3:1 for graphics against the ground. A colour
-// under it is lifted toward the ink in tenths until it clears (the Nets'
-// black, the navy teams), keeping its hue.
+// A team colour that can be seen on the paper — the app's own rule (mobile
+// lib/theme/teamSwatch.ts, ported): team colours are marks, never text, so
+// the floor is WCAG's 3:1 for graphics against the ground. A colour under it
+// is lifted toward the ink in tenths until it clears (the Nets' black, the
+// navy teams at night; the Spurs' silver by day), keeping its hue. The ground
+// may be a list (the paper and the card a swatch sits on): it must clear all.
 
 export const SWATCH_MIN_CONTRAST = 3;
 
@@ -31,15 +32,26 @@ export function contrastOf(a, b) {
   return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
 }
 
-/** `color` as it should be drawn on `ground`: itself at 3:1 or more, else lifted toward `ink` until it is. */
+/** The lowest contrast of `color` against one ground or each of a list; null when any can't be read. */
+function worst(color, ground) {
+  let low = Infinity;
+  for (const g of [].concat(ground)) {
+    const k = contrastOf(color, g);
+    if (k === null) return null;
+    low = Math.min(low, k);
+  }
+  return low;
+}
+
+/** `color` as it should be drawn on `ground` (one colour or a list): itself at 3:1 or more, else lifted toward `ink` until it is. */
 export function swatchOn(color, ground, ink) {
   const c = parse(color), i = parse(ink);
-  const first = contrastOf(color, ground);
+  const first = worst(color, ground);
   if (!c || !i || first === null || first >= SWATCH_MIN_CONTRAST) return color;
   for (let step = 1; step <= 10; step++) {
     const t = step / 10;
     const m = hex([c[0] + (i[0] - c[0]) * t, c[1] + (i[1] - c[1]) * t, c[2] + (i[2] - c[2]) * t]);
-    const k = contrastOf(m, ground);
+    const k = worst(m, ground);
     if (k !== null && k >= SWATCH_MIN_CONTRAST) return m;
   }
   return ink;

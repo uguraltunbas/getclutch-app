@@ -1,7 +1,8 @@
 // The page shell and the pieces every page shares: head (title, canonical,
-// Open Graph, JSON-LD, preloaded fonts), the masthead, the footer, the LED
-// rail. No inline style or script anywhere — the CSP allows neither — so
-// team colours are classes in the stylesheet and widths are SVG attributes.
+// Open Graph, JSON-LD, preloaded fonts, the theme script), the masthead, the
+// footer, the LED rail. No inline style or script anywhere — the CSP allows
+// neither — so team colours are classes in the stylesheet, widths are SVG
+// attributes, and Day or Night is set by a tiny external script in <head>.
 
 export const ORIGIN = "https://clutchledger.com";
 export const APP = "https://app.clutchledger.com";
@@ -74,16 +75,19 @@ const NAV = [
   ["/pricing/", "Pricing", "pricing"],
 ];
 
+/** The Theme button: Auto → Day → Night (static/theme.js keeps the pick and writes the word). */
+const THEME = '<button class="tg" type="button"><span class="vh">Theme: </span><b>Auto</b></button>';
+
 function masthead(current) {
   const links = NAV.map(([href, label, key]) => `<a href="${href}"${key === current ? ' aria-current="page"' : ""}>${label}</a>`).join("");
   const acts = WEB_APP_LIVE
     ? `<a class="signin" href="${APP}/">Sign in</a><a class="btn sm" href="${APP}/"><span class="hide-s">Play in your browser</span><span class="show-s">Play free</span></a>`
     : `<a class="btn sm" href="${APP_STORE}"><span class="hide-s">Get the iPhone app</span><span class="show-s">Get the app</span></a>`;
-  return `<header class="top"><div class="wrap bar">
+  return `<header class="top"><div class="wrap bar${WEB_APP_LIVE ? " live" : ""}">
 <a class="logo" href="/" aria-label="Clutch, front page">Clutch</a>
 <nav class="nav" aria-label="Site">${links}</nav>
-<div class="acts">${acts}
-<details class="menu"><summary>Menu</summary><nav aria-label="Site, small screens">${links}<a href="/support/">Support</a></nav></details></div>
+<div class="acts">${THEME}${acts}
+<details class="menu"><summary>Menu</summary><nav aria-label="Site, small screens">${links}<a href="/support/">Support</a>${THEME}</nav></details></div>
 </div></header>`;
 }
 
@@ -118,7 +122,10 @@ export function page({ path, title, description, body, current = "", og = "defau
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
 ${noindex ? '<meta name="robots" content="noindex">' : `<link rel="canonical" href="${url}">`}
-<meta name="theme-color" content="#15130F">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#15130F" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#EDEEF0" media="(prefers-color-scheme: light)">
+<script src="/theme.js"></script>
 ${pre}
 <link rel="stylesheet" href="${cssHref}">
 <link rel="icon" href="/favicon.png" type="image/png" sizes="64x64">

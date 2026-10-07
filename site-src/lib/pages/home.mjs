@@ -142,11 +142,11 @@ export function homePage(m) {
   const leadBoard = lead
     ? `<div class="inst a-${lead.away.abbreviation} h-${lead.home.abbreviation}"><span class="blob l" aria-hidden="true"></span><span class="blob r" aria-hidden="true"></span>
 ${board(lead, { kicker: isToday ? "GAME OF THE NIGHT" : `NEXT UP<span class="hide-s"> · ${esc(dayLabel(lead.date).toUpperCase())}</span>`, link: lead.path })}
-${liveOne ? `<a class="livechip d" href="${liveOne.path}" data-gid="${liveOne.id}" data-a="${liveOne.away.abbreviation}" data-h="${liveOne.home.abbreviation}"><span class="pulse" aria-hidden="true"></span><span data-live="sc">${esc(scoreLine(liveOne))}</span><span class="hot" data-live="st">${esc(statusText(liveOne))}</span></a>` : ""}</div>`
+${liveOne ? `<a class="livechip gl d" href="${liveOne.path}" data-gid="${liveOne.id}" data-a="${liveOne.away.abbreviation}" data-h="${liveOne.home.abbreviation}"><span class="pulse" aria-hidden="true"></span><span data-live="sc">${esc(scoreLine(liveOne))}</span><span class="hot" data-live="st">${esc(statusText(liveOne))}</span></a>` : ""}</div>`
     : `<div class="panel"><h2>The schedule isn't out yet.</h2><p class="sub">Clutch's numbers return with the next night of games.</p></div>`;
 
   const ticks = tickerItems(m, games, isToday);
-  const ticker = `<div class="ticker" role="region" aria-label="Stop press"><span class="lbl">STOP PRESS</span><div class="view"><div class="tick"><span>${ticks.map(esc).join("</span><span>")}</span><span aria-hidden="true">${ticks.map(esc).join('</span><span aria-hidden="true">')}</span></div></div></div>`;
+  const ticker = `<div class="ticker gl" role="region" aria-label="Stop press"><span class="lbl">STOP PRESS</span><div class="view"><div class="tick"><span>${ticks.map(esc).join("</span><span>")}</span><span aria-hidden="true">${ticks.map(esc).join('</span><span aria-hidden="true">')}</span></div></div></div>`;
 
   const sealedAll = games.length && games.every((g) => g.status === "postponed" || g.receipt?.state === "sealed");
   const firstSeal = sealedAll ? games.filter((g) => g.receipt?.seal).map((g) => g.receipt.seal.committedAt).sort()[0] : null;
@@ -163,7 +163,7 @@ ${liveOne ? `<a class="livechip d" href="${liveOne.path}" data-gid="${liveOne.id
   const lastH = !tonight ? "The paper returns with the next game." : isToday && games.some((g) => g.hasCall) ? "Tonight's paper is out." : isToday ? "Tonight's paper is being set." : `The next paper is out ${weekday(tonight)}.`;
 
   const body = `<section class="heroband"><span class="dots" aria-hidden="true"></span><div class="wrap">
-<div class="edition"><span>NIGHT EDITION<span class="hide-s"> · ${esc(m.current)}</span></span><span class="hide-s">${esc(longDate(m.today).toUpperCase())}</span><span>${right}</span></div>
+<div class="edition"><span><span class="ed"></span> EDITION<span class="hide-s"> · ${esc(m.current)}</span></span><span class="hide-s">${esc(longDate(m.today).toUpperCase())}</span><span>${right}</span></div>
 <h1 class="h1">Call every game.<br><em>Beat Clutch.</em></h1>
 <div class="hero"><div class="hero-l">
 <p class="lede">Clutch puts a number on every NBA game, tells you why, and seals it before tip. Make your own call — the morning grades you both.</p>
