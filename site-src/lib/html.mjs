@@ -109,8 +109,16 @@ const NAV = [
   ["/pricing/", "Pricing", "pricing"],
 ];
 
-/** The Theme button: Auto → Day → Night (static/theme.js keeps the pick and writes the word). */
-const THEME = '<button class="tg" type="button"><span class="vh">Theme: </span><b>Auto</b></button>';
+/**
+ * The Theme button, the masthead's last item — its top-right corner at every
+ * width, beside the Menu on small screens (owner, 2026-10-07: it was hard to
+ * find). A tap steps Auto / Day / Night (static/theme.js keeps the pick on
+ * <html data-theme>); the stylesheet shows the one word of the three that
+ * matches, so the button reads right from the first paint and its name is
+ * "Theme: Auto" (or Day, Night) whether the word is shown or, on a narrow
+ * phone, only the disc.
+ */
+const THEME = '<button class="tg" type="button"><span class="vh">Theme: </span><b class="t0">Auto</b><b class="t1">Day</b><b class="t2">Night</b></button>';
 
 function masthead(current) {
   const links = NAV.map(([href, label, key]) => `<a href="${href}"${key === current ? ' aria-current="page"' : ""}>${label}</a>`).join("");
@@ -120,8 +128,8 @@ function masthead(current) {
   return `<header class="top"><div class="wrap bar${WEB_APP_LIVE ? " live" : ""}">
 <a class="logo" href="/" aria-label="Clutch, front page">Clutch</a>
 <nav class="nav" aria-label="Site">${links}</nav>
-<div class="acts">${THEME}${acts}
-<details class="menu"><summary>Menu</summary><nav aria-label="Site, small screens">${links}<a href="/support/">Support</a>${THEME}</nav></details></div>
+<div class="acts">${acts}
+<details class="menu"><summary>Menu</summary><nav aria-label="Site, small screens">${links}<a href="/support/">Support</a></nav></details>${THEME}</div>
 </div></header>`;
 }
 

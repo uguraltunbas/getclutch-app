@@ -59,30 +59,37 @@ a.logo:hover{color:var(--ink)}
 .nav{display:flex;gap:26px;font-size:15px}
 .nav a{color:var(--ink2)}
 .nav a:hover,.nav a[aria-current]{color:var(--ink)}
-.acts{display:flex;align-items:center;gap:18px}
+.acts{display:flex;align-items:center;gap:18px;position:relative}
 .signin{color:var(--ink);font-size:15px;font-weight:700}
-.menu{display:none;position:relative}
-.menu summary,.tg{list-style:none;cursor:pointer;font:12px/1.55 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ink);border:1px solid var(--rule);padding:9px 10px}
+.menu{display:none}
+.menu summary,.tg{list-style:none;cursor:pointer;font:12px/1.5 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ink);border:1px solid var(--rule);padding:12px 10px}
+.menu summary:hover,.tg:hover{border-color:var(--rule3)}
 .menu summary::-webkit-details-marker{display:none}
 .menu nav{position:absolute;right:0;top:calc(100% + 8px);z-index:30;background:var(--panel);border:1px solid var(--rule);display:flex;flex-flow:column;min-width:220px;padding:6px 0;box-shadow:0 20px 50px var(--shadow)}
 .menu nav a{color:var(--ink);padding:11px 16px;font-size:15px}
 .menu nav a:hover{background:var(--paper)}
-/* the Theme button (masthead; in the menu on small screens): Auto → Day → Night.
-   The disc before the word is the pick: half (Auto), open (Day), full (Night).
-   Once the web app is live (.live: Sign in + the longer button) the masthead
-   keeps only the disc, the word staying its name, and the nav tightens under
-   1100 px — so the bar never wraps. Shown only when theme.js ran (it always
-   sets data-theme). */
-.tg{background:none;border-radius:0}
+/* the Theme button: the masthead's last item, so its top-right corner at every
+   width (beside the Menu on small screens). A tap steps Auto / Day / Night.
+   The disc is the pick: half (Auto), open (Day), full (Night); the word is the
+   one of its three <b>s that matches <html data-theme>, so it is right at the
+   first paint. Where the bar is short of room — narrow phones, and the live
+   masthead (Sign in + the longer button) between 981 and 1179 px — only the
+   disc shows, the word staying the button's name (font-size 0, not hidden).
+   44 px square at the least; the Menu and the masthead's button are 44 px
+   tall too, so the row lines up (under 360 px the bar tightens to keep one
+   line); the Menu's panel hangs from the row's right edge, under both.
+   Shown only when theme.js ran (it always sets data-theme). */
+.tg{background:none;border-radius:0;min-width:44px;white-space:nowrap}
 .tg::before{content:"";display:inline-block;padding:4.5px;border:1px solid;border-radius:50%;background:linear-gradient(90deg,currentColor 50%,#0000 0);margin-right:8px;vertical-align:-1px}
 [data-theme=light] .tg::before{background:none}[data-theme=dark] .tg::before{background:currentColor}
+.tg b{display:none}
+[data-theme=auto] .t0,[data-theme=light] .t1,[data-theme=dark] .t2{display:inline}
 :root:not([data-theme]) .tg{display:none}
-.live .acts>.tg b{font-size:0}.live .acts>.tg::before{margin:0}
-.menu .tg{margin:8px 16px;align-self:flex-start}
 
 /* buttons */
 .btn{display:inline-block;background:var(--amber);color:var(--onAmber);padding:11px 16px;font-weight:700;font-size:15px;line-height:1.3}
 .btn:hover{color:var(--onAmber);background:var(--amberHi)}
+.btn.sm{padding:12px 16px;line-height:20px}
 .btn.lg{padding:18px 26px;font-size:18px;box-shadow:0 0 28px rgba(255,176,32,.25)}
 .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--rule3);padding:10px 15px}
 .btn.ghost.lg{padding:17px 24px;box-shadow:none}
@@ -410,7 +417,8 @@ a.bk:hover{color:var(--ink)}
 .tend .note{flex-basis:100%}
 @media (prefers-reduced-motion:reduce){.tick,.pulse{animation:none}.tick{flex-wrap:wrap;width:auto}.tick span[aria-hidden]{display:none}}
 @media (max-width:1100px){.nav{gap:18px;font-size:14px}.live .nav{gap:12px}}
-@media (max-width:980px){.hero,.proof{grid-template-columns:minmax(0,1fr);gap:36px}.nav,.signin,.acts>.tg{display:none}.menu{display:block}.stack{grid-template-columns:minmax(0,1fr)}.aside{border-left:0;padding-left:0}.gh1,.gh1.long{font-size:64px;letter-spacing:-2px}}
+@media (min-width:981px) and (max-width:1179px){.live .tg b{font-size:0}.live .tg::before{margin:0;padding:6px}}
+@media (max-width:980px){.hero,.proof{grid-template-columns:minmax(0,1fr);gap:36px}.nav,.signin{display:none}.menu{display:block}.stack{grid-template-columns:minmax(0,1fr)}.aside{border-left:0;padding-left:0}.gh1,.gh1.long{font-size:64px;letter-spacing:-2px}}
 @media (max-width:760px){
 .wrap,.wrap.n{padding:0 16px}
 .h1{font-size:50px;letter-spacing:-1.5px}.heroband .h1{padding-top:34px}
@@ -440,7 +448,9 @@ a.bk:hover{color:var(--ink)}
 .foot{margin-top:72px}
 .stat .d{font-size:48px}
 }
-@media (max-width:420px){.acts{gap:10px}.btn.sm{padding:10px 12px;font-size:14px}.logo{font-size:28px}.bar{gap:10px}}
+@media (max-width:480px){.tg b{font-size:0}.tg::before{margin:0;padding:6px}}
+@media (max-width:420px){.acts{gap:10px}.btn.sm{padding:12px;font-size:14px}.logo{font-size:28px}.bar{gap:10px}}
+@media (max-width:359px){.bar,.acts{gap:6px}.logo{font-size:24px}.btn.sm{padding:12px 8px}.menu summary{padding:12px 7px}}
 .ed::before{content:var(--ed)}
 .gap{margin-top:14px}.hm{margin-bottom:28px}.mt{margin-top:44px}
 /*@teams*/
