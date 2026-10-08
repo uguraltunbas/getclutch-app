@@ -78,7 +78,7 @@ export const TERMS = {
 
 export const PRIVACY = {
   title: "Privacy",
-  updated: LEGAL_UPDATED,
+  updated: "October 8, 2026",
   intro: "Clutch is an NBA analytics app. You can read every page without an account. This policy says what we collect when you do sign in or use a feature that needs one, why, and who else touches it.",
   sections: [
     {
@@ -95,7 +95,7 @@ export const PRIVACY = {
       title: "Buying on the web",
       body: "Purchases on the web are processed by Paddle.com, our merchant of record. Paddle collects what it needs to take the payment and handle tax — your payment details, e-mail and billing country — under its own privacy notice. We receive the subscription's status and the e-mail on the order, through RevenueCat; we never see card details.",
     },
-    { title: "Why", body: "To run the features you use — keep your team, send the alerts you asked for, grade your calls, open what your plan or a Free Pro day includes. To find out which parts of the app work and which don't. To fix crashes." },
+    { title: "Why", body: "To run the features you use — keep your team, send the alerts you asked for, grade your calls, open what your plan or a Free Pro day includes. To find out which parts of the app work and which don't. To fix crashes. And now and then to e-mail you about Clutch itself — the season, a contest you can enter, an update you need — from ugur@clutchledger.com." },
     {
       title: "Who else handles it",
       body:
@@ -104,6 +104,7 @@ export const PRIVACY = {
         "• Apple and Google — sign-in; Apple — payments in the iPhone app.\n" +
         "• Paddle — payments on the web (merchant of record).\n" +
         "• Expo — delivers push notifications.\n" +
+        "• Resend — sends our e-mails.\n" +
         "• PostHog — product analytics.\n" +
         "• Sentry — crash reports.\n" +
         "• Cloudflare — serves this website.\n" +
@@ -120,7 +121,7 @@ export const PRIVACY = {
     },
     { title: "Made on your phone", body: "Game video, your yearbook (PDF) and the Front page (a share image) are made on your iPhone; nothing is sent to us to make them. A video or a yearbook leaves your phone only if you share or save it. Saving a video asks for permission to add to your Photos, and nothing is read from them." },
     { title: "This website", body: "clutchledger.com sets no cookies and runs no analytics or advertising. To show tonight's live scores your browser asks our database (Supabase) for them directly; Cloudflare, which serves the pages, keeps standard request logs." },
-    { title: "Your choices", body: "Alerts can be switched off in the app or in iOS Settings. You can delete your account from the You tab; that removes your profile, team, alert settings, calls, capsule, Win Totals sheet and points, and — if you signed in with Apple — revokes Clutch's access to your Apple ID. Subscriptions are not cancelled by deleting the account: one bought in the iPhone app is managed by Apple; one bought on the web is cancelled in the web app under You › Subscription, or from the link in Paddle's receipt e-mail (or write to us and we cancel it for you)." },
+    { title: "Your choices", body: "Alerts can be switched off in the app or in iOS Settings. To stop e-mails from Clutch, reply STOP to any of them. You can delete your account from the You tab; that removes your profile, team, alert settings, calls, capsule, Win Totals sheet and points, and — if you signed in with Apple — revokes Clutch's access to your Apple ID. Subscriptions are not cancelled by deleting the account: one bought in the iPhone app is managed by Apple; one bought on the web is cancelled in the web app under You › Subscription, or from the link in Paddle's receipt e-mail (or write to us and we cancel it for you)." },
     {
       title: "Your rights",
       body: `You can see, correct or delete what Clutch holds about you. Most of it is on the You tab, and deleting your account there removes it. To ask for a copy of your data, a correction, or anything the app can't do for you, write to ${SUPPORT_EMAIL}; we answer within 48 hours. Depending on where you live (for example the EU, the UK or California) these are your rights by law, and you can also complain to your data protection authority.`,
