@@ -429,7 +429,7 @@ T.slate = () => {
     <div class="dbl"></div>
     <div class="h2" style="margin-top:30px;font-size:${games.length > 9 ? 70 : 80}px">${tr ? "Bu gecenin tahminleri. <em class='amber' style='font-style:normal'>Hangisi yanlış?</em>" : "Tonight's calls. <em class='amber' style='font-style:normal'>Which one is wrong?</em>"}</div>
     <div id="rows" style="margin-top:28px;display:flex;flex-direction:column"></div>
-    <div class="lede" style="margin-top:22px;max-width:none;font-size:28px">${tr ? "Hepsi maç başlamadan mühürlü, maçtan sonra notlanıyor. <b>Sen de tahmin et, Clutch'ı yen.</b>" : "Sealed before tip, graded after the final. <b>Make your own calls and beat Clutch.</b>"}</div>
+    <div class="lede" style="margin-top:22px;max-width:none;font-size:28px">${Q.get("pre") ? (tr ? "Hazırlık maçları: maçtan önce mühürlü, notlanmıyor. <b>Sen de tahmin et, puan topla.</b>" : "Preseason: sealed before tip, never graded. <b>Make your own calls for points.</b>") : tr ? "Hepsi maç başlamadan mühürlü, maçtan sonra notlanıyor. <b>Sen de tahmin et, Clutch'ı yen.</b>" : "Sealed before tip, graded after the final. <b>Make your own calls and beat Clutch.</b>"}</div>
   </div>`));
   root.insertAdjacentHTML("beforeend", foot(tr ? "App Store'da ücretsiz" : "Free on the App Store"));
   const rows = document.getElementById("rows");

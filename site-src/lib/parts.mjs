@@ -87,7 +87,7 @@ export function cardLine(g) {
   }
   if (g.status === "live" || g.status === "halftime") return g.hasCall ? `Live. Clutch had the ${g.side.team.nickname} at ${pct(g.side.prob)} before tip.` : "Live.";
   if (!g.hasCall) return "Clutch's number lands the morning of the game.";
-  if (g.preseason) return "Preseason: the number sits near 50/50.";
+  if (g.preseason) return g.reasons[0] ? `${g.reasons[0].label}. Preseason: not graded.` : "Preseason: sealed before tip, not graded.";
   if (g.differs) return `The market differs: it has ${g.side.other.nickname} at ${pct(g.side.isHome ? 1 - g.market : g.market)}.`;
   if (g.reasons[0]) return g.reasons[0].label + ".";
   return "";
@@ -95,10 +95,10 @@ export function cardLine(g) {
 
 /**
  * Does a card's line say why the number is what it is? (The front page's
- * guide points at it: a reason, or the preseason's near-50/50 — not a score,
- * the market's other side, or a number still to come.)
+ * guide points at it: a reason — not a score, the market's other side, the
+ * preseason's "not graded", or a number still to come.)
  */
-export const lineIsWhy = (g) => g.status === "scheduled" && g.hasCall && (g.preseason || (!g.differs && !!g.reasons[0]));
+export const lineIsWhy = (g) => g.status === "scheduled" && g.hasCall && !!g.reasons[0] && (g.preseason || !g.differs);
 
 /** A Tonight card (a link to the game page). `why`: the guide's hook on its line. */
 export function gameCard(g, why = false) {

@@ -100,7 +100,7 @@ if (tonight.length) {
   const showBoard = tonight.length >= 3;
   const board = tonight.map((x) => ({ fav: x.fav.nickname, dog: x.dog.nickname, p: x.pct, tip: tipET(x.g.game_time_utc) }));
   const pre = tonight[0].g.season_type === "Preseason";
-  if (showBoard) items.push({ kind: pre ? "Tonight's calls (preseason)" : "Tonight's calls", when: "Afternoon · X, Threads, IG story", img: card("tonight.png", { t: "slate", g: board, d: nice(TODAY) + (pre ? " · preseason" : "") }),
+  if (showBoard) items.push({ kind: pre ? "Tonight's calls (preseason)" : "Tonight's calls", when: "Afternoon · X, Threads, IG story", img: card("tonight.png", { t: "slate", g: board, d: nice(TODAY) + (pre ? " · preseason" : ""), ...(pre ? { pre: 1 } : {}) }),
     en: `Tonight's calls from Clutch${pre ? " (preseason: sealed, not graded)" : ""}, all sealed before tip:\n\n${tonight.map((x) => `${x.fav.nickname} ${x.pct}% over ${x.dog.nickname}`).join("\n")}\n\nWhich one is wrong?`,
     tr: `Clutch'ın bu geceki tahminleri${pre ? " (hazırlık: mühürlü, notlanmıyor)" : ""}:\n\n${tonight.map((x) => `${x.fav.nickname} %${x.pct} (${x.dog.nickname}'a karşı) · ${tipTR(x.g.game_time_utc)}`).join("\n")}\n\nHangisi yanlış?` });
   // "biggest" = the two teams with the highest win totals between them (a proxy for interest)
