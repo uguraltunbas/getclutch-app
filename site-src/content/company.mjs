@@ -21,8 +21,8 @@ export const COMPANY = {
   links: {
     appStore: APP_STORE,
     x: "https://x.com/getclutchledger",
-    linkedinCompany: null,
-    linkedinFounder: null,
+    linkedinCompany: "https://www.linkedin.com/company/clutchledger/",
+    linkedinFounder: "https://www.linkedin.com/in/uguraltunbas/",
   },
   /** [when, what] — oldest first. */
   timeline: [
