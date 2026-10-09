@@ -7,6 +7,7 @@ import { pct, callPoints, comparisons, opener, verdictOf, rec, shortHash, RATE_F
 import { longDate, dayLabel, shortDate, weekday, timeET, countWord, shift } from "../time.mjs";
 import { FRONT_FREE, FRONT_PRO, FREE_CARDS, FAQ, PLAN } from "../../content/features.mjs";
 import { worstMiss, lastGradedNight } from "../model.mjs";
+import { organizationLd } from "../../content/company.mjs";
 
 /** The game of the night: the biggest matchup still to be decided (two teams' win totals, the desk's proxy for interest). */
 function gameOfTheNight(games) {
@@ -278,7 +279,7 @@ ${guide(lead, isToday)}`;
   const desc = `Clutch puts a win probability on every NBA game, tells you why, and seals it before tip. Call every game free ${WEB_APP_LIVE ? "in your browser or on iPhone" : "on iPhone"} — the public Ledger grades every call.`;
   const ld = [
     { "@context": "https://schema.org", "@type": "WebSite", name: "Clutch", url: ORIGIN + "/", description: desc },
-    { "@context": "https://schema.org", "@type": "Organization", name: "Clutch", url: ORIGIN + "/", logo: ORIGIN + "/icon-512.png", email: "uguraltunbasai@gmail.com", founder: { "@type": "Person", name: "Uğur Altunbaş" }, sameAs: [APP_STORE, "https://x.com/getclutchledger"] },
+    organizationLd(ORIGIN),
   ];
   return { path: "/", title: "Clutch — call every NBA game, beat Clutch", html: page({ path: "/", title: "Clutch — call every NBA game, beat Clutch", description: desc, body, current: "", og: "home", jsonld: ld, live: games.some((g) => g.status !== "final" && g.status !== "postponed"), tour: true }) };
 }

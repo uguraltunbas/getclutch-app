@@ -17,14 +17,14 @@
 
 import { WIN_TOTALS_RULES_URL } from "../lib/html.mjs";
 
-export const SUPPORT_EMAIL = "uguraltunbasai@gmail.com";
+export const SUPPORT_EMAIL = "ugur@clutchledger.com";
 export const OPERATOR = "Uğur Altunbaş";
-export const LEGAL_UPDATED = "October 2, 2026";
+export const LEGAL_UPDATED = "October 9, 2026";
 export const PADDLE_BUYER_TERMS = "https://www.paddle.com/legal/checkout-buyer-terms";
 
 export const TERMS = {
   title: "Terms",
-  updated: "October 6, 2026",
+  updated: "October 9, 2026",
   intro: "By using Clutch you agree to these terms. They are short on purpose.",
   sections: [
     { title: "What Clutch is", body: "An NBA analytics app: a model's win probabilities, the reasoning behind them, and a public record of every call it has made. Predictions are estimates, not guarantees, and the record shows how often they have been wrong." },
@@ -78,7 +78,7 @@ export const TERMS = {
 
 export const PRIVACY = {
   title: "Privacy",
-  updated: "October 8, 2026",
+  updated: "October 9, 2026",
   intro: "Clutch is an NBA analytics app. You can read every page without an account. This policy says what we collect when you do sign in or use a feature that needs one, why, and who else touches it.",
   sections: [
     {

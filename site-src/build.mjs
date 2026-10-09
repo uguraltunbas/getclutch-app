@@ -42,7 +42,7 @@ import { scanPages, selfTest } from "./lib/betting.mjs";
 import { homePage } from "./lib/pages/home.mjs";
 import { gamePage, nightPage } from "./lib/pages/game.mjs";
 import { ledgerPage, receiptsPage } from "./lib/pages/paper.mjs";
-import { howPage, pricingPage, termsPage, privacyPage, refundsPage, supportPage } from "./lib/pages/about.mjs";
+import { howPage, pricingPage, companyPage, termsPage, privacyPage, refundsPage, supportPage } from "./lib/pages/about.mjs";
 import { teamPages, notFoundPage } from "./lib/pages/teams.mjs";
 import { TERMS, PRIVACY, REFUNDS, SUPPORT, LEGAL_UPDATED } from "./content/legal.mjs";
 
@@ -77,7 +77,7 @@ const pages = [];
 pages.push(homePage(m));
 for (const g of m.pageGames) pages.push(gamePage(g, m));
 for (const d of Object.keys(m.nights)) pages.push(nightPage(d, m));
-pages.push(ledgerPage(m), receiptsPage(m), howPage(m), pricingPage(), termsPage(), privacyPage(), refundsPage(), supportPage());
+pages.push(ledgerPage(m), receiptsPage(m), howPage(m), pricingPage(), companyPage(), termsPage(), privacyPage(), refundsPage(), supportPage());
 pages.push(...teamPages(m));
 pages.push(notFoundPage());
 // Old GitHub Pages links on the new domain: 301s in _redirects only (no .html

@@ -1,12 +1,13 @@
 // How it works (the app's Methodology, app/methodology.tsx, with the numbers
 // from the free model/accuracy snapshot), Pricing (FEATURES, word for word),
-// the legal pages and Support. (Win Totals' official rules live on the
+// Company (who makes Clutch, content/company.mjs), the legal pages and Support. (Win Totals' official rules live on the
 // GitHub Pages site the App Store links to, not on this domain.)
 
 import { page, esc, prose, APP_STORE, ORIGIN, PLAY, PLAY_PRO, WEB_APP_LIVE, LAUNCH_DAY, passLink } from "../html.mjs";
 import { FEATURES, PLAN } from "../../content/features.mjs";
 import { TERMS, PRIVACY, REFUNDS, SUPPORT, SUPPORT_EMAIL, OPERATOR, PADDLE_BUYER_TERMS } from "../../content/legal.mjs";
 import { mediumDate } from "../time.mjs";
+import { COMPANY, organizationLd } from "../../content/company.mjs";
 
 const b3 = (x) => (x == null ? "—" : x.toFixed(3));
 /** "2012-13..2025-26" → "2012–13 to 2025–26". */
@@ -81,6 +82,36 @@ export function pricingPage() {
   const desc = `Clutch is free for good: every NBA game's number, the market, the top reasons and the Ledger. Clutch Pro: ${PLAN.monthly} a month or ${PLAN.annual} a year, ${PLAN.trialDays} days free.`;
   const ld = { "@context": "https://schema.org", "@type": "Product", name: PLAN.name, description: desc, image: ORIGIN + "/og/pricing.jpg", brand: { "@type": "Brand", name: "Clutch" }, url: ORIGIN + "/pricing/", offers: [{ "@type": "Offer", name: "Monthly", price: "9.99", priceCurrency: "USD", url: ORIGIN + "/pricing/" }, { "@type": "Offer", name: "Yearly", price: "59.99", priceCurrency: "USD", url: ORIGIN + "/pricing/" }] };
   return { path: "/pricing/", title: "Pricing: Free for good, Clutch Pro $9.99 a month · Clutch", html: page({ path: "/pricing/", title: "Pricing: Free for good, Clutch Pro $9.99 a month · Clutch", description: desc, body, current: "pricing", og: "pricing", jsonld: ld }) };
+}
+
+export function companyPage() {
+  const c = COMPANY;
+  const mail = `<a href="mailto:${esc(c.email)}">${esc(c.email)}</a>`;
+  const facts = [
+    ["Company", esc(c.name)],
+    ["Founder", esc(c.founder)],
+    ["Based in", `${esc(c.city)}, ${esc(c.country)}`],
+    ["Founded", esc(c.foundedText)],
+    ["On the App Store", `Since April 24, 2026 · <a href="${APP_STORE}">Clutch — the Basketball Ledger</a>`],
+    ["Funding", esc(c.funding)],
+    ["Contact", mail],
+  ];
+  const elsewhere = [
+    ["The iPhone app", c.links.appStore],
+    ["Clutch on X", c.links.x],
+    ["Clutch on LinkedIn", c.links.linkedinCompany],
+    [`${c.founder} on LinkedIn`, c.links.linkedinFounder],
+  ].filter(([, href]) => href);
+  const body = `<div class="wrap r"><div class="rhead"><span class="kick">COMPANY</span><h1 class="rh1">Who makes Clutch.</h1><p class="rdeck">Clutch is an NBA analytics app and a public record of every call it makes. ${esc(c.founder)} builds and runs it from ${esc(c.city)}, and has since ${esc(c.foundedText)}.</p></div>
+<div class="body">
+<section aria-labelledby="facts"><h2 class="sh" id="facts">At a glance</h2><div class="scroll"><table class="tbl"><tbody>${facts.map(([k, v]) => `<tr><th scope="row">${k}</th><td>${v}</td></tr>`).join("")}</tbody></table></div></section>
+<section aria-labelledby="when"><h2 class="sh" id="when">So far</h2><div class="scroll"><table class="tbl"><tbody>${c.timeline.map(([when, what]) => `<tr><th scope="row">${esc(when)}</th><td>${esc(what)}</td></tr>`).join("")}</tbody></table></div></section>
+<section class="blk" aria-labelledby="else"><h2 id="else">Elsewhere</h2><ul>${elsewhere.map(([label, href]) => `<li><a href="${href}">${esc(label)}</a></li>`).join("")}</ul></section>
+<section class="blk" aria-labelledby="write"><h2 id="write">Write to us</h2><p>Press, partners and questions: ${mail}. We answer within 48 hours. Help with the app is on the <a href="/support/">Support</a> page.</p></section>
+</div></div>`;
+  const desc = `Clutch is an NBA analytics app built and run by ${c.founder} in ${c.city} since ${c.foundedText}: the founder, the timeline, and how to reach us.`;
+  const ld = [organizationLd(ORIGIN), { "@context": "https://schema.org", "@type": "AboutPage", name: "Company · Clutch", url: ORIGIN + "/company/", about: { "@type": "Organization", name: c.name, url: ORIGIN + "/" } }];
+  return { path: "/company/", title: "Company: who makes Clutch · Clutch", html: page({ path: "/company/", title: "Company: who makes Clutch · Clutch", description: desc, body, current: "", og: "default", jsonld: ld }) };
 }
 
 /** A legal or help page from its sections. */
