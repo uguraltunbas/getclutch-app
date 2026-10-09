@@ -4,7 +4,7 @@
 // (April 24, 2026, apps.apple.com/app/id6761838099), the domain (October
 // 2026). A profile link that is null is left out until it exists.
 
-import { APP_STORE } from "../lib/html.mjs";
+import { APP_STORE, X_URL, LINKEDIN_URL } from "../lib/html.mjs";
 import { SUPPORT_EMAIL, OPERATOR } from "./legal.mjs";
 
 export const COMPANY = {
@@ -20,8 +20,8 @@ export const COMPANY = {
   funding: "Bootstrapped: no outside funding.",
   links: {
     appStore: APP_STORE,
-    x: "https://x.com/getclutchledger",
-    linkedinCompany: "https://www.linkedin.com/company/clutchledger/",
+    x: X_URL,
+    linkedinCompany: LINKEDIN_URL,
     linkedinFounder: "https://www.linkedin.com/in/uguraltunbas/",
   },
   /** [when, what] — oldest first. */

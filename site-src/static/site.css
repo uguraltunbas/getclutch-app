@@ -273,7 +273,7 @@ a.bk:hover{color:var(--ink)}
 
 /* footer */
 .foot{padding:56px 0;margin-top:104px}
-.fgrid{display:grid;grid-template-columns:minmax(0,2fr) repeat(3,minmax(0,1fr));gap:32px}
+.fgrid{display:grid;grid-template-columns:minmax(0,2fr) repeat(4,minmax(0,1fr));gap:32px}
 .fbrand .logo{font-size:40px}
 .fbrand p{font-size:14px;line-height:1.55;color:var(--ink3);max-width:340px;margin-top:10px}
 .foot nav{display:flex;flex-flow:column;gap:10px;font-size:14.5px}

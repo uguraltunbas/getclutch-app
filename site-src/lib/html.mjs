@@ -9,6 +9,9 @@ import { etDate, shortDate } from "./time.mjs";
 export const ORIGIN = "https://clutchledger.com";
 export const APP = "https://app.clutchledger.com";
 export const APP_STORE = "https://apps.apple.com/app/id6761838099";
+// Clutch's own profiles: the footer's Follow column, the Company page and the Organization record.
+export const X_URL = "https://x.com/getclutchledger";
+export const LINKEDIN_URL = "https://www.linkedin.com/company/clutchledger/";
 /** The official Win Totals rules: on the GitHub Pages site the App Store links to, not on this domain (Paddle reviews this one). */
 export const WIN_TOTALS_RULES_URL = "https://uguraltunbas.github.io/getclutch-app/win-totals-rules.html";
 
@@ -140,6 +143,7 @@ function footer() {
 <nav aria-label="The paper"><span class="mono">The paper</span><a href="/#tonight">Tonight</a><a href="/ledger/">The Ledger</a><a href="/receipts/">Proof</a><a href="/teams/">Teams</a></nav>
 <nav aria-label="About"><span class="mono">About</span><a href="/how-it-works/">How it works</a><a href="/pricing/">Pricing</a><a href="/company/">Company</a><a href="/support/">Support</a><a href="${APP_STORE}">iPhone app</a></nav>
 <nav aria-label="Legal"><span class="mono">Legal</span><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="/refunds/">Refunds</a></nav>
+<nav aria-label="Follow"><span class="mono">Follow</span><a href="${X_URL}" rel="me">X</a><a href="${LINKEDIN_URL}" rel="me">LinkedIn</a></nav>
 </div>
 <div class="fline"><span>Sports analytics for fans. Not affiliated with the NBA or any team.</span><span>© 2026 Clutch · Operated by Uğur Altunbaş</span></div>
 </div></footer>`;
