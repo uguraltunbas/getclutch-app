@@ -9,6 +9,8 @@ import { SUPPORT_EMAIL, OPERATOR } from "./legal.mjs";
 
 export const COMPANY = {
   name: "Clutch",
+  // The name on LinkedIn and in the domain: plain "Clutch" is shared by many companies.
+  alternateName: "Clutch Ledger",
   founder: OPERATOR,
   role: "Founder",
   city: "Istanbul",
@@ -42,6 +44,7 @@ export function organizationLd(origin) {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: COMPANY.name,
+    alternateName: COMPANY.alternateName,
     url: origin + "/",
     logo: origin + "/icon-512.png",
     email: COMPANY.email,

@@ -88,7 +88,7 @@ export function companyPage() {
   const c = COMPANY;
   const mail = `<a href="mailto:${esc(c.email)}">${esc(c.email)}</a>`;
   const facts = [
-    ["Company", esc(c.name)],
+    ["Company", `${esc(c.name)} (${esc(c.alternateName)})`],
     ["Founder", esc(c.founder)],
     ["Based in", `${esc(c.city)}, ${esc(c.country)}`],
     ["Founded", esc(c.foundedText)],
@@ -99,7 +99,7 @@ export function companyPage() {
   const elsewhere = [
     ["The iPhone app", c.links.appStore],
     ["Clutch on X", c.links.x],
-    ["Clutch on LinkedIn", c.links.linkedinCompany],
+    [`${c.alternateName} on LinkedIn`, c.links.linkedinCompany],
     [`${c.founder} on LinkedIn`, c.links.linkedinFounder],
   ].filter(([, href]) => href);
   const body = `<div class="wrap r"><div class="rhead"><span class="kick">COMPANY</span><h1 class="rh1">Who makes Clutch.</h1><p class="rdeck">Clutch is an NBA analytics app and a public record of every call it makes. ${esc(c.founder)} builds and runs it from ${esc(c.city)}, and has since ${esc(c.foundedText)}.</p></div>
