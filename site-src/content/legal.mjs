@@ -11,6 +11,9 @@
 // review): "the market's number" for comparison (the app never shows a line),
 // and contests are named iPhone-only — the web app hides Win Totals
 // (mobile lib/wintotals/offered.ts). The app's Terms catch up in 1.0.8.
+// Since October 21, 2026 §03 says what Clutch is not without naming it
+// (no betting word at all): the old disclaimer was the same pattern as the
+// footer line that tripped the review.
 //
 // A body is plain text: "\n" separates paragraphs, a line starting "• " is
 // a list item. The support e-mail and https links become links when rendered.
@@ -24,12 +27,12 @@ export const PADDLE_BUYER_TERMS = "https://www.paddle.com/legal/checkout-buyer-t
 
 export const TERMS = {
   title: "Terms",
-  updated: "October 9, 2026",
+  updated: "October 21, 2026",
   intro: "By using Clutch you agree to these terms. They are short on purpose.",
   sections: [
     { title: "What Clutch is", body: "An NBA analytics app: a model's win probabilities, the reasoning behind them, and a public record of every call it has made. Predictions are estimates, not guarantees, and the record shows how often they have been wrong." },
     { title: "Who runs Clutch", body: `Clutch — the iPhone app, the web app at app.clutchledger.com and this website — is made and operated by ${OPERATOR}, a sole proprietor. "We" and "Clutch" in these terms mean him. Contact: ${SUPPORT_EMAIL}.` },
-    { title: "Analytics, not a wagering service", body: "Clutch does not take bets, process wagers or pay out money, and nothing in it is advice to gamble. Where Clutch shows the market's number, it is there for comparison. You are responsible for following the law where you live." },
+    { title: "Analytics only", body: "Clutch is an analytics service. It does not accept money on the outcome of any game, never sends money to its users, and nothing in it is a recommendation to put money on a game. Where Clutch shows the market's number, it is there for comparison. You are responsible for following the law where you live." },
     { title: "Points", body: "Points are earned only by playing — your calls, the daily games, the Time Capsule and Win Totals — and when your favourite team wins a regular-season or playoff game. They only go up: they are never spent, cannot be bought, sold, transferred or exchanged for money, and have no cash value. Every level you reach earns a Free Pro day (24 hours of Pro at no charge), used when you choose, at most one a week. We may change how points are earned, and points earned by abusing the app may be removed. Your favourite team can be changed once per NBA season, and a call counts only for games that start at least 12 hours after it." },
     { title: "Accounts", body: "You must be 13 or older. Keep your sign-in to yourself; you are responsible for what happens on your account." },
     {

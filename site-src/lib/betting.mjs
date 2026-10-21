@@ -46,10 +46,7 @@ const ALL_WORDS = [...BETTING_WORDS, ...SITE_WORDS];
 export const bettingWordsIn = (text) => ALL_WORDS.filter((b) => b.re.test(text)).map((b) => b.id);
 
 /** Deliberate uses: `page` is a path prefix ("" = every page), `phrase` a substring of the text segment. */
-export const ALLOW = [
-  { page: "/terms/", phrase: "Analytics, not a wagering service", reason: "Terms of Use: the legal statement of what the app is not has to name it (app/terms.tsx)." },
-  { page: "/terms/", phrase: "Clutch does not take bets, process wagers or pay out money", reason: "Terms of Use: the same legal statement (app/terms.tsx, allow-listed in the app too)." },
-];
+export const ALLOW = [];
 
 const ENT = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ", rsquo: "’", lsquo: "‘", rdquo: "”", ldquo: "“", mdash: "—", ndash: "–", hellip: "…", middot: "·", rarr: "→", copy: "©" };
 const decode = (s) => s.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (m, e) => (e[0] === "#" ? String.fromCodePoint(e[1] === "x" || e[1] === "X" ? parseInt(e.slice(2), 16) : +e.slice(1)) : ENT[e.toLowerCase()] ?? m));
