@@ -278,8 +278,13 @@ ${guide(lead, isToday)}`;
 
   const desc = `Clutch puts a win probability on every NBA game, tells you why, and seals it before tip. Call every game free ${WEB_APP_LIVE ? "in your browser or on iPhone" : "on iPhone"} — the public Ledger grades every call.`;
   const ld = [
-    { "@context": "https://schema.org", "@type": "WebSite", name: "Clutch", url: ORIGIN + "/", description: desc },
+    // alternateName: Google's site name for search results reads WebSite, and
+    // "Clutch" alone is shared with ClutchPoints and Clutch.co.
+    { "@context": "https://schema.org", "@type": "WebSite", name: "Clutch", alternateName: "Clutch Ledger", url: ORIGIN + "/", description: desc },
     organizationLd(ORIGIN),
   ];
-  return { path: "/", title: "Clutch — call every NBA game, beat Clutch", html: page({ path: "/", title: "Clutch — call every NBA game, beat Clutch", description: desc, body, current: "", og: "home", jsonld: ld, live: games.some((g) => g.status !== "final" && g.status !== "postponed"), tour: true }) };
+  // The words people search come first ("NBA win probability"); the brand line
+  // ("call every game, beat Clutch") stays in the h1 and the share card.
+  const title = "Clutch — NBA win probability for every game, graded in public";
+  return { path: "/", title, html: page({ path: "/", title, description: desc, body, current: "", og: "home", jsonld: ld, live: games.some((g) => g.status !== "final" && g.status !== "postponed"), tour: true }) };
 }
