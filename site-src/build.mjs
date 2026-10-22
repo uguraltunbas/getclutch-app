@@ -47,6 +47,8 @@ import { howPage, pricingPage, companyPage, termsPage, privacyPage, refundsPage,
 import { teamPages, notFoundPage } from "./lib/pages/teams.mjs";
 import { accuracyPage, backtestSentence } from "./lib/pages/accuracy.mjs";
 import { matchupPages } from "./lib/pages/matchups.mjs";
+import { playoffsPage } from "./lib/pages/playoffs.mjs";
+import { tonightPage } from "./lib/pages/tonight.mjs";
 import { TERMS, PRIVACY, REFUNDS, SUPPORT, LEGAL_UPDATED } from "./content/legal.mjs";
 import { FEATURES, PLAN } from "./content/features.mjs";
 
@@ -78,12 +80,14 @@ const m = buildModel(raw);
 
 // ── pages ──
 const pages = [];
-pages.push(homePage(m));
+pages.push(homePage(m), tonightPage(m));
 for (const g of m.pageGames) pages.push(gamePage(g, m));
 for (const d of Object.keys(m.nights)) pages.push(nightPage(d, m));
 pages.push(ledgerPage(m), accuracyPage(m), receiptsPage(m), howPage(m), pricingPage(), companyPage(), termsPage(), privacyPage(), refundsPage(), supportPage());
 pages.push(...teamPages(m));
 pages.push(...matchupPages(m));
+const playoffs = playoffsPage(m);
+if (playoffs) pages.push(playoffs); else warn.push("no season board: /playoff-chances/ left out");
 pages.push(notFoundPage());
 // Old GitHub Pages links on the new domain: 301s in _redirects only (no .html
 // stub pages: next to /terms/index.html a terms.html stub would answer /terms).
@@ -196,7 +200,7 @@ function lastmod(path) {
   if (["/terms/", "/privacy/", "/refunds/", "/support/"].includes(path)) return LEGAL_ISO;
   return today;
 }
-writeFileSync(join(OUT, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${indexed.map((p) => `<url><loc>${ORIGIN}${p.path}</loc><lastmod>${lastmod(p.path)}</lastmod><changefreq>${p.path === "/" || p.path.startsWith("/games/") ? "hourly" : "daily"}</changefreq><priority>${p.path === "/" ? "1.0" : p.path.startsWith("/games/") ? "0.8" : "0.6"}</priority></url>`).join("\n")}\n</urlset>\n`);
+writeFileSync(join(OUT, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${indexed.map((p) => `<url><loc>${ORIGIN}${p.path}</loc><lastmod>${lastmod(p.path)}</lastmod><changefreq>${p.path === "/" || p.path === "/tonight/" || p.path.startsWith("/games/") ? "hourly" : "daily"}</changefreq><priority>${p.path === "/" ? "1.0" : p.path === "/tonight/" ? "0.9" : p.path.startsWith("/games/") ? "0.8" : "0.6"}</priority></url>`).join("\n")}\n</urlset>\n`);
 // Search engines and AI answers may read and cite the paper; model training may not
 // (owner decision, chat 13). Content-Signal is Cloudflare's robots.txt extension;
 // the named crawlers are the training-only ones, refused outright.
@@ -239,10 +243,12 @@ ${FEATURES.filter((f) => !f.free).map((f) => `- ${f.label}`).join("\n")}
 
 ## The paper
 
-- [Tonight](${ORIGIN}/): every game tonight with Clutch's number, the market's beside it, and the top reasons
+- [Tonight](${ORIGIN}/tonight/): every game tonight with Clutch's win probability, in a sentence each, and how last night's calls came out
+- [Front page](${ORIGIN}/): tonight's games with Clutch's number, the market's beside it, and the top reasons
 - [The Ledger](${ORIGIN}/ledger/): every graded call this season, right and wrong, in date order
 - [Accuracy](${ORIGIN}/accuracy/): the record, calibration by band, and Clutch against ESPN BPI, the market and the home team
 - [Proof](${ORIGIN}/receipts/): every night's sealed files and how to check one yourself
+- [Playoff chances](${ORIGIN}/playoff-chances/): every team's chance to make the playoffs, from 10,000 simulated seasons, updated nightly
 - [Teams](${ORIGIN}/teams/): each team's next games with Clutch's call, playoff chance and graded finals; head-to-head pages from each
 
 ## About

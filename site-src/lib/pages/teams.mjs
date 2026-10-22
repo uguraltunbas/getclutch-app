@@ -62,19 +62,19 @@ export function teamPages(m) {
 <section aria-labelledby="next"><h2 class="sh" id="next">Next up</h2>${nextRows || '<p class="sub">No games on the schedule yet.</p>'}</section>
 <section aria-labelledby="last"><h2 class="sh s" id="last">Latest finals</h2>${lastRows || '<p class="sub">No finals yet.</p>'}<p class="note gap">Clutch's call is graded only when the Ledger can prove it was made before tip; preseason is never graded.</p></section>
 ${h2h.length ? `<section aria-labelledby="h2h"><h2 class="sh s" id="h2h">Head to head</h2><p class="sub">${h2h.map((x) => `<a href="${x.path}">vs ${esc(x.opp.nickname)}</a>`).join(" · ")}</p><p class="note gap">Every meeting with each opponent this season and last, with Clutch's call and the result.</p></section>` : ""}
-${pc != null ? `<p class="note">Playoff chance: ${esc(board.method ? `${board.runs?.toLocaleString("en-US") ?? "10,000"} simulated seasons` : "the season simulation")}, ratings as of ${esc(mediumDate(board.as_of))}${board.phase === "preseason" ? " (preseason)" : ""}. Every team's chances are free in the app, updated nightly.</p>` : ""}
+${pc != null ? `<p class="note">Playoff chance: ${esc(board.method ? `${board.runs?.toLocaleString("en-US") ?? "10,000"} simulated seasons` : "the season simulation")}, ratings as of ${esc(mediumDate(board.as_of))}${board.phase === "preseason" ? " (preseason)" : ""}. Every team's chances are free in the app, updated nightly. <a href="/playoff-chances/">All 30 teams' playoff chances →</a></p>` : ""}
 <div class="btns"><a class="btn" href="${PLAY}">Call ${esc(t.nickname)} games ${WEB_APP_LIVE ? "in your browser" : "in the iPhone app"}</a><a class="btn ghost" href="/teams/">All 30 teams</a></div>
 </div></div>`;
-    const title = `${t.name}: Clutch's call on every game · Clutch`;
+    const title = `${t.name} win probability and playoff chances, ${m.current} · Clutch`;
     const description = `${t.name} win probability for every game${nextG ? `, next ${at(nextG)} the ${opp(nextG).nickname} on ${mediumDate(nextG.game_date)}` : ""}${pc != null ? `; playoff chance ${(pc * 100).toFixed(0)}%` : ""}. Sealed before tip, graded in public.`;
     const ld = { "@context": "https://schema.org", "@type": "SportsTeam", name: t.name, sport: "Basketball", url: ORIGIN + path, memberOf: { "@type": "SportsOrganization", name: "NBA" } };
     out.push({ path, title, html: page({ path, title, description, body, current: "teams", og: "default", jsonld: ld }) });
   }
 
   const byConf = (c) => m.raw.teams.filter((t) => t.conference === c).map((t) => `<a class="h-${t.abbreviation}" href="/teams/${teamSlug(t)}/"><span class="sw"></span><span><b>${esc(t.name)}</b><span class="mono">${chance[t.id] != null ? `PLAYOFFS ${(chance[t.id] * 100).toFixed(0)}%` : ""}</span></span></a>`).join("");
-  const body = `<div class="wrap"><div class="rhead"><span class="kick">THE TEAMS</span><h1 class="rh1">Thirty teams, every game called.</h1><p class="rdeck">Each team's next games with Clutch's call, its playoff chance and its latest finals, graded.</p></div>
+  const body = `<div class="wrap"><div class="rhead"><span class="kick">THE TEAMS</span><h1 class="rh1">Thirty teams, every game called.</h1><p class="rdeck">Each team's next games with Clutch's call, its playoff chance and its latest finals, graded. <a href="/playoff-chances/">Every team's playoff chances, ranked →</a></p></div>
 <div class="body"><section aria-labelledby="east"><h2 class="sh" id="east">East</h2><div class="teamgrid">${byConf("East")}</div></section><section aria-labelledby="west"><h2 class="sh" id="west">West</h2><div class="teamgrid">${byConf("West")}</div></section></div></div>`;
-  out.push({ path: "/teams/", title: "NBA teams: Clutch's call on every game · Clutch", html: page({ path: "/teams/", title: "NBA teams: Clutch's call on every game · Clutch", description: "All 30 NBA teams: each one's next games with Clutch's win probability, playoff chance and latest graded finals.", body, current: "teams", og: "default" }) });
+  out.push({ path: "/teams/", title: "NBA teams: win probability and playoff chances for all 30 · Clutch", html: page({ path: "/teams/", title: "NBA teams: win probability and playoff chances for all 30 · Clutch", description: "All 30 NBA teams: each one's next games with Clutch's win probability, playoff chance and latest graded finals.", body, current: "teams", og: "default" }) });
   return out;
 }
 

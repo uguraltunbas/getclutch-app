@@ -75,7 +75,8 @@ export function appStoreCampaign(path) {
   if (path === "/") return "site-home";
   if (/^\/games\/[^/]+\/[^/]+\/$/.test(path)) return "site-game";
   if (path.startsWith("/games/")) return "site-night";
-  if (path.startsWith("/teams/") || path.startsWith("/matchups/")) return "site-team";
+  if (path.startsWith("/teams/") || path.startsWith("/matchups/") || path === "/playoff-chances/") return "site-team";
+  if (path === "/tonight/") return "site-night";
   const known = { "/pricing/": "site-pricing", "/ledger/": "site-ledger", "/accuracy/": "site-ledger", "/receipts/": "site-ledger", "/how-it-works/": "site-how" };
   return known[path] ?? "site-other";
 }
@@ -142,7 +143,7 @@ function footer() {
   return `<footer class="foot"><div class="wrap">
 <div class="fgrid">
 <div class="fbrand"><span class="logo">Clutch</span><p>NBA analytics for fans. A number for every game, the reasons behind it, and a public record of every call.</p></div>
-<nav aria-label="The paper"><span class="mono">The paper</span><a href="/#tonight">Tonight</a><a href="/ledger/">The Ledger</a><a href="/accuracy/">Accuracy</a><a href="/receipts/">Proof</a><a href="/teams/">Teams</a></nav>
+<nav aria-label="The paper"><span class="mono">The paper</span><a href="/tonight/">Tonight</a><a href="/ledger/">The Ledger</a><a href="/accuracy/">Accuracy</a><a href="/receipts/">Proof</a><a href="/teams/">Teams</a><a href="/playoff-chances/">Playoff chances</a></nav>
 <nav aria-label="About"><span class="mono">About</span><a href="/how-it-works/">How it works</a><a href="/pricing/">Pricing</a><a href="/company/">Company</a><a href="/support/">Support</a><a href="${APP_STORE}">iPhone app</a></nav>
 <nav aria-label="Legal"><span class="mono">Legal</span><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="/refunds/">Refunds</a></nav>
 <nav aria-label="Follow"><span class="mono">Follow</span><a href="${X_URL}" rel="me">X</a><a href="${LINKEDIN_URL}" rel="me">LinkedIn</a></nav>

@@ -219,7 +219,7 @@ ${LAUNCH_DAY
 ${ticker}</section>
 
 <section class="sec t" id="tonight" aria-labelledby="tonight-h"><div class="wrap">
-<div class="shead"><div><h2 class="h2" id="tonight-h">${isToday ? "Tonight, in numbers" : "Next up, in numbers"}</h2><p class="sub">${esc(tonightSub)}</p></div>${tonight ? `<a class="more" href="/games/${tonight}/">ALL OF ${isToday ? "TONIGHT" : esc(dayLabel(tonight).toUpperCase())} →</a>` : ""}</div>
+<div class="shead"><div><h2 class="h2" id="tonight-h">${isToday ? "Tonight, in numbers" : "Next up, in numbers"}</h2><p class="sub">${esc(tonightSub)}</p></div>${tonight ? `<a class="more" href="/tonight/">ALL OF ${isToday ? "TONIGHT" : esc(dayLabel(tonight).toUpperCase())} →</a>` : ""}</div>
 <div class="cards">${games.map((g) => gameCard(g, g.id === lead?.id && lineIsWhy(g))).join("")}</div>
 ${comingUp(m, tonight, games.length)}
 </div></section>

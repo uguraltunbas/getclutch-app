@@ -164,11 +164,15 @@ ${gradeSection(g)}
 ${aside(g, m, night)}
 </div>
 </div>`;
+  // Titles in the words people search with: "<away> vs <home> prediction" before the final, the score after it.
+  const vs = `${g.away.nickname} vs ${g.home.nickname}`;
   const title = g.status === "final" && g.homeScore != null
-    ? `${g.away.nickname} ${g.awayScore}, ${g.home.nickname} ${g.homeScore} (${mediumDate(g.date)}) · Clutch`
-    : g.hasCall
-      ? `${g.away.nickname} at ${g.home.nickname}, ${mediumDate(g.date)}: ${g.side.team.nickname} ${pct(g.side.prob)}% · Clutch`
-      : `${g.away.nickname} at ${g.home.nickname}, ${mediumDate(g.date)} · Clutch`;
+    ? `${vs}, ${mediumDate(g.date)}: ${g.homeScore > g.awayScore ? `${g.home.nickname} win ${g.homeScore}–${g.awayScore}` : `${g.away.nickname} win ${g.awayScore}–${g.homeScore}`} · Clutch`
+    : g.status === "postponed"
+      ? `${vs}, ${mediumDate(g.date)}: postponed · Clutch`
+      : g.hasCall
+        ? `${vs} prediction (${mediumDate(g.date)}): ${g.side.team.nickname} ${pct(g.side.prob)}% to win · Clutch`
+        : `${vs} prediction (${mediumDate(g.date)}): win probability on game day · Clutch`;
   const team = (t) => ({ "@type": "SportsTeam", name: t.name, sport: "Basketball", url: `${ORIGIN}${m.teamPath(t)}` });
   const ld = {
     "@context": "https://schema.org", "@type": "SportsEvent",
@@ -222,7 +226,7 @@ export function nightPage(date, m) {
 <p class="note">Amber is Clutch's number for the side it favours; the cream segment is the market's number for that side. <a href="/how-it-works/">How it works →</a></p></div>
 </div>`;
   const path = `/games/${date}/`;
-  const title = `NBA games, ${mediumDate(date)}: Clutch's call on every game · Clutch`;
+  const title = `NBA predictions for ${mediumDate(date)}: win probability for every game · Clutch`;
   const description = `${games.length} NBA ${games.length === 1 ? "game" : "games"} on ${longDate(date)}: Clutch's win probability for each, the market beside it, and the result once it's final.`;
   return { path, title, html: page({ path, title, description, body, current: "tonight", og: "game", live: games.some((g) => g.status !== "final" && g.status !== "postponed") }) };
 }

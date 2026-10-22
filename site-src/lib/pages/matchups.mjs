@@ -111,7 +111,7 @@ ${s.last.length ? `<section aria-labelledby="earlier"><h2 class="sh s" id="earli
 <p class="note">Clutch's call is graded only when the Ledger can prove it was made before tip; preseason is never graded. <a href="/accuracy/">How accurate Clutch is →</a></p>
 <div class="btns"><a class="btn ghost" href="${m.teamPath(a)}">${esc(a.name)}</a><a class="btn ghost" href="${m.teamPath(b)}">${esc(b.name)}</a></div>
 </div></div>`;
-  const title = `${a.name} vs ${b.name}: every game, called and graded · Clutch`;
+  const title = `${a.nickname} vs ${b.nickname} prediction and head to head, ${m.current} · Clutch`;
   const description = `${a.name} vs ${b.name} head to head: Clutch's win probability before every meeting and the final${st ? `. ${st} this season` : ""}${next ? `. Next: ${mediumDate(next.date)}` : ""}.`;
   const ld = {
     "@context": "https://schema.org", "@type": "BreadcrumbList",
