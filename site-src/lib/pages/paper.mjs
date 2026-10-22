@@ -56,7 +56,7 @@ export function ledgerPage(m) {
   }
   main += `<section class="blk" aria-labelledby="rules"><h2 id="rules">How the Ledger keeps score</h2>
 <p>Every number is written to Clutch's database and sealed in the public record before tip-off, and never edited afterwards. The market, ESPN and the simple rules are graded on the same games, not quoted from a backtest. Preseason is never graded. Right and wrong calls sit in the same list, in date order.</p>
-<p>A rate is never quoted on fewer than ${RATE_FLOOR} graded calls — the record is written as right–wrong until then — and never without the baseline of picking the home team every night. <a href="/how-it-works/">How Clutch works →</a></p></section>`;
+<p>A rate is never quoted on fewer than ${RATE_FLOOR} graded calls — the record is written as right–wrong until then — and never without the baseline of picking the home team every night. <a href="/accuracy/">How accurate Clutch is, band by band →</a> · <a href="/how-it-works/">How Clutch works →</a></p></section>`;
   const body = `<div class="wrap r"><div class="rhead"><span class="kick">THE LEDGER · ${esc(current)}${m.ledgerAt ? ` · UPDATED ${esc(mediumDate(m.ledgerAt.slice(0, 10)).toUpperCase())}` : ""}</span><h1 class="rh1">Every call, graded in public.</h1><p class="rdeck">Clutch writes down its number for every game before tip and grades it after the final — beside the market, ESPN and picking the home team every night. The misses stay on the record.</p></div><div class="body">${main}</div></div>`;
   const desc = m.record
     ? `Clutch's ${current} NBA record: ${rec(m.record.hits, m.record.n)} on ${m.record.n} graded calls, beside the market, ESPN and always picking the home team. Every call sealed before tip.`

@@ -74,7 +74,7 @@ function proof(m) {
     const o = opener(m.current, m.today, m.sealed, !!m.last);
     left = `<span class="kick">THE LEDGER · ${esc(m.current)}</span><span class="big">0–0</span><h3>${esc(o.title)}</h3><p>${esc(o.body)}</p>${o.sealedLine ? `<span class="mono amber">${esc(o.sealedLine)} ✓</span>` : o.sealedNote ? `<span class="note">${esc(o.sealedNote)}</span>` : ""}`;
   }
-  left += `<a class="more" href="/ledger/">SEE EVERY CALL →</a>`;
+  left += `<a class="more" href="/ledger/">SEE EVERY CALL →</a> <a class="more" href="/accuracy/">HOW ACCURATE? →</a>`;
   let right = "";
   if (r) {
     const label = stage === "season" ? "" : `<span class="mono ink3">LAST SEASON · ${esc(r.season)}${r.retired ? " · THE RETIRED MODEL" : ""} · ${r.n} GRADED CALLS</span>`;
