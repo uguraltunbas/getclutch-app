@@ -93,6 +93,56 @@ ${lastCalls.length ? `<section class="blk" aria-labelledby="upsets"><h2 id="upse
   };
 }
 
+// ── Calibration and the Brier score ───────────────────────────────────
+
+function brierArticle(m) {
+  const bench = m.accuracy?.benchmark ?? {};
+  const seasons = Object.keys(bench).sort();
+  const last = lastGradedNight(m, m.today);
+  const night = last ? m.calls.filter((c) => c.game_date === last && c.season_type !== "Preseason") : [];
+  if (!seasons.length || !night.length) return null;
+  const T = (k) => seasons.map((s) => bench[s].tracks?.[k]?.brier).filter((x) => x != null);
+  const sc = (xs) => list(xs.map(b3));
+  // The worked example: each of the last graded night's calls, scored.
+  const rows = night.map((c) => { const q = c.claimed_pct / 100; return { c, q, cost: c.correct ? (1 - q) ** 2 : q ** 2 }; });
+  const avg = rows.reduce((a, r) => a + r.cost, 0) / rows.length;
+  const worst = rows.slice().sort((a, b) => b.q - a.q)[0]; // the night's most confident call shows the stakes best
+  const bands = (m.record ? m.ledger?.calibration ?? [] : []).filter((b) => b && b.n > 0);
+  const band = (b) => `${Math.round(b.lo * 100)}–${Math.round(b.hi * 100)}%`;
+  const body = `
+<section class="panel" aria-labelledby="short"><span class="kick">THE SHORT ANSWER</span><h2 id="short">Does 70% happen 70% of the time, and how confident was it when it mattered?</h2>
+<p class="sub">Calibration asks whether a forecaster's numbers come true as often as they say: of all the games called at 70%, the favourite should win about 70 in 100. The Brier score turns calibration and confidence into one number per forecaster. Lower is better and a coin flip on every game scores 0.250. Over the last two NBA seasons the market's final price scored ${sc(T("market"))}, ESPN BPI ${sc(T("espn_bpi"))}, and picking the home team every night ${sc(T("always_home"))}.</p></section>
+
+<section class="blk" aria-labelledby="cal"><h2 id="cal">Calibration</h2>
+<p>Put a forecaster's games in bands by the number it gave the favourite: 50–60%, 60–70%, and so on. In each band, count how often the favourite won. A calibrated forecaster's 60s win about 60% of the time and its 80s about 80%. If its 80s win only 65%, the 80s are overconfident, however many games it gets right.</p>
+<p>Small samples lie. Eight games in a band can easily come out 5 of 8 or 7 of 8 by luck, so a band means little until it holds a few dozen games.${bands.length ? ` Clutch's bands this season, so far: ${esc(bands.map((b) => `${band(b)}, ${b.hits} of ${b.n}`).join("; "))}.` : ""} <a href="/accuracy/">Every band, updated each morning →</a></p></section>
+
+<section aria-labelledby="brier"><h2 class="sh" id="brier">The Brier score, one game at a time</h2>
+<p class="sub">For each game, take the number given to the side that lost and square it; average over every game. A favourite at ${pct(worst.q)}% that loses costs ${b3(worst.q ** 2)}; the same favourite winning costs ${b3((1 - worst.q) ** 2)}. Here are Clutch's graded calls from ${esc(shortDate(last))}, scored:</p>
+<div class="scroll gap"><table class="tbl"><caption class="vh">Brier score for each call on ${esc(shortDate(last))}</caption><thead><tr><th scope="col">GAME</th><th scope="col" class="num">CLUTCH</th><th scope="col">RESULT</th><th scope="col" class="num">COST</th></tr></thead><tbody>${rows.map((r) => `<tr><td>${esc(r.c.matchup.replace(" @ ", " at "))}</td><td class="num">${esc(r.c.pick)} ${Math.round(r.c.claimed_pct)}%</td><td>${r.c.correct ? '<span class="chip win">RIGHT</span>' : '<span class="chip loss">MISSED</span>'}</td><td class="num">${b3(r.cost)}</td></tr>`).join("")}</tbody></table></div>
+<p class="note">The night's average: ${b3(avg)} on ${rows.length} ${rows.length === 1 ? "game" : "games"}. One night says little; the seasons below are 1,300 games each.</p></section>
+
+<section class="blk" aria-labelledby="good"><h2 id="good">What a good score looks like</h2>
+<p>A coin flip on every game scores 0.250. Picking the home team at its usual rate gets you to about ${sc(T("always_home"))}. The serious NBA forecasts sit close together: ESPN BPI scored ${sc(T("espn_bpi"))} over ${list(seasons)}, Clutch's call ${sc(T("clutch"))}, and the market's final price ${sc(T("market"))}.</p>
+<p>Those gaps look tiny, and over a single night they are noise. Over 1,300 games, a gap of 0.004 can be real, which is why every comparison Clutch prints comes with a likely range: the span the gap falls in 95 times in 100 when the same games are resampled. <a href="/learn/espn-bpi-accuracy/">The full comparison with ESPN BPI →</a></p></section>
+
+<section class="blk" aria-labelledby="both"><h2 id="both">Why both matter</h2>
+<p>Calibration alone can be gamed by never saying much: a forecaster that gives every home team 56% is close to calibrated and tells you almost nothing. The Brier score catches that, because it rewards numbers that are far from 50% and right. A forecaster that is bold and wrong loses on both counts. Good forecasts are calibrated and as confident as the evidence allows.</p></section>
+
+<p class="note">The night and the bands are rebuilt from Clutch's Ledger every day; the season scores from its walk-forward test. <a href="/learn/">More on reading the numbers →</a></p>`;
+  return {
+    slug: "calibration-and-brier-score",
+    h1: "Calibration and the Brier score, explained",
+    kick: "THE BASICS",
+    title: "Calibration and the Brier score, explained with NBA games · Clutch",
+    description: "How to grade a forecaster: calibration (does 70% happen 70% of the time?) and the Brier score, with real NBA calls scored one game at a time.",
+    deck: "Two ways to grade anyone who puts a number on a game: does it come true as often as it says, and was it confident when it mattered? With real NBA calls, scored one game at a time.",
+    published: "2026-10-23",
+    modified: "2026-10-23",
+    body,
+  };
+}
+
 // ── How accurate is ESPN BPI? ─────────────────────────────────────────
 
 function bpiArticle(m) {
@@ -186,7 +236,7 @@ ${earlySentence ? `<section class="blk" aria-labelledby="early"><h2 id="early">E
 }
 
 /** The articles, in the order the hub lists them. Each builder returns null when its data isn't loaded. */
-const ARTICLES = [winProbArticle, bpiArticle];
+const ARTICLES = [winProbArticle, brierArticle, bpiArticle];
 
 function articlePage(a) {
   const path = `${LEARN}${a.slug}/`;
