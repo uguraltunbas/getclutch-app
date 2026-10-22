@@ -22,7 +22,7 @@ import { WIN_TOTALS_RULES_URL } from "../lib/html.mjs";
 
 export const SUPPORT_EMAIL = "ugur@clutchledger.com";
 export const OPERATOR = "Uğur Altunbaş";
-export const LEGAL_UPDATED = "October 9, 2026";
+export const LEGAL_UPDATED = "October 23, 2026";
 export const PADDLE_BUYER_TERMS = "https://www.paddle.com/legal/checkout-buyer-terms";
 
 export const TERMS = {
@@ -110,7 +110,7 @@ export const PRIVACY = {
         "• Resend — sends our e-mails.\n" +
         "• PostHog — product analytics.\n" +
         "• Sentry — crash reports.\n" +
-        "• Cloudflare — serves this website.\n" +
+        "• Cloudflare — serves this website and counts its visits (Web Analytics, without cookies).\n" +
         "We don't sell personal information. The only readers who see anything of yours are the members of a league you join: your display name, your standing and your calls in that league. Nothing else you do in the app is shown to other readers, except the Win Totals crowd split — a daily count of everyone's picks, never whose (see Win Totals).",
     },
     {
@@ -123,7 +123,7 @@ export const PRIVACY = {
         "• Deleting your account deletes your sheet, your result and any prize with it.",
     },
     { title: "Made on your phone", body: "Game video, your yearbook (PDF) and the Front page (a share image) are made on your iPhone; nothing is sent to us to make them. A video or a yearbook leaves your phone only if you share or save it. Saving a video asks for permission to add to your Photos, and nothing is read from them." },
-    { title: "This website", body: "clutchledger.com sets no cookies and runs no analytics or advertising. To show tonight's live scores your browser asks our database (Supabase) for them directly; Cloudflare, which serves the pages, keeps standard request logs." },
+    { title: "This website", body: "clutchledger.com sets no cookies and runs no advertising. Cloudflare Web Analytics counts its visits — which page, the site you came from, your browser type and your country — without cookies or local storage, and without fingerprinting you or following you to other sites. To show tonight's live scores your browser asks our database (Supabase) for them directly; Cloudflare, which serves the pages, keeps standard request logs." },
     { title: "Your choices", body: "Alerts can be switched off in the app or in iOS Settings. To stop e-mails from Clutch, reply STOP to any of them. You can delete your account from the You tab; that removes your profile, team, alert settings, calls, capsule, Win Totals sheet and points, and — if you signed in with Apple — revokes Clutch's access to your Apple ID. Subscriptions are not cancelled by deleting the account: one bought in the iPhone app is managed by Apple; one bought on the web is cancelled in the web app under You › Subscription, or from the link in Paddle's receipt e-mail (or write to us and we cancel it for you)." },
     {
       title: "Your rights",

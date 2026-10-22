@@ -11,6 +11,9 @@ export const APP = "https://app.clutchledger.com";
 export const APP_STORE = "https://apps.apple.com/app/id6761838099";
 // IndexNow (Bing, Yandex, Seznam, Naver): public by design — the site serves it at /<key>.txt.
 export const INDEXNOW_KEY = "a31eed2945a541da96d1777477463467";
+// Cloudflare Web Analytics (owner, 2026-10-23): counts visits without cookies; the token is public by design
+// (it is in every page). The stylesheet-only CSP admits its script and its beacon (static/_headers).
+export const CF_BEACON_TOKEN = "e54d984f52e44bebade43eb18d86335e";
 // Clutch's own profiles: the footer's Follow column, the Company page and the Organization record.
 export const X_URL = "https://x.com/getclutchledger";
 export const LINKEDIN_URL = "https://www.linkedin.com/company/clutchledger/";
@@ -204,6 +207,7 @@ ${body}
 </main>
 ${footer()}
 ${live ? '<script src="/live.js" defer></script>' : ""}${tour ? '<script src="/tour.js" defer></script>' : ""}
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;:&quot;${CF_BEACON_TOKEN}&quot;}"></script>
 </body>
 </html>
 `;
