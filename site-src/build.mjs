@@ -49,6 +49,7 @@ import { accuracyPage, backtestSentence } from "./lib/pages/accuracy.mjs";
 import { matchupPages } from "./lib/pages/matchups.mjs";
 import { playoffsPage } from "./lib/pages/playoffs.mjs";
 import { tonightPage } from "./lib/pages/tonight.mjs";
+import { learnPages } from "./lib/pages/learn.mjs";
 import { TERMS, PRIVACY, REFUNDS, SUPPORT, LEGAL_UPDATED } from "./content/legal.mjs";
 import { FEATURES, PLAN } from "./content/features.mjs";
 
@@ -87,6 +88,7 @@ pages.push(ledgerPage(m), accuracyPage(m), receiptsPage(m), howPage(m), pricingP
 pages.push(...teamPages(m));
 pages.push(...matchupPages(m));
 const playoffs = playoffsPage(m);
+pages.push(...learnPages(m));
 if (playoffs) pages.push(playoffs); else warn.push("no season board: /playoff-chances/ left out");
 pages.push(notFoundPage());
 // Old GitHub Pages links on the new domain: 301s in _redirects only (no .html
