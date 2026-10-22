@@ -6,8 +6,8 @@
 // it is listed in ARTICLES.
 
 import { page, esc, ORIGIN } from "../html.mjs";
-import { rec, RATE_FLOOR, pct } from "../copy.mjs";
-import { mediumDate, shortDate } from "../time.mjs";
+import { rec, RATE_FLOOR, pct, leadText, shortHash, sealFileUrl, RECEIPTS_REPO, RECEIPTS_ACTIVITY_URL } from "../copy.mjs";
+import { mediumDate, shortDate, timeET } from "../time.mjs";
 import { lastGradedNight } from "../model.mjs";
 import { COMPANY } from "../../content/company.mjs";
 
@@ -143,6 +143,60 @@ function brierArticle(m) {
   };
 }
 
+// ── How to check a prediction came before the game ────────────────────
+
+function sealArticle(m) {
+  // The example: the first seal of the last graded night whose games (and their tips) are all known.
+  const last = lastGradedNight(m, m.today);
+  const seals = m.receipts.filter((r) => r.kind === "seal" && r.slate_date === last).sort((a, b) => a.committed_at.localeCompare(b.committed_at));
+  const seal = seals[0];
+  if (!seal) return null;
+  const games = (m.receiptGames[seal.id] ?? []).map((x) => m.gameById[x.gameId]);
+  if (!games.length || !games.every((g) => g?.tipUtc)) return null;
+  const firstTip = games.map((g) => g.tipUtc).sort()[0];
+  const lead = leadText(seal.committed_at, firstTip);
+  if (!lead) return null;
+  const sha = String(seal.commit_url ?? "").match(/\/commit\/([0-9a-f]{40,64})$/)?.[1];
+  const fileUrl = sha && seal.path ? sealFileUrl({ commitSha: sha, path: seal.path, commitUrl: seal.commit_url }) : seal.commit_url ?? RECEIPTS_REPO;
+  const night = m.calls.filter((c) => c.game_date === last && c.season_type !== "Preseason");
+  const held = night.filter((c) => c.correct).length;
+  const excluded = m.record?.excluded ?? 0;
+  const body = `
+<section class="panel" aria-labelledby="short"><span class="kick">THE SHORT ANSWER</span><h2 id="short">Look for a fingerprint, a clock nobody can set, and the misses.</h2>
+<p class="sub">A real pregame prediction leaves three marks: a fingerprint of the numbers published before tip, a timestamp the forecaster cannot set, and a record that keeps every miss. Screenshots and posts made after the final prove nothing, and a dated blog post can be edited the next morning.</p></section>
+
+<section class="blk" aria-labelledby="why"><h2 id="why">Why it matters</h2>
+<p>A track record is easy to fake without a single lie you can point to: post only the calls that came in, delete the ones that didn't, nudge a number after the injury news, or write the prediction up once the game is over. Each one makes a forecaster look better than it is. The only defence is a record that was fixed in public before the games and can't be quietly trimmed afterwards.</p></section>
+
+<section class="blk" aria-labelledby="fp"><h2 id="fp">1. A fingerprint before tip</h2>
+<p>Clutch writes every game's number into a file and publishes the file's SHA-256 fingerprint: 64 characters computed from its contents. Change one digit of one number and the fingerprint comes out completely different, so a published fingerprint pins the file down exactly. On ${esc(shortDate(last))}, the night's first file held ${games.length} ${games.length === 1 ? "game" : "games"} and its fingerprint, shortened, is <code>${esc(shortHash(seal.sha256))}</code>.</p></section>
+
+<section class="blk" aria-labelledby="clock"><h2 id="clock">2. A clock nobody can set</h2>
+<p>The date on a file or a commit is typed by whoever makes it, so on its own it proves nothing. What counts is when the file reached a public server that keeps its own time. Clutch's files go to a public GitHub repository, and GitHub records when each one arrived. That ${esc(shortDate(last))} file arrived at ${esc(timeET(seal.committed_at))}, ${esc(lead)} before the first tip.${seals.length > 1 ? ` When news moved a number later that day, the file was sealed again, ${seals.length - 1} more ${seals.length === 2 ? "time" : "times"}; the last seal before each game counts.` : ""} <a href="${esc(fileUrl)}">The file →</a> · <a href="${RECEIPTS_ACTIVITY_URL}">GitHub's arrival times →</a></p></section>
+
+<section class="blk" aria-labelledby="miss"><h2 id="miss">3. The misses stay</h2>
+<p>Each file names the fingerprint of the one before it, so an old file can't be swapped out or dropped without breaking the chain. After the final, every call is graded against the sealed number, right or wrong.${night.length ? ` That night, Clutch's calls held in ${held} of ${night.length}, and the misses are on the Ledger beside the hits.` : ""}${excluded ? ` Calls that can't be shown to predate tip aren't graded at all, and the Ledger prints how many: ${excluded} so far this season.` : ""} <a href="/ledger/">Every graded call →</a></p></section>
+
+<section class="blk" aria-labelledby="yourself"><h2 id="yourself">Check one yourself</h2>
+<p>Download any night's file, compute its fingerprint with a tool your computer already has (<code>shasum -a 256</code> on a Mac, <code>certutil -hashfile</code> on Windows), and compare it with the one on the Proof page; then check its arrival time against the tip. It takes about two minutes. <a href="/receipts/">Step by step, on the Proof page →</a></p></section>
+
+<section class="blk" aria-labelledby="not"><h2 id="not">What a seal doesn't prove</h2>
+<p>A seal proves when a number was made, not that it was any good. For that you need many graded games: how often the favourites won, and how each band of numbers held up. <a href="/accuracy/">How accurate Clutch is →</a> · <a href="/learn/calibration-and-brier-score/">Calibration and the Brier score →</a></p></section>
+
+<p class="note">The example above is rebuilt from Clutch's public files every day.</p>`;
+  return {
+    slug: "check-a-prediction-came-first",
+    h1: "How to check a prediction was made before the game",
+    kick: "PROOF",
+    title: "How to check an NBA prediction was made before the game · Clutch",
+    description: "Anyone can say they called it after the final. Three marks of a real pregame prediction, shown on a real night of sealed NBA numbers.",
+    deck: "Anyone can say they called it once the final is in. Here is how to tell a real pregame prediction from one written afterwards, with a real night of Clutch's sealed numbers as the example.",
+    published: "2026-10-23",
+    modified: "2026-10-23",
+    body,
+  };
+}
+
 // ── How accurate is ESPN BPI? ─────────────────────────────────────────
 
 function bpiArticle(m) {
@@ -236,7 +290,7 @@ ${earlySentence ? `<section class="blk" aria-labelledby="early"><h2 id="early">E
 }
 
 /** The articles, in the order the hub lists them. Each builder returns null when its data isn't loaded. */
-const ARTICLES = [winProbArticle, brierArticle, bpiArticle];
+const ARTICLES = [winProbArticle, brierArticle, bpiArticle, sealArticle];
 
 function articlePage(a) {
   const path = `${LEARN}${a.slug}/`;
