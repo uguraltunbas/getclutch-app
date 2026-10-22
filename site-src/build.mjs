@@ -38,13 +38,15 @@ import { FONTS, ORIGIN, INDEXNOW_KEY, WEB_APP_LIVE, WIN_TOTALS_RULES_URL, DESCRI
 import { ttfToWoff2 } from "./lib/woff2.mjs";
 import { swatchOn } from "./lib/swatch.mjs";
 import { checkContrast, editions } from "./check-contrast.mjs";
-import { scanPages, selfTest } from "./lib/betting.mjs";
+import { scanPages, selfTest, bettingWordsIn } from "./lib/betting.mjs";
+import { rec, RATE_FLOOR, RECEIPTS_REPO } from "./lib/copy.mjs";
 import { homePage } from "./lib/pages/home.mjs";
 import { gamePage, nightPage } from "./lib/pages/game.mjs";
 import { ledgerPage, receiptsPage } from "./lib/pages/paper.mjs";
 import { howPage, pricingPage, companyPage, termsPage, privacyPage, refundsPage, supportPage } from "./lib/pages/about.mjs";
 import { teamPages, notFoundPage } from "./lib/pages/teams.mjs";
-import { accuracyPage } from "./lib/pages/accuracy.mjs";
+import { accuracyPage, backtestSentence } from "./lib/pages/accuracy.mjs";
+import { matchupPages } from "./lib/pages/matchups.mjs";
 import { TERMS, PRIVACY, REFUNDS, SUPPORT, LEGAL_UPDATED } from "./content/legal.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -80,6 +82,7 @@ for (const g of m.pageGames) pages.push(gamePage(g, m));
 for (const d of Object.keys(m.nights)) pages.push(nightPage(d, m));
 pages.push(ledgerPage(m), accuracyPage(m), receiptsPage(m), howPage(m), pricingPage(), companyPage(), termsPage(), privacyPage(), refundsPage(), supportPage());
 pages.push(...teamPages(m));
+pages.push(...matchupPages(m));
 pages.push(notFoundPage());
 // Old GitHub Pages links on the new domain: 301s in _redirects only (no .html
 // stub pages: next to /terms/index.html a terms.html stub would answer /terms).
@@ -200,6 +203,45 @@ const TRAINING_CRAWLERS = ["GPTBot", "ClaudeBot", "Google-Extended", "Applebot-E
 writeFileSync(join(OUT, "robots.txt"), `User-agent: *\nContent-Signal: search=yes, ai-input=yes, ai-train=no\nAllow: /\n\n${TRAINING_CRAWLERS.map((b) => `User-agent: ${b}`).join("\n")}\nDisallow: /\n\nSitemap: ${ORIGIN}/sitemap.xml\n`);
 // IndexNow proves the site owns the key by serving it at /<key>.txt; site-src/indexnow.mjs pings after deploy.
 writeFileSync(join(OUT, `${INDEXNOW_KEY}.txt`), INDEXNOW_KEY + "\n");
+// /llms.txt (llmstxt.org): the site in a few lines for AI answers — what Clutch is, the record as of
+// this build (the Ledger's rule: no rate under twenty calls), and where each thing is. Held to the
+// same betting-word check as the pages.
+const r = m.record;
+const llmsRecord = r
+  ? `${r.season} so far: ${rec(r.hits, r.n)} on ${r.n} graded calls${r.n >= RATE_FLOOR && r.hitRate != null ? ` (${r.hitRate.toFixed(1)}% right)` : ` (too few for a rate; one is quoted from ${RATE_FLOOR})`}, as of ${m.ledgerAt ? m.ledgerAt.slice(0, 10) : TODAY}.`
+  : `The ${m.current} record starts with the regular season's first graded finals.`;
+const llms = `# Clutch
+
+> NBA win probability for every game, sealed before tip in a public GitHub repository and graded in public after the final. Free on the web (app.clutchledger.com) and on iPhone. Also known as Clutch Ledger.
+
+- Each morning Clutch publishes one number per NBA game: the chance the side it favours wins. The number is sealed with a SHA-256 fingerprint before tip-off and never edited.
+- After the final, the Ledger grades it beside ESPN BPI, the market and picking the home team every night, on the same games. Misses stay on the record.
+- ${llmsRecord}
+- ${backtestSentence(m.accuracy?.benchmark) ?? "The model's two-season test is on the How it works page."}
+- Clutch is analytics for fans, not advice: it makes no calls on margins or totals and carries no affiliate links.
+
+## The paper
+
+- [Tonight](${ORIGIN}/): every game tonight with Clutch's number, the market's beside it, and the top reasons
+- [The Ledger](${ORIGIN}/ledger/): every graded call this season, right and wrong, in date order
+- [Accuracy](${ORIGIN}/accuracy/): the record, calibration by band, and Clutch against ESPN BPI, the market and the home team
+- [Proof](${ORIGIN}/receipts/): every night's sealed files and how to check one yourself
+- [Teams](${ORIGIN}/teams/): each team's next games with Clutch's call, playoff chance and graded finals; head-to-head pages from each
+
+## About
+
+- [How it works](${ORIGIN}/how-it-works/): the model, the two-season test and its limits
+- [Pricing](${ORIGIN}/pricing/): what is free and what Pro adds
+- [Company](${ORIGIN}/company/): who makes Clutch
+- [The sealed files on GitHub](${RECEIPTS_REPO})
+
+## Optional
+
+- [Support](${ORIGIN}/support/)
+- [Terms](${ORIGIN}/terms/)
+- [Privacy](${ORIGIN}/privacy/)
+`;
+writeFileSync(join(OUT, "llms.txt"), llms);
 
 // ── checks ──
 // Nothing unapproved goes out: a draft or todo marker in the content or in a page fails the build.
@@ -212,6 +254,7 @@ const st = selfTest();
 if (st.missed.length || st.wrong.length) fail.push(`betting-words self-test: missed ${JSON.stringify(st.missed)}, wrongly caught ${JSON.stringify(st.wrong)}`);
 const scan = scanPages(pages.filter((p) => !p.redirect));
 for (const h of scan.hits) fail.push(`betting word: ${h}`);
+for (const line of llms.split("\n")) for (const id of bettingWordsIn(line)) fail.push(`betting word: /llms.txt [${id}] ${line}`);
 for (const s of scan.stale) fail.push(`betting-words allow-list entry matched nothing (remove it): ${s}`);
 const seenTitle = new Map(), seenDesc = new Map();
 for (const p of pages.filter((p) => !p.redirect)) {
@@ -257,9 +300,9 @@ if (tourGz > 3072) fail.push(`guide script ${tourGz} bytes gzipped (budget 3 KB)
 
 // ── report ──
 const sizes = indexed.map((p) => Buffer.byteLength(p.html));
-const kinds = { games: m.pageGames.length, nights: Object.keys(m.nights).length, teams: pages.filter((p) => p.path.startsWith("/teams/")).length };
+const kinds = { games: m.pageGames.length, nights: Object.keys(m.nights).length, teams: pages.filter((p) => p.path.startsWith("/teams/")).length, matchups: pages.filter((p) => p.path.startsWith("/matchups/")).length };
 console.log(`site ${TODAY} → ${OUT} · web app ${WEB_APP_LIVE ? "LIVE (browser links on)" : "not live (play links → App Store)"}${LAUNCH_UNTIL ? ` · Launch Pass on: Pro free on the web until ${LAUNCH_DAY}` : ""}`);
-console.log(`  ${pages.length} pages (${indexed.length} indexed; ${kinds.games} game pages over ${kinds.nights} nights, ${kinds.teams} team pages), tonight = ${m.tonight ?? "none"}`);
+console.log(`  ${pages.length} pages (${indexed.length} indexed; ${kinds.games} game pages over ${kinds.nights} nights, ${kinds.teams} team pages, ${kinds.matchups} head-to-head pages), tonight = ${m.tonight ?? "none"}`);
 console.log(`  html ${(Math.min(...sizes) / 1024).toFixed(1)}–${(Math.max(...sizes) / 1024).toFixed(1)} KB · css ${cssKB.toFixed(1)} KB · live.js ${liveKB.toFixed(2)} KB · theme.js ${themeB} B · tour.js ${tourB} B (${tourGz} B gzip) · fonts ${(fontBytes / 1024).toFixed(0)} KB (${FONTS.length} woff2)`);
 for (const w of warn) console.warn(`  warn: ${w}`);
 if (fail.length) {

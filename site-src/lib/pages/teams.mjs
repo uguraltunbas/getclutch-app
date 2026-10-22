@@ -5,6 +5,7 @@
 
 import { page, esc, ORIGIN, PLAY, WEB_APP_LIVE, teamSlug } from "../html.mjs";
 import { pct, pickSide, normalizeStatus, finalLabel, RATE_FLOOR } from "../copy.mjs";
+import { matchupsOf } from "./matchups.mjs";
 import { dayLabel, shortDate, mediumDate, timeET, seasonOf as seasonOfDate } from "../time.mjs";
 
 export function teamPages(m) {
@@ -52,6 +53,7 @@ export function teamPages(m) {
       pc != null ? `<div><span class="d">${(pc * 100).toFixed(0)}%</span><span class="mono">CLUTCH'S PLAYOFF CHANCE</span></div>` : "",
       graded.length ? `<div><span class="d">${right}–${graded.length - right}</span><span class="mono">CLUTCH'S CALLS IN ${esc(t.nickname.toUpperCase())} GAMES · ${esc(gradedSeason)}${gradedSeason !== m.current && m.last?.retired && m.last.season === gradedSeason ? " · RETIRED MODEL" : ""}</span></div>` : "",
     ].join("");
+    const h2h = matchupsOf(m, t);
     const path = `/teams/${teamSlug(t)}/`;
     const nextG = next[0];
     const deck = `Clutch's number on every ${t.nickname} game, sealed before tip and graded in public — plus their playoff chance and how Clutch's calls on their games have gone.`;
@@ -59,6 +61,7 @@ export function teamPages(m) {
 <div class="body">
 <section aria-labelledby="next"><h2 class="sh" id="next">Next up</h2>${nextRows || '<p class="sub">No games on the schedule yet.</p>'}</section>
 <section aria-labelledby="last"><h2 class="sh s" id="last">Latest finals</h2>${lastRows || '<p class="sub">No finals yet.</p>'}<p class="note gap">Clutch's call is graded only when the Ledger can prove it was made before tip; preseason is never graded.</p></section>
+${h2h.length ? `<section aria-labelledby="h2h"><h2 class="sh s" id="h2h">Head to head</h2><p class="sub">${h2h.map((x) => `<a href="${x.path}">vs ${esc(x.opp.nickname)}</a>`).join(" · ")}</p><p class="note gap">Every meeting with each opponent this season and last, with Clutch's call and the result.</p></section>` : ""}
 ${pc != null ? `<p class="note">Playoff chance: ${esc(board.method ? `${board.runs?.toLocaleString("en-US") ?? "10,000"} simulated seasons` : "the season simulation")}, ratings as of ${esc(mediumDate(board.as_of))}${board.phase === "preseason" ? " (preseason)" : ""}. Every team's chances are free in the app, updated nightly.</p>` : ""}
 <div class="btns"><a class="btn" href="${PLAY}">Call ${esc(t.nickname)} games ${WEB_APP_LIVE ? "in your browser" : "in the iPhone app"}</a><a class="btn ghost" href="/teams/">All 30 teams</a></div>
 </div></div>`;

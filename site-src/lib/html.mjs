@@ -75,7 +75,7 @@ export function appStoreCampaign(path) {
   if (path === "/") return "site-home";
   if (/^\/games\/[^/]+\/[^/]+\/$/.test(path)) return "site-game";
   if (path.startsWith("/games/")) return "site-night";
-  if (path.startsWith("/teams/")) return "site-team";
+  if (path.startsWith("/teams/") || path.startsWith("/matchups/")) return "site-team";
   const known = { "/pricing/": "site-pricing", "/ledger/": "site-ledger", "/accuracy/": "site-ledger", "/receipts/": "site-ledger", "/how-it-works/": "site-how" };
   return known[path] ?? "site-other";
 }

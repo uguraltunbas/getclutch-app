@@ -6,6 +6,7 @@
 import { page, esc, APP_STORE, ORIGIN, PLAY, playGame, WEB_APP_LIVE } from "../html.mjs";
 import { board, gameCard, statusText, gradeChip } from "../parts.mjs";
 import { pct, headlineFor, callPoints, receiptLine, shortHash, sealFileUrl, CALL_RULE, PRESEASON_DECK, rec, RATE_FLOOR, RECEIPTS_REPO } from "../copy.mjs";
+import { matchupFor } from "./matchups.mjs";
 import { longDate, mediumDate, shortDate, weekday, timeET, isoET } from "../time.mjs";
 
 const the = (t) => `the ${t.nickname}`;
@@ -135,7 +136,9 @@ ${WEB_APP_LIVE ? `<small>Free, right here in your browser. No download.</small><
   const alsoHtml = also.length
     ? `<section class="also" aria-labelledby="also"><h2 class="side-h" id="also">${g.date === m.today ? "Also tonight" : `Also on ${esc(shortDate(g.date))}`}</h2>${also.map((x) => `<a class="h-${x.home.abbreviation}" href="${x.path}" data-gid="${x.id}" data-a="${x.away.abbreviation}" data-h="${x.home.abbreviation}"><span class="sw"></span><span><b>${esc(x.away.abbreviation)} at ${esc(x.home.abbreviation)}</b><span class="mono" data-live="st">${esc(statusText(x))}</span></span><span class="d">${x.status === "final" && x.homeScore != null ? `<span class="cream">${x.awayScore}–${x.homeScore}</span>` : x.hasCall ? `${esc(x.side.team.abbreviation)} ${pct(x.side.prob)}` : "--"}</span></a>`).join("")}</section>`
     : "";
-  return `<aside class="aside" aria-label="Make your call, the market and the Ledger">${call}${vs}<section class="mini" aria-labelledby="led"><h2 class="side-h" id="led">The Ledger</h2>${ledger}<a class="more" href="/ledger/">SEE EVERY CALL →</a></section>${alsoHtml}</aside>`;
+  const mu = matchupFor(m, g.home, g.away);
+  const h2h = `<section class="mini" aria-labelledby="h2h"><h2 class="side-h" id="h2h">The teams</h2><p><a href="${m.teamPath(g.away)}">${esc(g.away.name)}</a> · <a href="${m.teamPath(g.home)}">${esc(g.home.name)}</a></p>${mu ? `<a class="more" href="${mu.path}">EVERY ${esc(g.away.abbreviation)}–${esc(g.home.abbreviation)} GAME →</a>` : ""}</section>`;
+  return `<aside class="aside" aria-label="Make your call, the market and the Ledger">${call}${vs}<section class="mini" aria-labelledby="led"><h2 class="side-h" id="led">The Ledger</h2>${ledger}<a class="more" href="/ledger/">SEE EVERY CALL →</a></section>${h2h}${alsoHtml}</aside>`;
 }
 
 export function gamePage(g, m) {
