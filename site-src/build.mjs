@@ -33,8 +33,8 @@ import { fileURLToPath } from "node:url";
 
 import { supabase, loadAll } from "./lib/data.mjs";
 import { buildModel } from "./lib/model.mjs";
-import { etDate, seasonOf } from "./lib/time.mjs";
-import { FONTS, ORIGIN, INDEXNOW_KEY, WEB_APP_LIVE, WIN_TOTALS_RULES_URL, DESCRIPTION_MAX, LAUNCH_INPUT, LAUNCH_VALID, LAUNCH_UNTIL, LAUNCH_DAY } from "./lib/html.mjs";
+import { etDate, seasonOf, mediumDate } from "./lib/time.mjs";
+import { FONTS, ORIGIN, APP, APP_STORE, INDEXNOW_KEY, WEB_APP_LIVE, WIN_TOTALS_RULES_URL, DESCRIPTION_MAX, LAUNCH_INPUT, LAUNCH_VALID, LAUNCH_UNTIL, LAUNCH_DAY } from "./lib/html.mjs";
 import { ttfToWoff2 } from "./lib/woff2.mjs";
 import { swatchOn } from "./lib/swatch.mjs";
 import { checkContrast, editions } from "./check-contrast.mjs";
@@ -48,6 +48,7 @@ import { teamPages, notFoundPage } from "./lib/pages/teams.mjs";
 import { accuracyPage, backtestSentence } from "./lib/pages/accuracy.mjs";
 import { matchupPages } from "./lib/pages/matchups.mjs";
 import { TERMS, PRIVACY, REFUNDS, SUPPORT, LEGAL_UPDATED } from "./content/legal.mjs";
+import { FEATURES, PLAN } from "./content/features.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, "..");
@@ -204,8 +205,9 @@ writeFileSync(join(OUT, "robots.txt"), `User-agent: *\nContent-Signal: search=ye
 // IndexNow proves the site owns the key by serving it at /<key>.txt; site-src/indexnow.mjs pings after deploy.
 writeFileSync(join(OUT, `${INDEXNOW_KEY}.txt`), INDEXNOW_KEY + "\n");
 // /llms.txt (llmstxt.org): the site in a few lines for AI answers — what Clutch is, the record as of
-// this build (the Ledger's rule: no rate under twenty calls), and where each thing is. Held to the
-// same betting-word check as the pages.
+// this build (the Ledger's rule: no rate under twenty calls), what is free and what Pro adds (the
+// app's one FEATURES list, word for word, as on the pricing page), where it runs, and where each
+// thing is. Held to the same betting-word check as the pages.
 const r = m.record;
 const llmsRecord = r
   ? `${r.season} so far: ${rec(r.hits, r.n)} on ${r.n} graded calls${r.n >= RATE_FLOOR && r.hitRate != null ? ` (${r.hitRate.toFixed(1)}% right)` : ` (too few for a rate; one is quoted from ${RATE_FLOOR})`}, as of ${m.ledgerAt ? m.ledgerAt.slice(0, 10) : TODAY}.`
@@ -219,6 +221,21 @@ const llms = `# Clutch
 - ${llmsRecord}
 - ${backtestSentence(m.accuracy?.benchmark) ?? "The model's two-season test is on the How it works page."}
 - Clutch is analytics for fans, not advice: it makes no calls on margins or totals and carries no affiliate links.
+
+## Free, in the browser and on iPhone
+
+${FEATURES.filter((f) => f.free).map((f) => `- ${f.label}`).join("\n")}
+
+## What ${PLAN.name} adds (${PLAN.monthly} a month or ${PLAN.annual} a year, ${PLAN.trialDays} days free)
+
+${FEATURES.filter((f) => !f.free).map((f) => `- ${f.label}`).join("\n")}
+
+## Where it runs
+
+- In any browser at ${APP}/: everything to follow and call, signed in with Apple or Google.${LAUNCH_UNTIL ? ` Every Pro feature is free on the web until ${mediumDate(LAUNCH_UNTIL)} (the Launch Pass).` : ""}
+- The iPhone app (${APP_STORE}): the same, plus Live Activities on the lock screen, home screen widgets, Siri and iMessage challenges.
+- One account everywhere; Pro bought on one carries over to the other.
+- Points come from your calls and level you up to Free Pro days; they can't be bought or sold and have no cash value.
 
 ## The paper
 
