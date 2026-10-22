@@ -34,7 +34,7 @@ import { fileURLToPath } from "node:url";
 import { supabase, loadAll } from "./lib/data.mjs";
 import { buildModel } from "./lib/model.mjs";
 import { etDate, seasonOf } from "./lib/time.mjs";
-import { FONTS, ORIGIN, WEB_APP_LIVE, WIN_TOTALS_RULES_URL, DESCRIPTION_MAX, LAUNCH_INPUT, LAUNCH_VALID, LAUNCH_UNTIL, LAUNCH_DAY } from "./lib/html.mjs";
+import { FONTS, ORIGIN, INDEXNOW_KEY, WEB_APP_LIVE, WIN_TOTALS_RULES_URL, DESCRIPTION_MAX, LAUNCH_INPUT, LAUNCH_VALID, LAUNCH_UNTIL, LAUNCH_DAY } from "./lib/html.mjs";
 import { ttfToWoff2 } from "./lib/woff2.mjs";
 import { swatchOn } from "./lib/swatch.mjs";
 import { checkContrast, editions } from "./check-contrast.mjs";
@@ -197,6 +197,8 @@ writeFileSync(join(OUT, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?>\
 // the named crawlers are the training-only ones, refused outright.
 const TRAINING_CRAWLERS = ["GPTBot", "ClaudeBot", "Google-Extended", "Applebot-Extended", "CCBot", "Meta-ExternalAgent", "Bytespider"];
 writeFileSync(join(OUT, "robots.txt"), `User-agent: *\nContent-Signal: search=yes, ai-input=yes, ai-train=no\nAllow: /\n\n${TRAINING_CRAWLERS.map((b) => `User-agent: ${b}`).join("\n")}\nDisallow: /\n\nSitemap: ${ORIGIN}/sitemap.xml\n`);
+// IndexNow proves the site owns the key by serving it at /<key>.txt; site-src/indexnow.mjs pings after deploy.
+writeFileSync(join(OUT, `${INDEXNOW_KEY}.txt`), INDEXNOW_KEY + "\n");
 
 // ── checks ──
 // Nothing unapproved goes out: a draft or todo marker in the content or in a page fails the build.

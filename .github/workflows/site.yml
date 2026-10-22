@@ -84,6 +84,9 @@ jobs:
           name: site
           path: _site_v2
           retention-days: 7
+      - name: Save the live sitemap (IndexNow sends only what this deploy changes)
+        if: steps.cf.outputs.deploy == 'true'
+        run: curl -fsS --max-time 20 https://clutchledger.com/sitemap.xml -o "$RUNNER_TEMP/live-sitemap.xml" || echo "::notice::live sitemap unreadable; IndexNow skipped this run"
       - name: Deploy the site
         if: steps.cf.outputs.deploy == 'true'
         uses: cloudflare/wrangler-action@9acf94ace14e7dc412b076f2c5c20b8ce93c79cd # v3.15.0
@@ -100,3 +103,6 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: "4.146.0"
           command: deploy --config site-src/www/wrangler.jsonc
+      - name: Tell IndexNow what changed
+        if: steps.cf.outputs.deploy == 'true'
+        run: node site-src/indexnow.mjs --out _site_v2 --before "$RUNNER_TEMP/live-sitemap.xml"

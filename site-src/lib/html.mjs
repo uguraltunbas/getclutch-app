@@ -9,6 +9,8 @@ import { etDate, shortDate } from "./time.mjs";
 export const ORIGIN = "https://clutchledger.com";
 export const APP = "https://app.clutchledger.com";
 export const APP_STORE = "https://apps.apple.com/app/id6761838099";
+// IndexNow (Bing, Yandex, Seznam, Naver): public by design — the site serves it at /<key>.txt.
+export const INDEXNOW_KEY = "a31eed2945a541da96d1777477463467";
 // Clutch's own profiles: the footer's Follow column, the Company page and the Organization record.
 export const X_URL = "https://x.com/getclutchledger";
 export const LINKEDIN_URL = "https://www.linkedin.com/company/clutchledger/";
