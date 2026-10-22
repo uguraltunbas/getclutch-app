@@ -186,7 +186,12 @@ ${aside(g, m, night)}
   };
   const live = g.status !== "final" && g.status !== "postponed" ? true : night.some((x) => x.status !== "final" && x.status !== "postponed");
   const description = `${g.away.name} at ${g.home.name}, ${mediumDate(g.date)}. ${dk}`;
-  return { path: g.path, title, html: page({ path: g.path, title, description, body, current: "tonight", og: "game", ogType: "article", jsonld: ld, live }) };
+  const crumbs = { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Clutch", item: `${ORIGIN}/` },
+    { "@type": "ListItem", position: 2, name: `NBA games, ${mediumDate(g.date)}`, item: `${ORIGIN}/games/${g.date}/` },
+    { "@type": "ListItem", position: 3, name: `${g.away.nickname} at ${g.home.nickname}`, item: ORIGIN + g.path },
+  ] };
+  return { path: g.path, title, html: page({ path: g.path, title, description, body, current: "tonight", og: "game", ogType: "article", jsonld: [ld, crumbs], live }) };
 }
 
 /**

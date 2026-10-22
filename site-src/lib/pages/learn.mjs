@@ -199,7 +199,8 @@ function articlePage(a) {
     author: { "@type": "Person", name: COMPANY.founder, url: `${ORIGIN}/company/` },
     publisher: { "@type": "Organization", name: "Clutch", url: ORIGIN + "/", logo: { "@type": "ImageObject", url: `${ORIGIN}/icon-512.png` } },
   };
-  return { path, title: a.title, html: page({ path, title: a.title, description: a.description, body, current: "how", og: "ledger", ogType: "article", jsonld: ld }) };
+  const crumbs = { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [{ "@type": "ListItem", position: 1, name: "Learn", item: ORIGIN + LEARN }, { "@type": "ListItem", position: 2, name: a.h1, item: ORIGIN + path }] };
+  return { path, title: a.title, html: page({ path, title: a.title, description: a.description, body, current: "how", og: "ledger", ogType: "article", jsonld: [ld, crumbs] }) };
 }
 
 export function learnPages(m) {

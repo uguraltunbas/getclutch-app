@@ -67,7 +67,8 @@ ${pc != null ? `<p class="note">Playoff chance: ${esc(board.method ? `${board.ru
 </div></div>`;
     const title = `${t.name} win probability and playoff chances, ${m.current} · Clutch`;
     const description = `${t.name} win probability for every game${nextG ? `, next ${at(nextG)} the ${opp(nextG).nickname} on ${mediumDate(nextG.game_date)}` : ""}${pc != null ? `; playoff chance ${(pc * 100).toFixed(0)}%` : ""}. Sealed before tip, graded in public.`;
-    const ld = { "@context": "https://schema.org", "@type": "SportsTeam", name: t.name, sport: "Basketball", url: ORIGIN + path, memberOf: { "@type": "SportsOrganization", name: "NBA" } };
+    const ld = [{ "@context": "https://schema.org", "@type": "SportsTeam", name: t.name, sport: "Basketball", url: ORIGIN + path, memberOf: { "@type": "SportsOrganization", name: "NBA" } },
+      { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [{ "@type": "ListItem", position: 1, name: "Teams", item: `${ORIGIN}/teams/` }, { "@type": "ListItem", position: 2, name: t.name, item: ORIGIN + path }] }];
     out.push({ path, title, html: page({ path, title, description, body, current: "teams", og: "default", jsonld: ld }) });
   }
 

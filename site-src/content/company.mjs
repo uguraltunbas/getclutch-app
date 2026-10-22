@@ -25,6 +25,9 @@ export const COMPANY = {
     x: X_URL,
     linkedinCompany: LINKEDIN_URL,
     linkedinFounder: "https://www.linkedin.com/in/uguraltunbas/",
+    // The public record and the launch page: the same Clutch, so search and AI answers tie them together.
+    github: "https://github.com/uguraltunbas/clutch-receipts",
+    productHunt: "https://www.producthunt.com/products/clutch-ledger",
   },
   /** [when, what] — oldest first. */
   timeline: [
@@ -51,6 +54,6 @@ export function organizationLd(origin) {
     foundingDate: COMPANY.founded,
     founder,
     address: { "@type": "PostalAddress", addressLocality: COMPANY.city, addressCountry: COMPANY.countryCode },
-    sameAs: [links.appStore, links.x, links.linkedinCompany].filter(Boolean),
+    sameAs: [links.appStore, links.x, links.linkedinCompany, links.github, links.productHunt].filter(Boolean),
   };
 }
