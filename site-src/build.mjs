@@ -256,6 +256,7 @@ ${FEATURES.filter((f) => !f.free).map((f) => `- ${f.label}`).join("\n")}
 ## About
 
 - [How it works](${ORIGIN}/how-it-works/): the model, the two-season test and its limits
+- [Learn](${ORIGIN}/learn/): what NBA win probability means, calibration and the Brier score, how accurate ESPN BPI is, and how to check a prediction came before the game
 - [Pricing](${ORIGIN}/pricing/): what is free and what Pro adds
 - [Company](${ORIGIN}/company/): who makes Clutch
 - [The sealed files on GitHub](${RECEIPTS_REPO})
