@@ -63,6 +63,7 @@ export function teamPages(m) {
 <section aria-labelledby="last"><h2 class="sh s" id="last">Latest finals</h2>${lastRows || '<p class="sub">No finals yet.</p>'}<p class="note gap">Clutch's call is graded only when the Ledger can prove it was made before tip; preseason is never graded.</p></section>
 ${h2h.length ? `<section aria-labelledby="h2h"><h2 class="sh s" id="h2h">Head to head</h2><p class="sub">${h2h.map((x) => `<a href="${x.path}">vs ${esc(x.opp.nickname)}</a>`).join(" · ")}</p><p class="note gap">Every meeting with each opponent this season and last, with Clutch's call and the result.</p></section>` : ""}
 ${pc != null ? `<p class="note">Playoff chance: ${esc(board.method ? `${board.runs?.toLocaleString("en-US") ?? "10,000"} simulated seasons` : "the season simulation")}, ratings as of ${esc(mediumDate(board.as_of))}${board.phase === "preseason" ? " (preseason)" : ""}. Every team's chances are free in the app, updated nightly. <a href="/playoff-chances/">All 30 teams' playoff chances →</a></p>` : ""}
+${t.abbreviation === "HOU" ? '<p class="note" lang="tr"><a href="/tr/houston-rockets/" hreflang="tr">Bu sayfa Türkçe: Rockets maçları Türkiye saatiyle →</a></p>' : ""}
 <div class="btns"><a class="btn" href="${PLAY}">Call ${esc(t.nickname)} games ${WEB_APP_LIVE ? "in your browser" : "in the iPhone app"}</a><a class="btn ghost" href="/teams/">All 30 teams</a></div>
 </div></div>`;
     const title = `${t.name} win probability and playoff chances, ${m.current} · Clutch`;

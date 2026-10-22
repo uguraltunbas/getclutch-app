@@ -38,7 +38,7 @@ import { FONTS, ORIGIN, APP, APP_STORE, INDEXNOW_KEY, WEB_APP_LIVE, WIN_TOTALS_R
 import { ttfToWoff2 } from "./lib/woff2.mjs";
 import { swatchOn } from "./lib/swatch.mjs";
 import { checkContrast, editions } from "./check-contrast.mjs";
-import { scanPages, selfTest, bettingWordsIn } from "./lib/betting.mjs";
+import { scanPages, selfTest, bettingWordsIn, textSegments } from "./lib/betting.mjs";
 import { rec, RATE_FLOOR, RECEIPTS_REPO } from "./lib/copy.mjs";
 import { homePage } from "./lib/pages/home.mjs";
 import { gamePage, nightPage } from "./lib/pages/game.mjs";
@@ -51,6 +51,7 @@ import { playoffsPage } from "./lib/pages/playoffs.mjs";
 import { tonightPage } from "./lib/pages/tonight.mjs";
 import { learnPages } from "./lib/pages/learn.mjs";
 import { weekPages } from "./lib/pages/weeks.mjs";
+import { trPages, TR_WORDS } from "./lib/pages/tr.mjs";
 import { TERMS, PRIVACY, REFUNDS, SUPPORT, LEGAL_UPDATED } from "./content/legal.mjs";
 import { FEATURES, PLAN } from "./content/features.mjs";
 
@@ -91,6 +92,7 @@ pages.push(...matchupPages(m));
 const playoffs = playoffsPage(m);
 pages.push(...learnPages(m));
 pages.push(...weekPages(m));
+pages.push(...trPages(m));
 if (playoffs) pages.push(playoffs); else warn.push("no season board: /playoff-chances/ left out");
 pages.push(notFoundPage());
 // Old GitHub Pages links on the new domain: 301s in _redirects only (no .html
@@ -285,6 +287,9 @@ const st = selfTest();
 if (st.missed.length || st.wrong.length) fail.push(`betting-words self-test: missed ${JSON.stringify(st.missed)}, wrongly caught ${JSON.stringify(st.wrong)}`);
 const scan = scanPages(pages.filter((p) => !p.redirect));
 for (const h of scan.hits) fail.push(`betting word: ${h}`);
+// The Turkish pages: the Turkish words a review reads as wagering, too.
+for (const p of pages.filter((p) => p.path.startsWith("/tr/"))) for (const seg of textSegments(p.html)) if (TR_WORDS.test(seg)) fail.push(`Turkish betting word: ${p.path} ${seg.slice(0, 80)}`);
+if (!TR_WORDS.test("Bugünün kupon önerisi") || TR_WORDS.test("Kazanma olasılığı ve playoff şansı")) fail.push("Turkish betting-word self-test");
 for (const line of llms.split("\n")) for (const id of bettingWordsIn(line)) fail.push(`betting word: /llms.txt [${id}] ${line}`);
 for (const s of scan.stale) fail.push(`betting-words allow-list entry matched nothing (remove it): ${s}`);
 const seenTitle = new Map(), seenDesc = new Map();

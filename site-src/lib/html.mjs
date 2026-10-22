@@ -147,7 +147,7 @@ function footer() {
 <div class="fgrid">
 <div class="fbrand"><span class="logo">Clutch</span><p>NBA analytics for fans. A number for every game, the reasons behind it, and a public record of every call.</p></div>
 <nav aria-label="The paper"><span class="mono">The paper</span><a href="/tonight/">Tonight</a><a href="/ledger/">The Ledger</a><a href="/accuracy/">Accuracy</a><a href="/receipts/">Proof</a><a href="/teams/">Teams</a><a href="/playoff-chances/">Playoff chances</a></nav>
-<nav aria-label="About"><span class="mono">About</span><a href="/how-it-works/">How it works</a><a href="/learn/">Learn</a><a href="/pricing/">Pricing</a><a href="/company/">Company</a><a href="/support/">Support</a><a href="${APP_STORE}">iPhone app</a></nav>
+<nav aria-label="About"><span class="mono">About</span><a href="/how-it-works/">How it works</a><a href="/learn/">Learn</a><a href="/tr/" hreflang="tr" lang="tr">Türkçe</a><a href="/pricing/">Pricing</a><a href="/company/">Company</a><a href="/support/">Support</a><a href="${APP_STORE}">iPhone app</a></nav>
 <nav aria-label="Legal"><span class="mono">Legal</span><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="/refunds/">Refunds</a></nav>
 <nav aria-label="Follow"><span class="mono">Follow</span><a href="${X_URL}" rel="me">X</a><a href="${LINKEDIN_URL}" rel="me">LinkedIn</a></nav>
 </div>
@@ -160,14 +160,14 @@ function footer() {
  * name under /og/; `jsonld` one object or a list; `live` adds the small
  * live-score script; `tour` the front page's guide (static/tour.js).
  */
-export function page({ path, title, description, body, current = "", og = "default", ogType = "website", jsonld = null, live = false, tour = false, noindex = false, cssHref = "/site.css" }) {
+export function page({ path, title, description, body, current = "", og = "default", ogType = "website", jsonld = null, live = false, tour = false, noindex = false, cssHref = "/site.css", lang = "en" }) {
   const url = ORIGIN + path;
   description = clipDescription(description);
   const ld = (Array.isArray(jsonld) ? jsonld : jsonld ? [jsonld] : []).map((o) => `<script type="application/ld+json">${JSON.stringify(o).replace(/</g, "\\u003c")}</script>`).join("\n");
   const pre = FONTS.filter((f) => f.preload).map((f) => `<link rel="preload" href="/fonts/${f.file}" as="font" type="font/woff2" crossorigin>`).join("\n");
   const img = `${ORIGIN}/og/${og}.jpg`;
   const html = `<!doctype html>
-<html lang="en">
+<html lang="${lang}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
