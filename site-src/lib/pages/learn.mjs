@@ -6,8 +6,9 @@
 // it is listed in ARTICLES.
 
 import { page, esc, ORIGIN } from "../html.mjs";
-import { rec, RATE_FLOOR } from "../copy.mjs";
-import { mediumDate } from "../time.mjs";
+import { rec, RATE_FLOOR, pct } from "../copy.mjs";
+import { mediumDate, shortDate } from "../time.mjs";
+import { lastGradedNight } from "../model.mjs";
 import { COMPANY } from "../../content/company.mjs";
 
 const LEARN = "/learn/";
@@ -22,6 +23,74 @@ function gap(d) {
   if (d[2] < 0) return "clear";
   if (d[1] > 0) return "behind";
   return "noise";
+}
+
+// ── What is NBA win probability? ──────────────────────────────────────
+
+function winProbArticle(m) {
+  // The example: tonight's (or the next night's) clearest favourite, else the last graded night's.
+  const ahead = (m.tonight ? m.nights[m.tonight] ?? [] : []).filter((g) => g.status === "scheduled" && g.hasCall && !g.preseason).sort((a, b) => b.side.prob - a.side.prob)[0];
+  const last = lastGradedNight(m, m.today);
+  const lastCalls = last ? m.calls.filter((c) => c.game_date === last && c.season_type !== "Preseason") : [];
+  let ex = null;
+  if (ahead) ex = { fav: ahead.side.team.nickname, other: ahead.side.other.nickname, p: pct(ahead.side.prob), when: ahead.date === m.today ? "tonight" : `on ${shortDate(ahead.date)}`, path: ahead.path };
+  else if (lastCalls.length) {
+    const c = lastCalls.slice().sort((a, b) => b.claimed_pct - a.claimed_pct)[0];
+    const [aw, hm] = c.matchup.split(" @ ").map((x) => m.byAbbr[x]);
+    const fav = m.byAbbr[c.pick];
+    if (aw && hm && fav) ex = { fav: fav.nickname, other: (fav.id === hm.id ? aw : hm).nickname, p: Math.round(c.claimed_pct), when: `on ${shortDate(c.game_date)}`, path: m.gameById[c.game_id]?.path ?? null };
+  }
+  if (!ex) return null;
+  const inN = Math.round(100 / (100 - ex.p));
+  const bench = m.accuracy?.benchmark ?? {};
+  const seasons = Object.keys(bench).sort();
+  const homes = seasons.map((s) => bench[s].tracks?.always_home?.acc).filter((x) => x != null);
+  const held = lastCalls.filter((c) => c.correct).length;
+  const expectedMisses = lastCalls.reduce((a, c) => a + (1 - c.claimed_pct / 100), 0);
+  const exName = ex.path ? `<a href="${ex.path}">the ${esc(ex.fav)} ${ex.p}% against the ${esc(ex.other)}</a>` : `the ${esc(ex.fav)} ${ex.p}% against the ${esc(ex.other)}`;
+  const bands = [
+    ["50–54%", "Narrowly", "Close to a coin flip. The favourite wins a little more often than not."],
+    ["55–61%", "By a possession", "A real edge, but the other side wins about two games in five."],
+    ["62–71%", "Clearly", "A solid favourite. Upsets still come about one game in three or four."],
+    ["72% and up", "Comfortably", "A strong favourite. Even at 80%, one game in five goes the other way."],
+  ];
+  const body = `
+<section class="panel" aria-labelledby="short"><span class="kick">THE SHORT ANSWER</span><h2 id="short">A number for how often this game goes one way.</h2>
+<p class="sub">A win probability is a single number for how likely a team is to win a game. When Clutch gives ${exName} ${esc(ex.when)}, it means that in games like this one, a team in that position wins about ${ex.p} times in 100 and loses about ${100 - ex.p}. It is not a promise: a ${ex.p}% favourite should lose about one game in ${inN === 2 ? "two" : inN === 3 ? "three" : inN === 4 ? "four" : inN === 5 ? "five" : inN}.</p></section>
+
+<section aria-labelledby="read"><h2 class="sh" id="read">How to read the number</h2>
+<div class="scroll"><table class="tbl"><caption class="vh">What each range of win probability means</caption><thead><tr><th scope="col">NUMBER</th><th scope="col">CLUTCH SAYS</th><th scope="col">WHAT IT MEANS</th></tr></thead><tbody>${bands.map(([n, w, d]) => `<tr><td class="num">${n}</td><td class="amber">${esc(w)}</td><td>${esc(d)}</td></tr>`).join("")}</tbody></table></div>
+<p class="note">The words are the ones over each number on Clutch's game pages. The number always belongs to the side Clutch favours; the other side's is 100 minus it.</p></section>
+
+<section class="blk" aria-labelledby="made"><h2 id="made">Where the number comes from</h2>
+<p>A pregame win probability starts from how good each team is this season and lately, then adjusts for the night itself: rest and back-to-backs, travel, altitude, a neutral floor, and who is listed on the league's official injury report, weighted by how much each player has been worth. Home court matters too${homes.length ? `: home teams won ${list(homes.map((h) => `${(h * 100).toFixed(1)}%`))} of the games in ${list(seasons)}` : ""}.</p>
+<p>Clutch's model learns how much each of these is worth from past seasons, then shows the top reasons behind every number in plain words. <a href="/how-it-works/">How Clutch's model works →</a></p></section>
+
+<section class="blk" aria-labelledby="market"><h2 id="market">The market's number</h2>
+<p>The prices on a game can be read as a win probability too: take the margin out and both sides add up to 100%. Just before tip that number has seen almost all of the day's news, which makes it the hardest one to improve on. Clutch shows it beside its own number on every game and grades both after the final.</p></section>
+
+<section class="blk" aria-labelledby="live"><h2 id="live">Pregame and live</h2>
+<p>TV broadcasts and score apps often show a live win probability that moves with every possession. Clutch's number is the pregame one: made on the day of the game, sealed in public before tip, and graded after the final, so it can be checked against what happened.</p></section>
+
+<section class="blk" aria-labelledby="good"><h2 id="good">How to tell a good one</h2>
+<p>Two checks. First, does it come true as often as it says? Of all the games a source called at 70%, the favourite should win about 70 in every 100. That is calibration. Second, is it confident when it's right and cautious when it isn't? The Brier score grades that: lower is better, and a coin flip on every game scores 0.250.</p>
+<p>Clutch prints both for its own numbers, band by band, beside ESPN BPI, the market and picking the home team. <a href="/accuracy/">How accurate Clutch is →</a> · <a href="/learn/espn-bpi-accuracy/">How accurate is ESPN BPI? →</a></p></section>
+
+${lastCalls.length ? `<section class="blk" aria-labelledby="upsets"><h2 id="upsets">Why favourites lose</h2>
+<p>On ${esc(shortDate(last))}, Clutch's favourites won ${held} of ${lastCalls.length}. Its numbers for those games added up to about ${expectedMisses.toFixed(1)} expected losses, so ${lastCalls.length - held === 0 ? "a perfect night was luckier than it looks" : lastCalls.length - held < expectedMisses - 0.5 ? "the night went better than the numbers said it would" : lastCalls.length - held > expectedMisses + 0.5 ? "the night went worse than the numbers said it would" : "the night went about as the numbers said"}. A source whose favourites never lose isn't giving probabilities; over a season, a 70% favourite should lose about three games in ten.</p></section>` : ""}
+
+<p class="note">The example and the night above are rebuilt from Clutch's data every day. <a href="/learn/">More on reading the numbers →</a></p>`;
+  return {
+    slug: "what-is-win-probability",
+    h1: "What is NBA win probability?",
+    kick: "THE BASICS",
+    title: "What is NBA win probability? How to read it · Clutch",
+    description: "What an NBA win probability means, how to read 55% or 75%, where the number comes from, and how to tell a good one from a bad one.",
+    deck: "A win probability is one number for how likely a team is to win a game. Here is what it means, how it is made, and how to tell a good one from a bad one.",
+    published: "2026-10-23",
+    modified: "2026-10-23",
+    body,
+  };
 }
 
 // ── How accurate is ESPN BPI? ─────────────────────────────────────────
@@ -117,7 +186,7 @@ ${earlySentence ? `<section class="blk" aria-labelledby="early"><h2 id="early">E
 }
 
 /** The articles, in the order the hub lists them. Each builder returns null when its data isn't loaded. */
-const ARTICLES = [bpiArticle];
+const ARTICLES = [winProbArticle, bpiArticle];
 
 function articlePage(a) {
   const path = `${LEARN}${a.slug}/`;
