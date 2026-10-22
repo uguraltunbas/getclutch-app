@@ -7,6 +7,7 @@ import { page, esc, bar } from "../html.mjs";
 import { comparisons, opener, verdictOf, rec, pct, shortHash, leadText, sealFileUrl, RATE_FLOOR, RECEIPTS_REPO, RECEIPTS_VERIFY_URL, RECEIPTS_ACTIVITY_URL, PRESEASON_START, REGULAR_SEASON_START } from "../copy.mjs";
 import { mediumDate, shortDate, timeET, longDate } from "../time.mjs";
 import { seasonOf } from "../time.mjs";
+import { weeksOf, weekPath } from "./weeks.mjs";
 
 function recordBlock(r, heading) {
   const v = verdictOf(r);
@@ -46,6 +47,8 @@ export function ledgerPage(m) {
   let main = "";
   if (m.record) {
     main += recordBlock(m.record, { id: "season", kick: `${current} · THE SEASON SO FAR`, title: `Clutch's ${current} record` });
+    const weeks = weeksOf(m);
+    if (weeks.length) main += `<section aria-labelledby="weeks"><h2 class="sh s" id="weeks">Week by week</h2><p class="sub">${weeks.map((w) => { const r = w.calls.filter((c) => c.correct).length; return `<a href="${weekPath(w.monday)}">Week of ${esc(shortDate(w.monday))}: ${rec(r, w.calls.length)}</a>`; }).join(" · ")}</p></section>`;
     main += `<section aria-labelledby="calls"><h2 class="sh" id="calls">Every call, ${esc(current)}</h2>${callRows(thisSeason.slice(0, 120), m)}${thisSeason.length > 120 ? `<p class="note gap">The newest 120 of ${thisSeason.length}. Every one is in the app's Ledger.</p>` : ""}</section>`;
   } else {
     main += `<section class="panel" aria-labelledby="open"><span class="kick">${esc(o.kicker)}</span><h2 id="open">${esc(o.title)}</h2><p class="sub">${esc(o.body)}</p>${o.sealedLine ? `<p class="mono amber gap">${esc(o.sealedLine)} ✓</p>` : ""}${o.sealedNote ? `<p class="note gap">${esc(o.sealedNote)}</p>` : ""}<p class="note gap">Preseason calls count for points in the app from ${esc(shortDate(PRESEASON_START))}; leagues and Clutch's record start on ${esc(shortDate(REGULAR_SEASON_START))}.</p></section>`;

@@ -50,6 +50,7 @@ import { matchupPages } from "./lib/pages/matchups.mjs";
 import { playoffsPage } from "./lib/pages/playoffs.mjs";
 import { tonightPage } from "./lib/pages/tonight.mjs";
 import { learnPages } from "./lib/pages/learn.mjs";
+import { weekPages } from "./lib/pages/weeks.mjs";
 import { TERMS, PRIVACY, REFUNDS, SUPPORT, LEGAL_UPDATED } from "./content/legal.mjs";
 import { FEATURES, PLAN } from "./content/features.mjs";
 
@@ -89,6 +90,7 @@ pages.push(...teamPages(m));
 pages.push(...matchupPages(m));
 const playoffs = playoffsPage(m);
 pages.push(...learnPages(m));
+pages.push(...weekPages(m));
 if (playoffs) pages.push(playoffs); else warn.push("no season board: /playoff-chances/ left out");
 pages.push(notFoundPage());
 // Old GitHub Pages links on the new domain: 301s in _redirects only (no .html
@@ -199,6 +201,9 @@ const nextDay = (d) => new Date(Date.parse(`${d}T12:00:00Z`) + 86400e3).toISOStr
 function lastmod(path) {
   const night = path.match(/^\/games\/(\d{4}-\d{2}-\d{2})\//)?.[1];
   if (night && nextDay(night) < TODAY) return nextDay(night);
+  // A finished week's page is fixed the morning after its Sunday.
+  const week = path.match(/^\/ledger\/weeks\/(\d{4}-\d{2}-\d{2})\/$/)?.[1];
+  if (week) { const after = new Date(Date.parse(`${week}T12:00:00Z`) + 7 * 86400e3).toISOString().slice(0, 10); if (after < TODAY) return after; }
   if (["/terms/", "/privacy/", "/refunds/", "/support/"].includes(path)) return LEGAL_ISO;
   return today;
 }
