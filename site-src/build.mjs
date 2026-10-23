@@ -52,6 +52,7 @@ import { tonightPage } from "./lib/pages/tonight.mjs";
 import { learnPages } from "./lib/pages/learn.mjs";
 import { weekPages } from "./lib/pages/weeks.mjs";
 import { trPages, TR_WORDS } from "./lib/pages/tr.mjs";
+import { embedPages } from "./lib/pages/embed.mjs";
 import { TERMS, PRIVACY, REFUNDS, SUPPORT, LEGAL_UPDATED } from "./content/legal.mjs";
 import { FEATURES, PLAN } from "./content/features.mjs";
 
@@ -93,6 +94,7 @@ const playoffs = playoffsPage(m);
 pages.push(...learnPages(m));
 pages.push(...weekPages(m));
 pages.push(...trPages(m));
+pages.push(...embedPages(m));
 if (playoffs) pages.push(playoffs); else warn.push("no season board: /playoff-chances/ left out");
 pages.push(notFoundPage());
 // Old GitHub Pages links on the new domain: 301s in _redirects only (no .html
@@ -174,9 +176,15 @@ try { new Function(tourJs); } catch (e) { console.error(`tour.js: trimmed into s
 const tourName = `/assets/tour.${hash(tourJs)}.js`;
 writeFileSync(join(OUT, tourName), tourJs);
 
+// The embeddable boxes' own small stylesheet (lib/pages/embed.mjs): comments and spaces out, content-hashed.
+const embedCss = readFileSync(join(HERE, "static", "embed.css"), "utf8").replace(/\/\*[\s\S]*?\*\//g, "").replace(/\s*([{};:,>])\s*/g, "$1").replace(/\n+/g, "").trim() + "\n";
+const embedCssName = `/assets/embed.${hash(embedCss)}.css`;
+writeFileSync(join(OUT, embedCssName), embedCss);
+if (Buffer.byteLength(embedCss) > 3072) fail.push(`embed.css ${Buffer.byteLength(embedCss)} bytes (budget 3 KB)`);
+
 // Wire the hashed names into every page.
 for (const p of pages) {
-  p.html = p.html.replaceAll('href="/site.css"', `href="${cssName}"`).replaceAll('src="/live.js"', `src="${liveName}"`).replaceAll('src="/theme.js"', `src="${themeName}"`).replaceAll('src="/tour.js"', `src="${tourName}"`);
+  p.html = p.html.replaceAll('href="/embed.css"', `href="${embedCssName}"`).replaceAll('href="/site.css"', `href="${cssName}"`).replaceAll('src="/live.js"', `src="${liveName}"`).replaceAll('src="/theme.js"', `src="${themeName}"`).replaceAll('src="/tour.js"', `src="${tourName}"`);
   for (const [plain, hashed] of Object.entries(fontFiles)) p.html = p.html.replaceAll(`/fonts/${plain}`, hashed);
 }
 
@@ -193,7 +201,7 @@ for (const p of pages) {
   mkdirSync(dirname(file), { recursive: true });
   writeFileSync(file, p.html);
 }
-const indexed = pages.filter((p) => !p.redirect && p.path.endsWith("/"));
+const indexed = pages.filter((p) => !p.redirect && !p.embed && p.path.endsWith("/"));
 const today = new Date().toISOString().slice(0, 10);
 // lastmod only moves when a page really changes (search engines stop trusting a
 // sitemap whose every date is the build's): a past night is graded the morning
@@ -317,7 +325,7 @@ for (const c of [ed.night.paper, ed.day.paper]) {
   if (!themeJs.includes(c)) fail.push(`theme.js: the paper ${c} is not its theme-color`);
   if (!pages[0].html.includes(`<meta name="theme-color" content="${c}"`)) fail.push(`the page head: no theme-color ${c}`);
 }
-if (!pages.filter((p) => !p.redirect).every((p) => p.html.includes(`<script src="${themeName}"></script>`))) fail.push("a page without the theme script");
+if (!pages.filter((p) => !p.redirect && !p.embed).every((p) => p.html.includes(`<script src="${themeName}"></script>`))) fail.push("a page without the theme script");
 if (!pages[0].html.includes(`<script src="${tourName}" defer></script>`) || !pages[0].html.includes('<template id="tour">')) fail.push("the front page without its guide (tour.js and its template)");
 // The Launch Pass input: said out loud when it is set but not shown.
 if (LAUNCH_INPUT) {
