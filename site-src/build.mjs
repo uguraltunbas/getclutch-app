@@ -45,7 +45,7 @@ import { gamePage, nightPage } from "./lib/pages/game.mjs";
 import { ledgerPage, receiptsPage } from "./lib/pages/paper.mjs";
 import { howPage, pricingPage, companyPage, termsPage, privacyPage, refundsPage, supportPage } from "./lib/pages/about.mjs";
 import { teamPages, notFoundPage } from "./lib/pages/teams.mjs";
-import { accuracyPage, backtestSentence } from "./lib/pages/accuracy.mjs";
+import { accuracyPage, backtestSentence, backtestBands } from "./lib/pages/accuracy.mjs";
 import { matchupPages } from "./lib/pages/matchups.mjs";
 import { playoffsPage } from "./lib/pages/playoffs.mjs";
 import { tonightPage } from "./lib/pages/tonight.mjs";
@@ -236,6 +236,10 @@ const r = m.record;
 const llmsRecord = r
   ? `${r.season} so far: ${rec(r.hits, r.n)} on ${r.n} graded calls${r.n >= RATE_FLOOR && r.hitRate != null ? ` (${r.hitRate.toFixed(1)}% right)` : ` (too few for a rate; one is quoted from ${RATE_FLOOR})`}, as of ${m.ledgerAt ? m.ledgerAt.slice(0, 10) : TODAY}.`
   : `The ${m.current} record starts with the regular season's first graded finals.`;
+const llmsBands = backtestBands(m.accuracy?.current_version);
+const llmsCalibration = llmsBands
+  ? `\n- In the same test, each band of Clutch's numbers came true within ${Math.max(...llmsBands.bands.map((b) => Math.abs(b.happened - b.said))).toFixed(1)} points of what it said: ${llmsBands.bands.map((b) => `${Math.round(b.lo * 100)}–${Math.round(b.hi * 100)}% calls averaged ${b.said.toFixed(0)}% and won ${b.happened.toFixed(0)}%`).join("; ")}.`
+  : "";
 const llms = `# Clutch
 
 > NBA win probability for every game, sealed before tip in a public GitHub repository and graded in public after the final. Free on the web (app.clutchledger.com) and on iPhone. Also known as Clutch Ledger.
@@ -243,7 +247,7 @@ const llms = `# Clutch
 - Each morning Clutch publishes one number per NBA game: the chance the side it favours wins. The number is sealed with a SHA-256 fingerprint before tip-off and never edited.
 - After the final, the Ledger grades it beside ESPN BPI, the market and picking the home team every night, on the same games. Misses stay on the record.
 - ${llmsRecord}
-- ${backtestSentence(m.accuracy?.benchmark) ?? "The model's two-season test is on the How it works page."}
+- ${backtestSentence(m.accuracy?.benchmark) ?? "The model's two-season test is on the How it works page."}${llmsCalibration}
 - Clutch is analytics for fans, not advice: it makes no calls on margins or totals and carries no affiliate links.
 
 ## Free, in the browser and on iPhone

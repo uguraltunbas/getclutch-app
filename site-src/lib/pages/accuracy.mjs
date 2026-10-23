@@ -9,8 +9,9 @@
 // likely ranges, never written in advance.
 
 import { page, esc, ORIGIN, bar } from "../html.mjs";
-import { comparisons, verdictOf, rec, RATE_FLOOR, RECEIPTS_REPO } from "../copy.mjs";
+import { comparisons, verdictOf, rec, RATE_FLOOR, RECEIPTS_REPO, wilson } from "../copy.mjs";
 import { mediumDate } from "../time.mjs";
+import { BACKTEST_CALIBRATION } from "../../content/backtest.mjs";
 
 const PATH = "/accuracy/";
 const callWord = (n) => `${n.toLocaleString("en-US")} ${n === 1 ? "call" : "calls"}`;
@@ -94,6 +95,36 @@ function calibrationSection(m) {
 <p class="note">SAID is the average of Clutch's numbers in the band; HAPPENED is how often that side won. A band shows its rate and likely range from ${RATE_FLOOR} calls.</p></section>`;
 }
 
+/** The test's seasons pooled into the live Ledger's four bands — only for the
+ *  model the bands were counted on, so a retrained model never inherits them. */
+export function backtestBands(version, cal = BACKTEST_CALIBRATION) {
+  if (!version || cal?.version !== version) return null;
+  const seasons = Object.keys(cal.seasons ?? {}).sort();
+  const pooled = (cal.seasons[seasons[0]] ?? []).map((b, i) => {
+    const xs = seasons.map((s) => cal.seasons[s][i]).filter((x) => x?.n);
+    const n = xs.reduce((a, x) => a + x.n, 0), hits = xs.reduce((a, x) => a + x.hits, 0);
+    const said = n ? xs.reduce((a, x) => a + x.claimed * x.n, 0) / n : null;
+    const ci = wilson(hits, n);
+    return { lo: b.lo, hi: b.hi, n, hits, said: said == null ? null : said * 100, happened: n ? (hits / n) * 100 : null, ciLow: ci?.[0], ciHigh: ci?.[1] };
+  }).filter((b) => b.n >= RATE_FLOOR);
+  return pooled.length ? { seasons, bands: pooled } : null;
+}
+
+/** Did the test's numbers come true? One sentence read off the bands, then the bands. */
+function backtestBandsBlock(m) {
+  const t = backtestBands(m.accuracy?.current_version);
+  if (!t) return "";
+  const games = t.bands.reduce((a, b) => a + b.n, 0);
+  const gap = Math.max(...t.bands.map((b) => Math.abs(b.happened - b.said)));
+  const inside = t.bands.every((b) => b.said >= b.ciLow && b.said <= b.ciHigh);
+  const lead = `Across the test's ${games.toLocaleString("en-US")} games, every band came true within ${gap.toFixed(1)} points of what Clutch said${inside ? ", each inside its likely range" : ""}.`;
+  const rows = t.bands.map((b) => `<tr><td>${esc(bandLabel(b))}</td><td class="num">${b.n.toLocaleString("en-US")}</td><td class="num">${b.said.toFixed(1)}%</td><td class="num amber">${b.happened.toFixed(1)}%</td><td class="num">${b.ciLow.toFixed(0)}–${b.ciHigh.toFixed(0)}%</td></tr>`).join("");
+  return `<h3 class="side-h gap">When the test said 70%, did it happen 70%?</h3>
+<p><strong>${esc(lead)}</strong></p>
+<div class="scroll gap"><table class="tbl"><caption class="vh">Calibration in the walk-forward test, ${esc(t.seasons.join(" and "))}</caption><thead><tr><th scope="col">CLUTCH'S BAND</th><th scope="col" class="num">GAMES</th><th scope="col" class="num">SAID</th><th scope="col" class="num">HAPPENED</th><th scope="col" class="num">LIKELY RANGE</th></tr></thead><tbody>${rows}</tbody></table></div>
+<p class="note">The same bands as the live table above, counted the same way on the side Clutch favoured, over both test seasons together. A replay, so it says how the method holds up; the live bands say how this season's sealed numbers do.</p>`;
+}
+
 function backtestSection(m) {
   const bench = m.accuracy?.benchmark ?? {};
   const seasons = Object.keys(bench).sort().reverse();
@@ -105,7 +136,8 @@ function backtestSection(m) {
   return `<section class="blk" aria-labelledby="test"><span class="kick">BEFORE IT SHIPPED · A REPLAY, NOT THE LIVE RECORD</span><h2 id="test">The two-season test</h2>
 <p>${esc(sentence)} Nobody publishing an NBA model reliably beats the market, and Clutch doesn't claim to.</p>
 <div class="scroll gap"><table class="tbl"><caption class="vh">The walk-forward test: share of winners right and accuracy score, by season</caption><thead><tr><th scope="col">NUMBER</th>${head}</tr></thead><tbody>${body}</tbody></table></div>
-<p class="note">${seasons.map((s) => `${s}: ${bench[s].n.toLocaleString("en-US")} games`).join(" · ")}. RIGHT is the share of games where the side given over 50% won; SCORE is the accuracy score (lower is better). Every game was predicted by a model fit only on earlier games, then graded on the same games as ESPN BPI and the market's final price before tip. This test chose the model; it is not its record. <a href="/how-it-works/">The full test and the model's limits →</a></p></section>`;
+<p class="note">${seasons.map((s) => `${s}: ${bench[s].n.toLocaleString("en-US")} games`).join(" · ")}. RIGHT is the share of games where the side given over 50% won; SCORE is the accuracy score (lower is better). Every game was predicted by a model fit only on earlier games, then graded on the same games as ESPN BPI and the market's final price before tip. This test chose the model; it is not its record. <a href="/how-it-works/">The full test and the model's limits →</a></p>
+${backtestBandsBlock(m)}</section>`;
 }
 
 function lastSeasonLine(m) {
@@ -123,6 +155,13 @@ function questions(m) {
       ? `This season Clutch is ${rec(r.hits, r.n)} on ${callWord(r.n)} graded after the final${r.n >= RATE_FLOOR && r.hitRate != null ? `, ${r.hitRate.toFixed(1)}% right` : " — too few yet for a rate"}. Picking the home team every night went ${rec(Math.round(((r.homeRate ?? 0) * r.n) / 100), r.n)} on the same games.`
       : "The season's first calls are graded the morning after its first finals; this page fills in from then."],
     ["Is Clutch more accurate than ESPN BPI?", sentence ? `In the test it had to pass before it shipped: ${sentence} Live, this season's games are graded beside ESPN BPI on the Ledger.` : "Live, this season's games are graded beside ESPN BPI on the Ledger."],
+    ...(() => {
+      const t = backtestBands(m.accuracy?.current_version);
+      if (!t) return [];
+      const worst = Math.max(...t.bands.map((b) => Math.abs(b.happened - b.said)));
+      const games = t.bands.reduce((a, b) => a + b.n, 0);
+      return [["Are Clutch's probabilities calibrated?", `In the two-season test (${games.toLocaleString("en-US")} games), each band of Clutch's numbers came true within ${worst.toFixed(1)} points of what it said: its ${t.bands.map((b) => `${bandLabel(b)} calls averaged ${b.said.toFixed(0)}% and won ${b.happened.toFixed(0)}%`).join("; ")}. This season's live bands are rebuilt every morning above.`]];
+    })(),
     ["How is a call graded?", "Clutch's number for every game is sealed in a public file on GitHub before tip-off and graded after the final against that same number. The side it gives over 50% is its call. Right and wrong calls stay on the record, in date order."],
   ];
   return `<section aria-labelledby="faq"><h2 class="sh" id="faq">Questions</h2>${qa.map(([q, a]) => `<div class="blk gap"><h3 class="side-h">${esc(q)}</h3><p>${esc(a)}</p></div>`).join("")}</section>`;
