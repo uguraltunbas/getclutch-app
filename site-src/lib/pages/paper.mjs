@@ -62,9 +62,10 @@ export function ledgerPage(m) {
 <p>A rate is never quoted on fewer than ${RATE_FLOOR} graded calls — the record is written as right–wrong until then — and never without the baseline of picking the home team every night. <a href="/accuracy/">How accurate Clutch is, band by band →</a> · <a href="/how-it-works/">How Clutch works →</a></p></section>`;
   const body = `<div class="wrap r"><div class="rhead"><span class="kick">THE LEDGER · ${esc(current)}${m.ledgerAt ? ` · UPDATED ${esc(mediumDate(m.ledgerAt.slice(0, 10)).toUpperCase())}` : ""}</span><h1 class="rh1">Every call, graded in public.</h1><p class="rdeck">Clutch writes down its number for every game before tip and grades it after the final — beside the market, ESPN and picking the home team every night. The misses stay on the record.</p></div><div class="body">${main}</div></div>`;
   const desc = m.record
-    ? `Clutch's ${current} NBA record: ${rec(m.record.hits, m.record.n)} on ${m.record.n} graded calls, beside the market, ESPN and always picking the home team. Every call sealed before tip.`
+    ? `Clutch's ${current} NBA prediction track record: ${rec(m.record.hits, m.record.n)} on ${m.record.n} graded calls, beside the market, ESPN and always picking the home team. Every call sealed before tip.`
     : `Clutch's ${current} record starts Oct 20. Every NBA call is sealed before tip and graded after the final, beside the market, ESPN and the home team.`;
-  return { path: "/ledger/", title: "The Ledger: every Clutch call, graded in public · Clutch", html: page({ path: "/ledger/", title: "The Ledger: every Clutch call, graded in public · Clutch", description: desc, body, current: "ledger", og: "ledger" }) };
+  const title = "NBA prediction track record: every Clutch call, graded · Clutch";
+  return { path: "/ledger/", title, html: page({ path: "/ledger/", title, description: desc, body, current: "ledger", og: "ledger" }) };
 }
 
 // ── Proof (/receipts/) ─────────────────────────────────────────────────
