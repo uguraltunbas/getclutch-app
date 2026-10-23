@@ -20,6 +20,11 @@
   ! Cache-Control
   Cache-Control: public, max-age=86400
 
+/email/*
+  ! Cache-Control
+  Cache-Control: public, max-age=86400
+  Access-Control-Allow-Origin: *
+
 /sitemap.xml
   ! Cache-Control
   Cache-Control: public, max-age=3600

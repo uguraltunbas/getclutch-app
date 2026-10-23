@@ -191,6 +191,9 @@ for (const p of pages) {
 // ── static files ──
 mkdirSync(join(OUT, "og"), { recursive: true });
 for (const f of readdirSync(join(HERE, "static", "og"))) copyFileSync(join(HERE, "static", "og", f), join(OUT, "og", f));
+// Images the e-mails load (ml-engine jobs/announce.py): logo, App Store badge, X icon. Names never change.
+mkdirSync(join(OUT, "email"), { recursive: true });
+for (const f of readdirSync(join(HERE, "static", "email"))) copyFileSync(join(HERE, "static", "email", f), join(OUT, "email", f));
 for (const f of ["favicon.png", "apple-touch-icon.png", "icon-512.png"]) copyFileSync(join(HERE, "static", f), join(OUT, f));
 writeFileSync(join(OUT, "_headers"), readFileSync(join(HERE, "static", "_headers"), "utf8").replaceAll("__SUPABASE_URL__", SB_URL));
 writeFileSync(join(OUT, "_redirects"), Object.entries(LEGACY).map(([a, b]) => `${a} ${b} 301`).join("\n") + "\n");
