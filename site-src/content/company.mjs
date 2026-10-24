@@ -28,6 +28,9 @@ export const COMPANY = {
     // The public record and the launch page: the same Clutch, so search and AI answers tie them together.
     github: "https://github.com/uguraltunbas/clutch-receipts",
     productHunt: "https://www.producthunt.com/products/clutch-ledger",
+    // Where the open dataset lives, under the Clutch name.
+    kaggle: "https://www.kaggle.com/xmlzed",
+    huggingFace: "https://huggingface.co/clutchledger",
   },
   /** [when, what] — oldest first. */
   timeline: [
@@ -54,6 +57,6 @@ export function organizationLd(origin) {
     foundingDate: COMPANY.founded,
     founder,
     address: { "@type": "PostalAddress", addressLocality: COMPANY.city, addressCountry: COMPANY.countryCode },
-    sameAs: [links.appStore, links.x, links.linkedinCompany, links.github, links.productHunt].filter(Boolean),
+    sameAs: [links.appStore, links.x, links.linkedinCompany, links.github, links.productHunt, links.kaggle, links.huggingFace].filter(Boolean),
   };
 }
