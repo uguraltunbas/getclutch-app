@@ -105,6 +105,10 @@ export const RECEIPTS_REPO = "https://github.com/uguraltunbas/clutch-receipts";
 export const RECEIPTS_VERIFY_URL = `${RECEIPTS_REPO}/blob/main/VERIFY.md`;
 export const RECEIPTS_ACTIVITY_URL = `${RECEIPTS_REPO}/activity`;
 
+// Clutch's own numbers are free to reuse with credit; the same licence sits in the receipts repo.
+export const DATA_LICENSE_URL = "https://creativecommons.org/licenses/by/4.0/";
+export const DATA_LICENSE_LINE = `Clutch's numbers on this page are free to reuse under <a href="${DATA_LICENSE_URL}" rel="license">CC BY 4.0</a>: credit Clutch and link to clutchledger.com.`;
+
 const toProb = (v) => { const n = typeof v === "string" ? Number(v) : v; return typeof n === "number" && Number.isFinite(n) && n >= 0 && n <= 1 ? n : null; };
 
 /** One game's receipt state: sealed · late · not_yet · none · postponed (mapReceipt). */

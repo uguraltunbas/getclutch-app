@@ -9,7 +9,7 @@
 // likely ranges, never written in advance.
 
 import { page, esc, ORIGIN, bar } from "../html.mjs";
-import { comparisons, verdictOf, rec, RATE_FLOOR, RECEIPTS_REPO, wilson } from "../copy.mjs";
+import { comparisons, verdictOf, rec, RATE_FLOOR, RECEIPTS_REPO, wilson, DATA_LICENSE_URL, DATA_LICENSE_LINE } from "../copy.mjs";
 import { mediumDate } from "../time.mjs";
 import { BACKTEST_CALIBRATION } from "../../content/backtest.mjs";
 
@@ -180,7 +180,7 @@ ${calibrationSection(m)}
 ${backtestSection(m)}
 ${lastSeasonLine(m)}
 ${questions(m)}
-<section class="blk" aria-labelledby="src"><h2 id="src">Where these numbers come from</h2><p>Every number Clutch publishes is sealed with a SHA-256 fingerprint in <a href="${RECEIPTS_REPO}">a public repository</a> before tip, and the Ledger grades that sealed number after the final. This page is rebuilt from the Ledger every morning; nothing on it is typed by hand. <a href="/receipts/">How to check a seal yourself →</a></p></section>
+<section class="blk" aria-labelledby="src"><h2 id="src">Where these numbers come from</h2><p>Every number Clutch publishes is sealed with a SHA-256 fingerprint in <a href="${RECEIPTS_REPO}">a public repository</a> before tip, and the Ledger grades that sealed number after the final. This page is rebuilt from the Ledger every morning; nothing on it is typed by hand. <a href="/receipts/">How to check a seal yourself →</a></p><p>${DATA_LICENSE_LINE} Scores are public record; ESPN BPI and market figures belong to their sources.</p></section>
 </div></div>`;
   const title = "How accurate is Clutch? NBA predictions, graded · Clutch";
   const description = r
@@ -194,6 +194,7 @@ ${questions(m)}
     url: ORIGIN + PATH,
     creator: { "@type": "Organization", name: "Clutch", url: ORIGIN + "/" },
     isAccessibleForFree: true,
+    license: DATA_LICENSE_URL,
     isBasedOn: RECEIPTS_REPO,
     keywords: ["NBA", "basketball", "win probability", "prediction accuracy", "calibration", "Brier score", "ESPN BPI"],
     variableMeasured: ["graded calls", "calls right", "calibration by probability band", "Brier score"],

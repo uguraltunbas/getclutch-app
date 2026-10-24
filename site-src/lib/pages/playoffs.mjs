@@ -7,6 +7,7 @@
 
 import { page, esc, ORIGIN, bar, teamSlug } from "../html.mjs";
 import { mediumDate } from "../time.mjs";
+import { DATA_LICENSE_URL, DATA_LICENSE_LINE } from "../copy.mjs";
 
 export const PLAYOFFS_PATH = "/playoff-chances/";
 
@@ -41,7 +42,8 @@ ${table("West", "west")}
 <section class="blk" aria-labelledby="how"><h2 id="how">How these are made</h2>
 <p>Each night Clutch plays out the rest of the regular season ${(board.runs ?? 10000).toLocaleString("en-US")} times. Every remaining game gets Clutch's win probability for it, each team's strength is allowed to drift as much as it has in past seasons, and ties are broken by head-to-head and then at random. A team's playoff chance is how often it finished in a top-six spot or won its way through the play-in.</p>
 ${test}
-<p>The full simulation — seeds, every round, the title and projected wins — is in Clutch Pro. Each team's page has its next games with Clutch's call. <a href="/teams/">All 30 teams →</a></p></section>
+<p>The full simulation — seeds, every round, the title and projected wins — is in Clutch Pro. Each team's page has its next games with Clutch's call. <a href="/teams/">All 30 teams →</a></p>
+<p>${DATA_LICENSE_LINE}</p></section>
 </div></div>`;
   const title = `NBA playoff chances ${board.season ?? m.current}: all 30 teams, updated nightly · Clutch`;
   const description = `Every NBA team's playoff chance for ${board.season ?? m.current}, from ${(board.runs ?? 10000).toLocaleString("en-US")} simulated seasons, updated nightly. ${top.team.name}: ${chanceText(top.playoff_pct)}.`;
@@ -52,6 +54,7 @@ ${test}
     url: ORIGIN + PLAYOFFS_PATH,
     creator: { "@type": "Organization", name: "Clutch", url: ORIGIN + "/" },
     isAccessibleForFree: true,
+    license: DATA_LICENSE_URL,
     keywords: ["NBA", "playoff chances", "playoff probability", "season simulation", board.season ?? m.current],
     variableMeasured: ["playoff chance", "wins", "losses"],
     ...(board.as_of ? { dateModified: board.as_of } : {}),
