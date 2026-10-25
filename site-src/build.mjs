@@ -221,11 +221,13 @@ function lastmod(path) {
   return today;
 }
 writeFileSync(join(OUT, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${indexed.map((p) => `<url><loc>${ORIGIN}${p.path}</loc><lastmod>${lastmod(p.path)}</lastmod><changefreq>${p.path === "/" || p.path === "/tonight/" || p.path.startsWith("/games/") ? "hourly" : "daily"}</changefreq><priority>${p.path === "/" ? "1.0" : p.path === "/tonight/" ? "0.9" : p.path.startsWith("/games/") ? "0.8" : "0.6"}</priority></url>`).join("\n")}\n</urlset>\n`);
-// Search engines and AI answers may read and cite the paper; model training may not
-// (owner decision, chat 13). Content-Signal is Cloudflare's robots.txt extension;
-// the named crawlers are the training-only ones, refused outright.
-const TRAINING_CRAWLERS = ["GPTBot", "ClaudeBot", "Google-Extended", "Applebot-Extended", "CCBot", "Meta-ExternalAgent", "Bytespider"];
-writeFileSync(join(OUT, "robots.txt"), `User-agent: *\nContent-Signal: search=yes, ai-input=yes, ai-train=no\nAllow: /\n\n${TRAINING_CRAWLERS.map((b) => `User-agent: ${b}`).join("\n")}\nDisallow: /\n\nSitemap: ${ORIGIN}/sitemap.xml\n`);
+// Search engines, AI answers and model training may all read the paper: a new name
+// is known to an assistant only if it was in what the model learned from (owner
+// decision 2026-10-25, reversing chat 13's ai-train=no). Content-Signal is
+// Cloudflare's robots.txt extension. Bytespider stays refused (crawls far past
+// any use to the site).
+const REFUSED_CRAWLERS = ["Bytespider"];
+writeFileSync(join(OUT, "robots.txt"), `User-agent: *\nContent-Signal: search=yes, ai-input=yes, ai-train=yes\nAllow: /\n\n${REFUSED_CRAWLERS.map((b) => `User-agent: ${b}`).join("\n")}\nDisallow: /\n\nSitemap: ${ORIGIN}/sitemap.xml\n`);
 // IndexNow proves the site owns the key by serving it at /<key>.txt; site-src/indexnow.mjs pings after deploy.
 writeFileSync(join(OUT, `${INDEXNOW_KEY}.txt`), INDEXNOW_KEY + "\n");
 // /llms.txt (llmstxt.org): the site in a few lines for AI answers — what Clutch is, the record as of
