@@ -18,6 +18,12 @@ export const CF_BEACON_TOKEN = "e54d984f52e44bebade43eb18d86335e";
 export const X_URL = "https://x.com/getclutchledger";
 export const LINKEDIN_URL = "https://www.linkedin.com/company/clutchledger/";
 /** The official Win Totals rules: on the GitHub Pages site the App Store links to, not on this domain (Paddle reviews this one). */
+/**
+ * Launch directories that list Clutch and ask for their badge on our site to keep the free listing
+ * (owner, 2026-10-25). Front page only, so the rest of the site carries no outside links in its footer;
+ * the images are copies in static/badges (the CSP loads no outside image), linked as each one asks.
+ */
+const LISTED_ON = [{ href: "https://fazier.com", img: "/badges/fazier.svg", w: 103, h: 44, alt: "Launched on Fazier" }];
 export const WIN_TOTALS_RULES_URL = "https://uguraltunbas.github.io/getclutch-app/win-totals-rules.html";
 
 /**
@@ -142,7 +148,7 @@ function masthead(current) {
 </div></header>`;
 }
 
-function footer() {
+function footer(path) {
   return `<footer class="foot"><div class="wrap">
 <div class="fgrid">
 <div class="fbrand"><span class="logo">Clutch</span><p>NBA analytics for fans. A number for every game, the reasons behind it, and a public record of every call.</p></div>
@@ -151,6 +157,7 @@ function footer() {
 <nav aria-label="Legal"><span class="mono">Legal</span><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="/refunds/">Refunds</a></nav>
 <nav aria-label="Follow"><span class="mono">Follow</span><a href="${X_URL}" rel="me">X</a><a href="${LINKEDIN_URL}" rel="me">LinkedIn</a></nav>
 </div>
+${path === "/" ? `<div class="flisted"><span class="mono">Listed on</span>${LISTED_ON.map((b) => `<a href="${b.href}"><img src="${b.img}" width="${b.w}" height="${b.h}" alt="${b.alt}"></a>`).join("")}</div>` : ""}
 <div class="fline"><span>Sports analytics for fans. Not affiliated with the NBA or any team.</span><span>© 2026 Clutch · Operated by Uğur Altunbaş</span></div>
 </div></footer>`;
 }
@@ -205,7 +212,7 @@ ${masthead(current)}
 <main id="main">
 ${body}
 </main>
-${footer()}
+${footer(path)}
 ${live ? '<script src="/live.js" defer></script>' : ""}${tour ? '<script src="/tour.js" defer></script>' : ""}
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;:&quot;${CF_BEACON_TOKEN}&quot;}"></script>
 </body>
