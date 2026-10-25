@@ -3,16 +3,18 @@
 // on the schedule ahead, and the Ledger's graded calls on the pair from
 // earlier seasons (from the calls themselves: the games table misses part of
 // last season, so no series total is drawn from it). A pair gets its page once it has a
-// regular-season or playoff game that is final or has its own game page
-// (tonight's slate included), so the pages grow with the season instead of
-// arriving as 435 empty shells. The two names are in alphabetical order,
+// regular-season or playoff game that is final, has its own game page
+// (tonight's slate included) or tips within the next week (people search
+// "X vs Y prediction" in the days before, and a crawler needs those days),
+// so the pages grow with the season instead of arriving as 435 empty shells. The two names are in alphabetical order,
 // so a pair has one address whichever team is at home.
 
 import { page, esc, ORIGIN, teamSlug } from "../html.mjs";
 import { pct, normalizeStatus, finalLabel, rec } from "../copy.mjs";
-import { shortDate, mediumDate, dayLabel, timeET } from "../time.mjs";
+import { shortDate, mediumDate, dayLabel, timeET, shift } from "../time.mjs";
 
 const pairKey = (x, y) => [x, y].sort().join("|");
+const LEAD_DAYS = 7;
 const ordered = (t, u) => (teamSlug(t) < teamSlug(u) ? [t, u] : [u, t]);
 export const matchupPath = (t, u) => { const [a, b] = ordered(t, u); return `/matchups/${teamSlug(a)}-vs-${teamSlug(b)}/`; };
 
@@ -22,6 +24,7 @@ export function matchupIndex(m) {
   const out = new Map();
   const seasonFrom = `${m.current.slice(0, 4)}-08-01`;
   const onPage = new Set(m.pageGames.map((g) => g.id));
+  const soon = shift(m.today, LEAD_DAYS);
   const slot = (h, a) => {
     const k = pairKey(h.id, a.id);
     if (!out.has(k)) { const [x, y] = ordered(h, a); out.set(k, { a: x, b: y, path: matchupPath(x, y), games: [], last: [], live: false }); }
@@ -31,7 +34,7 @@ export function matchupIndex(m) {
     if (g.date < seasonFrom) continue;
     const s = slot(g.home, g.away);
     s.games.push({ ...g, page: onPage.has(g.id) });
-    if (!g.preseason && (g.status === "final" || onPage.has(g.id))) s.live = true;
+    if (!g.preseason && (g.status === "final" || onPage.has(g.id) || (g.status === "scheduled" && g.date >= m.today && g.date <= soon))) s.live = true;
   }
   for (const c of m.calls) {
     if (c.game_date >= seasonFrom || c.season_type === "Preseason") continue;
