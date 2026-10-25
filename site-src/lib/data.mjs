@@ -1,7 +1,7 @@
 // Every read the site makes, with the public anon key — the same rows the
 // free app reads, and nothing else:
 //
-//   teams, games, win_total_lines (line, source, as_of — never the prices),
+//   teams, games (this season's, and last season's finals), win_total_lines (line, source, as_of — never the prices),
 //   players (who is listed on the injury report), receipts,
 //   receipt_games (game id + the sealed home win probability; 049, public)
 //   game_predictions        only the columns migration 031 grants to anon:
@@ -137,6 +137,10 @@ export async function loadAll(db, { today, days = 7, warn = console.warn }) {
   // For the team pages: each team's latest finals and next games.
   const recent = await soft("recent finals", () => db.get(`games?select=${GAME_COLS}&status=eq.final&game_date=lt.${today}&order=game_date.desc&limit=700`), []);
   const upcoming = await soft("upcoming games", () => db.get(`games?select=${GAME_COLS}&game_date=gte.${today}&status=neq.postponed&order=game_date,game_time_utc&limit=400`), []);
+  // Last season's finals, for the head-to-head lines ("Rockets won the season series 3–1"); ~1,320
+  // rows, so paged. nba_id marks the play-in (005…, stored as Regular Season), which no series counts.
+  const prevSeason = `${+season.slice(0, 4) - 1}-${season.slice(2, 4)}`;
+  const lastSeason = await soft("last season's finals", () => getAll(db, `games?select=${GAME_COLS},nba_id&season=eq.${prevSeason}&status=eq.final&season_type=in.(${encodeURIComponent('"Regular Season"')},Playoffs)&order=id`), []);
   // Predictions for each team's next game (the team pages say Clutch's call when it exists).
   const nextIds = [];
   const seen = new Set();
@@ -147,5 +151,5 @@ export async function loadAll(db, { today, days = 7, warn = console.warn }) {
     for (const p of rows) preds[p.game_id] = p;
   }
 
-  return { today, days, teams, games, tonight, pageDates, preds, lines, snaps, receiptsByDate, receipts, receiptGames, players, recent, upcoming, season, builtAt: new Date().toISOString() };
+  return { today, days, teams, games, tonight, pageDates, preds, lines, snaps, receiptsByDate, receipts, receiptGames, players, recent, upcoming, lastSeason, prevSeason, season, builtAt: new Date().toISOString() };
 }

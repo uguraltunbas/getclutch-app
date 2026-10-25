@@ -1,8 +1,9 @@
 // /matchups/<team>-vs-<team>/ — one pair of teams: every meeting this season
 // (Clutch's number before tip, the final, the Ledger's grade), the meetings
-// on the schedule ahead, and the Ledger's graded calls on the pair from
-// earlier seasons (from the calls themselves: the games table misses part of
-// last season, so no series total is drawn from it). A pair gets its page once it has a
+// on the schedule ahead, every meeting last season with its series result
+// (the games table holds all of 2025-26 since the ESPN backfill of
+// 2026-10-25; the play-in counts in no series) and the Ledger's graded calls
+// on the pair from seasons before that. A pair gets its page once it has a
 // regular-season or playoff game that is final, has its own game page
 // (tonight's slate included) or tips within the next week (people search
 // "X vs Y prediction" in the days before, and a crawler needs those days),
@@ -27,7 +28,7 @@ export function matchupIndex(m) {
   const soon = shift(m.today, LEAD_DAYS);
   const slot = (h, a) => {
     const k = pairKey(h.id, a.id);
-    if (!out.has(k)) { const [x, y] = ordered(h, a); out.set(k, { a: x, b: y, path: matchupPath(x, y), games: [], last: [], live: false }); }
+    if (!out.has(k)) { const [x, y] = ordered(h, a); out.set(k, { a: x, b: y, path: matchupPath(x, y), games: [], prev: [], last: [], live: false }); }
     return out.get(k);
   };
   for (const g of m.games) {
@@ -36,8 +37,11 @@ export function matchupIndex(m) {
     s.games.push({ ...g, page: onPage.has(g.id) });
     if (!g.preseason && (g.status === "final" || onPage.has(g.id) || (g.status === "scheduled" && g.date >= m.today && g.date <= soon))) s.live = true;
   }
+  // Last season's meetings carry their own call (m.callBy), so "earlier seasons" keeps only the calls before that.
+  const prevIds = new Set();
+  for (const g of m.lastSeason) { prevIds.add(g.id); slot(g.home, g.away).prev.push(g); }
   for (const c of m.calls) {
-    if (c.game_date >= seasonFrom || c.season_type === "Preseason") continue;
+    if (c.game_date >= seasonFrom || c.season_type === "Preseason" || prevIds.has(c.game_id)) continue;
     const [aw, hm] = String(c.matchup).split(" @ ").map((x) => m.byAbbr[x]);
     if (!aw || !hm) continue;
     slot(hm, aw).last.push(c);
@@ -45,6 +49,7 @@ export function matchupIndex(m) {
   for (const [k, s] of out) if (!s.live) out.delete(k);
   for (const s of out.values()) {
     s.games.sort((x, y) => (x.date + (x.tipUtc ?? "")).localeCompare(y.date + (y.tipUtc ?? "")));
+    s.prev.sort((x, y) => x.date.localeCompare(y.date));
     s.last.sort((x, y) => x.game_date.localeCompare(y.game_date));
   }
   m._matchups = out;
@@ -67,6 +72,30 @@ function seriesText(s, x) {
   if (x.a === x.b) return `Level at ${x.a}–${x.b}`;
   const [lead, hi, lo] = x.a > x.b ? [s.a, x.a, x.b] : [s.b, x.b, x.a];
   return `${lead.nickname} lead ${hi}–${lo}`;
+}
+
+/** Last season, from side a's view: the regular season (play-in left out) and the playoffs, each { a, b }. */
+export function prevSeries(s) {
+  return { reg: series(s, s.prev.filter((g) => g.seasonType === "Regular Season" && !g.playIn)), po: series(s, s.prev.filter((g) => g.seasonType === "Playoffs")) };
+}
+
+/** "Rockets won the season series 3–1. Rockets won their playoff series 4–2." or "". */
+function prevText(s, x) {
+  const out = [];
+  if (x.reg.a || x.reg.b) {
+    if (x.reg.a === x.reg.b) out.push(`They split the season series ${x.reg.a}–${x.reg.b}`);
+    else { const [w, hi, lo] = x.reg.a > x.reg.b ? [s.a, x.reg.a, x.reg.b] : [s.b, x.reg.b, x.reg.a]; out.push(`${w.nickname} won the season series ${hi}–${lo}`); }
+  }
+  const hi = Math.max(x.po.a, x.po.b);
+  if (hi === 4) { const [w, lo] = x.po.a === 4 ? [s.a, x.po.b] : [s.b, x.po.a]; out.push(`${w.nickname} won their playoff series 4–${lo}`); }
+  return out.join(". ");
+}
+
+function prevRow(g, m) {
+  const c = m.callBy[g.id];
+  const label = `${g.away.abbreviation} at ${g.home.abbreviation} · ${g.awayScore}–${g.homeScore}${g.period > 4 ? ` ${finalLabel(g.period).replace("FINAL/", "")}` : ""}${g.playIn ? " · play-in" : g.seasonType === "Playoffs" ? " · playoffs" : ""}`;
+  const grade = c ? `<span class="d">${esc(c.pick)} ${Math.round(c.claimed_pct)}</span><span>${c.correct ? '<span class="chip win">RIGHT</span>' : '<span class="chip loss">MISSED</span>'}</span>` : '<span class="d dim">--</span><span><span class="note">Not graded</span></span>';
+  return `<div class="callrow"><span class="mono">${esc(shortDate(g.date).toUpperCase())}</span><span>${esc(label)}</span>${grade}</div>`;
 }
 
 function row(g) {
@@ -97,25 +126,31 @@ function matchupPage(s, m) {
   const right = graded.filter((g) => g.grade === "right").length;
   const now = series(s, played);
   const lastRight = s.last.filter((c) => c.correct).length;
+  const prev = prevSeries(s);
+  const pt = prevText(s, prev);
+  const prevCalls = s.prev.map((g) => m.callBy[g.id]).filter(Boolean);
+  const prevRight = prevCalls.filter((c) => c.correct).length;
   const next = ahead[0] ?? null;
   const stats = [
     played.length ? `<div><span class="d">${now.a}–${now.b}</span><span class="mono">${esc(`${a.abbreviation}–${b.abbreviation}`)} · ${esc(m.current)}</span></div>` : "",
     graded.length ? `<div><span class="d">${rec(right, graded.length)}</span><span class="mono">CLUTCH'S GRADED CALLS</span></div>` : "",
+    prev.reg.a || prev.reg.b ? `<div><span class="d">${prev.reg.a}–${prev.reg.b}</span><span class="mono">${esc(`${a.abbreviation}–${b.abbreviation}`)} · ${esc(m.prevSeason)}</span></div>` : "",
     s.last.length ? `<div><span class="d">${rec(lastRight, s.last.length)}</span><span class="mono">CLUTCH'S CALLS · EARLIER SEASONS</span></div>` : "",
   ].join("");
   const st = seriesText(s, now);
-  const deck = `Every ${a.name}–${b.name} game this season: Clutch's number for each before tip, the final, and whether the call held. ${st ? `${st} this season.` : "Their first meeting of the season is on the schedule below."}`;
+  const deck = `Every ${a.name}–${b.name} game this season: Clutch's number for each before tip, the final, and whether the call held. ${st ? `${st} this season.` : "Their first meeting of the season is on the schedule below."}${pt ? ` Last season: ${pt}.` : ""}`;
   const thisSeason = s.games.filter((g) => g.status === "final" || g.status === "postponed" || g.status === "live" || g.status === "halftime");
   const body = `<div class="wrap r"><div class="rhead"><span class="kick">HEAD TO HEAD · ${esc(m.current)}</span><h1 class="rh1">${esc(a.nickname)} vs ${esc(b.nickname)}</h1><p class="rdeck">${esc(deck)}</p>${stats ? `<div class="stat gap">${stats}</div>` : ""}</div>
 <div class="body">
 <section aria-labelledby="season"><h2 class="sh" id="season">This season</h2>${thisSeason.length ? thisSeason.map(row).join("") : '<p class="sub">No finals yet between these two this season.</p>'}</section>
 ${ahead.length ? `<section aria-labelledby="ahead"><h2 class="sh s" id="ahead">Still to come</h2>${ahead.map(row).join("")}<p class="note gap">Clutch's number for each game lands the morning of the game and is sealed before tip.</p></section>` : ""}
+${s.prev.length ? `<section aria-labelledby="lastseason"><h2 class="sh s" id="lastseason">Last season, ${esc(m.prevSeason)}</h2>${s.prev.map((g) => prevRow(g, m)).join("")}<p class="note gap">${pt ? `${esc(pt)}. ` : ""}${prevCalls.length ? `Clutch's graded calls on these games: ${rec(prevRight, prevCalls.length)}${m.last?.retired && m.last.season === m.prevSeason ? ", made by the model Clutch has since retired" : ""}. ` : ""}${s.prev.some((g) => g.playIn) ? "The play-in counts in no series." : ""}</p></section>` : ""}
 ${s.last.length ? `<section aria-labelledby="earlier"><h2 class="sh s" id="earlier">Clutch's calls, earlier seasons</h2>${s.last.map(lastRow).join("")}<p class="note gap">The Ledger's graded calls on this pair: ${rec(lastRight, s.last.length)}${m.last?.retired ? `, made by the model Clutch has since retired` : ""}. Only calls it could prove were made before tip are graded.</p></section>` : ""}
 <p class="note">Clutch's call is graded only when the Ledger can prove it was made before tip; preseason is never graded. <a href="/accuracy/">How accurate Clutch is →</a></p>
 <div class="btns"><a class="btn ghost" href="${m.teamPath(a)}">${esc(a.name)}</a><a class="btn ghost" href="${m.teamPath(b)}">${esc(b.name)}</a></div>
 </div></div>`;
   const title = `${a.nickname} vs ${b.nickname} prediction and head to head, ${m.current} · Clutch`;
-  const description = `${a.name} vs ${b.name} head to head: Clutch's win probability before every meeting and the final${st ? `. ${st} this season` : ""}${next ? `. Next: ${mediumDate(next.date)}` : ""}.`;
+  const description = `${a.name} vs ${b.name} head to head: Clutch's win probability before every meeting and the final${st ? `. ${st} this season` : ""}${pt ? `. Last season: ${pt}` : ""}${next ? `. Next: ${mediumDate(next.date)}` : ""}.`;
   const ld = {
     "@context": "https://schema.org", "@type": "BreadcrumbList",
     itemListElement: [
@@ -129,6 +164,18 @@ ${s.last.length ? `<section aria-labelledby="earlier"><h2 class="sh s" id="earli
 
 export function matchupPages(m) {
   return [...matchupIndex(m).values()].sort((x, y) => x.path.localeCompare(y.path)).map((s) => matchupPage(s, m));
+}
+
+/** A team's record last season (regular season, play-in left out): { w, l, vs: { oppId: { w, l } } }. */
+export function prevRecord(m, t) {
+  const out = { w: 0, l: 0, vs: {} };
+  for (const g of m.lastSeason) {
+    if (g.seasonType !== "Regular Season" || g.playIn || (g.home.id !== t.id && g.away.id !== t.id)) continue;
+    const isHome = g.home.id === t.id, won = isHome === g.homeScore > g.awayScore;
+    const v = (out.vs[(isHome ? g.away : g.home).id] ??= { w: 0, l: 0 });
+    if (won) { out.w++; v.w++; } else { out.l++; v.l++; }
+  }
+  return out;
 }
 
 /** A team's head-to-head pages, by opponent's name (the team pages list them). */
