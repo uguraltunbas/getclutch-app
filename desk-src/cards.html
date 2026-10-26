@@ -544,6 +544,43 @@ T.cardsweek = () => {
   });
 };
 
+/* og — a game page's share card (1200×630, X and Open Graph): the two teams, the tip in ET and
+   Clutch's sealed number on the glass; after the final, the score and the Ledger's grade as a
+   stamp. Every word is written by site-src/lib/ogcards.mjs (held to the betting-word list there):
+   a = away, h = home, each { abbr, city, name, c (swatch), s (score or "") }; p the number,
+   top / tip / cap (under the glass) / lede / sub the lines, st pre | held | missed | open, stamp its word. */
+T.og = () => {
+  const a = JSON.parse(Q.get("a") || "{}"), h = JSON.parse(Q.get("h") || "{}");
+  const st = Q.get("st") || "pre";
+  const fin = a.s !== "" && a.s != null;
+  const won = (x, y) => fin && +x.s > +y.s;
+  const team = (t, other) => `<div style="display:flex;align-items:center;gap:22px;height:104px">
+      <div style="width:14px;align-self:stretch;background:${esc(t.c)}"></div>
+      <div style="flex:1;min-width:0">
+        <div class="mono" style="font-size:20px;color:var(--ink3)">${esc(t.city)}</div>
+        <div class="fit" style="font:900 62px/1.05 var(--display);color:${fin && !won(t, other) ? "var(--ink3)" : "var(--ink)"};white-space:nowrap;margin-top:4px">${esc(t.name)}</div>
+      </div>
+      ${fin ? `<div style="font:900 62px/1 var(--display);color:${won(t, other) ? "var(--ink)" : "var(--ink4)"}">${esc(t.s)}</div>` : ""}
+    </div>`;
+  root.appendChild($(`<div class="pad" style="inset:44px 56px">
+    <div class="top" style="font-size:22px"><span>${esc(Q.get("top") || "")}</span><span class="r">${esc(Q.get("tip") || "")}</span></div>
+    <div class="dbl" style="margin-top:16px"></div>
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) 540px;gap:44px;margin-top:30px">
+      <div>${team(a, h)}<div class="mono" style="font-size:18px;color:var(--ink4);margin:2px 0 2px 36px">at</div>${team(h, a)}</div>
+      <div><div class="glass" id="g" style="height:236px"></div>
+        <div class="mono" style="font-size:20px;color:var(--ink3);margin-top:16px">${esc(Q.get("cap") || "")}</div></div>
+    </div>
+    <div style="margin-top:auto;padding-bottom:58px;display:flex;align-items:baseline;gap:20px"><span style="font:900 42px/1 var(--display);color:var(--ink)">${esc(Q.get("lede") || "")}</span><span style="font:500 24px/1.2 var(--body);color:var(--ink3)">${esc(Q.get("sub") || "")}</span></div>
+  </div>`));
+  root.appendChild($(`<div class="foot" style="left:56px;right:56px;bottom:34px;font-size:19px"><span class="brand"><img src="icon.png" alt="" style="width:38px;height:38px;border-radius:9px">Clutch · the Basketball Ledger</span><span>clutchledger.com</span></div>`));
+  // a long name ("Timberwolves" beside a score) steps down until it fits its column
+  document.querySelectorAll(".fit").forEach((el) => { let px = 62; while (el.scrollWidth > el.clientWidth && px > 36) el.style.fontSize = (px -= 2) + "px"; });
+  const g = document.getElementById("g").getBoundingClientRect();
+  ledBox(canvasAt(g.left, g.top, g.width, g.height), (Q.get("p") || "--") + "%", 0, 0, g.width, g.height, { field: true, maxPitch: 30, inset: 80, insetY: 50 });
+  // the Ledger's grade, stamped in the free corner beside the last line (never over the number)
+  if (st === "held" || st === "missed") root.appendChild($(`<div class="stamp" style="color:${st === "held" ? "var(--win)" : "var(--hot)"};right:76px;bottom:84px;font-size:58px;border-width:6px">${esc(Q.get("stamp") || "")}</div>`));
+};
+
 const FACES = ["900 40px Fraunces", "700 40px Fraunces", "600 24px 'Plex Mono'", "500 24px 'Plex Mono'", "700 24px 'Plex Mono'", "400 30px Franklin", "500 30px Franklin", "600 30px Franklin", "800 30px Franklin", "900 30px Franklin"];
 window.READY = () => Promise.all(FACES.map((f) => document.fonts.load(f))).then(() => (T[Q.get("t") || "jumbo"] || T.jumbo)());
 </script>

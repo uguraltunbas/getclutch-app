@@ -159,7 +159,10 @@ ${s.last.length ? `<section aria-labelledby="earlier"><h2 class="sh s" id="earli
       { "@type": "ListItem", position: 3, name: `${a.nickname} vs ${b.nickname}`, item: ORIGIN + path },
     ],
   };
-  return { path, title, html: page({ path, title, description, body, current: "teams", og: "default", jsonld: ld }) };
+  // The share card: the next meeting's (lib/ogcards.mjs), else the latest meeting that has one.
+  const coming = s.games.find((g) => g.status !== "final" && g.status !== "postponed");
+  const card = (coming && m.og?.[coming.id]) || s.games.slice().reverse().map((g) => m.og?.[g.id]).find(Boolean) || null;
+  return { path, title, html: page({ path, title, description, body, current: "teams", og: card?.name ?? "default", ...(card ? { ogAlt: card.alt } : {}), jsonld: ld }) };
 }
 
 export function matchupPages(m) {

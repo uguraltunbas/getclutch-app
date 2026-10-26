@@ -4,7 +4,7 @@
 // no dependencies) and turns the pages in this folder into PNG cards and
 // MP4 videos.
 //
-//   node render.mjs cards  <job.json>   each {page, query, out, w, h} → PNG
+//   node render.mjs cards  <job.json>   each {page, query, out, w, h} → PNG (JPEG when out ends .jpg)
 //   node render.mjs video  <job.json>   each {page, query, out, w, h, fps, dur} → MP4
 //
 // A video page exposes window.renderFrame(t) (seconds) and window.DURATION;
@@ -97,9 +97,10 @@ async function cards(cdp, jobs) {
     await open(cdp, job);
     await evalOrThrow(cdp, "window.renderFrame ? window.renderFrame(window.STILL ?? 0) : 0");
     await sleep(30);
-    const png = await shot(cdp, "png");
+    // a .jpg out is written as JPEG (the site's share cards), anything else as PNG
+    const img = /\.jpe?g$/i.test(job.out) ? await shot(cdp, "jpeg", job.quality ?? 86) : await shot(cdp, "png");
     mkdirSync(dirname(resolve(HERE, job.out)), { recursive: true });
-    writeFileSync(resolve(HERE, job.out), png);
+    writeFileSync(resolve(HERE, job.out), img);
     console.log("card", job.out);
   }
 }

@@ -9,6 +9,8 @@ day by `.github/workflows/desk.yml` and published at `/desk/` (noindex).
   DevTools protocol, frames piped into ffmpeg).
 - `cards.html` / `scenes.html` are the templates (LED scoreboard, the morning
   paper, the receipt, the Win Totals tote board, countdown stories).
+- `cards.html?t=og` is also the website's per-game share card (1200×630 JPEG):
+  `site-src/build.mjs` writes its words (lib/ogcards.mjs) and renders it here.
 - Never reads a Pro column and never shows the Machine's Win Totals picks
   before the lock (2026-10-20 19:00 UTC).
 - Clutch's Cards (from 1.0.7, migration 065): the free row of the snapshot
