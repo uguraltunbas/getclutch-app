@@ -7,7 +7,7 @@ import { WEB_APP_LIVE, LAUNCH_DAY, passLink, webAppLink } from "../lib/html.mjs"
 
 export const FEATURES = [
   { label: "Clutch's call on every game, the market beside it, and the top reasons why", free: true, pro: true },
-  { label: "Call it: call any game, earn points and levels — every level is a Free Pro day", free: true, pro: true },
+  { label: "Call it: call any game, earn points, levels and titles — plus one Free Pro day a month", free: true, pro: true },
   { label: "The Ledger: every call Clutch makes, graded in public beside the market and ESPN", free: true, pro: true },
   { label: "Sealed before tip ✓: every number in a public record anyone can check", free: true, pro: true },
   { label: "Our worst miss: last night's biggest miss, and what fooled Clutch", free: true, pro: true },
@@ -61,7 +61,7 @@ export const FREE_CARDS = [
 ];
 
 export const FAQ = [
-  { q: "What do points get me?", a: "Free Pro days: every level you reach is 24 hours of Pro. Points come from your calls and your team's wins; they can't be bought or sold and have no cash value." },
+  { q: "What do points get me?", a: "Levels and titles, from Rookie to Hall of Fame — bragging rights, nothing paid. Points come from your calls and your team's wins; they can't be bought or sold and have no cash value. Separately, everyone signed in gets one Free Pro day a month." },
   { q: "Where does the number come from?", a: "A model trained on past seasons — form, rest, travel and the official injury report — blended with the market's price. How it works shows every piece." },
   { q: "Is Clutch any good?", a: "Look at the Ledger. Every call is there, graded beside the market, ESPN and picking the home team, misses included. Where the sample is too small, it says so." },
   // `link` (optional): a link after the answer (href already escaped for an attribute).

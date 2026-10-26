@@ -268,7 +268,7 @@ ${FEATURES.filter((f) => !f.free).map((f) => `- ${f.label}`).join("\n")}
 - In any browser at ${APP}/: everything to follow and call, signed in with Apple or Google.${LAUNCH_UNTIL ? ` Every Pro feature is free on the web until ${mediumDate(LAUNCH_UNTIL)} (the Launch Pass).` : ""}
 - The iPhone app (${APP_STORE}): the same, plus Live Activities on the lock screen, home screen widgets, Siri and iMessage challenges.
 - One account everywhere; Pro bought on one carries over to the other.
-- Points come from your calls and level you up to Free Pro days; they can't be bought or sold and have no cash value.
+- Points come from your calls and level you up through titles (Rookie to Hall of Fame); they can't be bought or sold, have no cash value and unlock nothing paid. Everyone signed in also gets one Free Pro day a month.
 
 ## The paper
 

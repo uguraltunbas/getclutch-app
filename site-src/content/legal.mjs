@@ -18,7 +18,6 @@
 // A body is plain text: "\n" separates paragraphs, a line starting "• " is
 // a list item. The support e-mail and https links become links when rendered.
 
-import { WIN_TOTALS_RULES_URL } from "../lib/html.mjs";
 
 export const SUPPORT_EMAIL = "ugur@clutchledger.com";
 export const OPERATOR = "Uğur Altunbaş";
@@ -27,13 +26,13 @@ export const PADDLE_BUYER_TERMS = "https://www.paddle.com/legal/checkout-buyer-t
 
 export const TERMS = {
   title: "Terms",
-  updated: "October 21, 2026",
+  updated: "October 26, 2026",
   intro: "By using Clutch you agree to these terms. They are short on purpose.",
   sections: [
     { title: "What Clutch is", body: "An NBA analytics app: a model's win probabilities, the reasoning behind them, and a public record of every call it has made. Predictions are estimates, not guarantees, and the record shows how often they have been wrong." },
     { title: "Who runs Clutch", body: `Clutch — the iPhone app, the web app at app.clutchledger.com and this website — is made and operated by ${OPERATOR}, a sole proprietor. "We" and "Clutch" in these terms mean him. Contact: ${SUPPORT_EMAIL}.` },
     { title: "Analytics only", body: "Clutch is an analytics service. It does not accept money on the outcome of any game, never sends money to its users, and nothing in it is a recommendation to put money on a game. Where Clutch shows the market's number, it is there for comparison. You are responsible for following the law where you live." },
-    { title: "Points", body: "Points are earned only by playing — your calls, the daily games, the Time Capsule and Win Totals — and when your favourite team wins a regular-season or playoff game. They only go up: they are never spent, cannot be bought, sold, transferred or exchanged for money, and have no cash value. Every level you reach earns a Free Pro day (24 hours of Pro at no charge), used when you choose, at most one a week. We may change how points are earned, and points earned by abusing the app may be removed. Your favourite team can be changed once per NBA season, and a call counts only for games that start at least 12 hours after it." },
+    { title: "Points", body: "Points are earned only by playing — your calls, the daily games, the Time Capsule and Win Totals while it ran — and when your favourite team wins a regular-season or playoff game. They only go up: they are never spent, cannot be bought, sold, transferred or exchanged for money, have no cash value, and unlock nothing you pay for. Every level you reach earns a title shown on your profile. We may change how points are earned, and points earned by abusing the app may be removed. Your favourite team can be changed once per NBA season, and a call counts only for games that start at least 12 hours after it." },
     { title: "Accounts", body: "You must be 13 or older. Keep your sign-in to yourself; you are responsible for what happens on your account." },
     {
       title: "Names, leagues and conduct",
@@ -46,8 +45,7 @@ export const TERMS = {
     },
     {
       title: "Contests",
-      body: "Clutch runs free contests inside the iPhone app only — they are not offered on the web: Win Totals, part two of the Time Capsule. They are free to enter, need no purchase, and nothing bought improves anyone's chances. Their prizes are Pro time inside Clutch: no cash value, not transferable, and not exchangeable for money. Apple is not a sponsor of any Clutch contest and is not involved in them. Each contest has official rules, which apply alongside these terms. Points themselves are not prizes: they are never paid out.",
-      link: { href: WIN_TOTALS_RULES_URL, label: "Win Totals official rules →" },
+      body: "Clutch runs no contests and offers no prizes. Win Totals, part two of the Time Capsule, ran free inside the iPhone app and is closed this season: nothing can be entered and nothing is awarded. Apple was never a sponsor of it. Points are not prizes: they are never paid out, have no cash value, and unlock nothing you pay for.",
     },
     {
       title: "Subscriptions and passes",
@@ -55,8 +53,7 @@ export const TERMS = {
         "In the iPhone app:\n" +
         "• Clutch Pro is an auto-renewable subscription sold through Apple, monthly or yearly. Elite, an earlier plan no longer sold, keeps renewing for anyone who holds it and includes everything in Pro.\n" +
         "• Pro for 24 hours is a single purchase: everything in Pro for 24 hours from when it opens. It does not renew. If Apple refunds it, it ends.\n" +
-        "• A Free Pro day (see Points) is 24 hours of Pro at no charge; it does not renew.\n" +
-        "• Pro won in a contest (see Contests) runs for the time won and does not renew; a refund of anything else never takes it back.\n" +
+        "• A Free Pro day is 24 hours of Pro at no charge: one a calendar month (US Eastern time) for every signed-in reader, used when you choose. It does not roll over and does not renew, and it does not depend on points.\n" +
         "• You can buy or restore without an account; sign in with Apple to keep your plan on every device.\n" +
         "• Payment is charged to your Apple ID at confirmation.\n" +
         "• A subscription renews automatically unless it is cancelled at least 24 hours before the end of the period; manage or cancel it in Settings › Apple ID › Subscriptions.\n" +
@@ -81,7 +78,7 @@ export const TERMS = {
 
 export const PRIVACY = {
   title: "Privacy",
-  updated: "October 9, 2026",
+  updated: "October 26, 2026",
   intro: "Clutch is an NBA analytics app. You can read every page without an account. This policy says what we collect when you do sign in or use a feature that needs one, why, and who else touches it.",
   sections: [
     {
@@ -111,16 +108,14 @@ export const PRIVACY = {
         "• PostHog — product analytics.\n" +
         "• Sentry — crash reports.\n" +
         "• Cloudflare — serves this website and counts its visits (Web Analytics, without cookies).\n" +
-        "We don't sell personal information. The only readers who see anything of yours are the members of a league you join: your display name, your standing and your calls in that league. Nothing else you do in the app is shown to other readers, except the Win Totals crowd split — a daily count of everyone's picks, never whose (see Win Totals).",
+        "We don't sell personal information. The only readers who see anything of yours are the members of a league you join: your display name, your standing and your calls in that league. Nothing else you do in the app is shown to other readers.",
     },
     {
       title: "Win Totals",
       body:
-        "• What we keep: your sheet — your Over or Under on each team, your three stars and your tie-break — when you saved it, and after the season your score, your place and any prize.\n" +
-        "• What for: only to run the contest — ranking the sheets, granting the prizes and your leagues' tables.\n" +
-        "• Who sees it: before opening tip, other readers see only how the crowd split on each team — a daily count across all readers, once 20 have picked the team, never whose picks — and, in your leagues, whether you have sealed. From opening tip, your leagues see your score. Your picks themselves are never shown to anyone else.\n" +
-        "• As a guest: a sheet you make without an account stays on this phone until it is on an account; nothing of it reaches us before then.\n" +
-        "• Deleting your account deletes your sheet, your result and any prize with it.",
+        "• Win Totals is closed this season: no new sheets are taken, none are graded and no prizes are awarded.\n" +
+        "• What we keep: a sheet you saved before it closed — your Over or Under on each team, your three stars and your tie-break — and when you saved it. It is used for nothing else and shown to no one.\n" +
+        "• Deleting your account deletes your sheet with it.",
     },
     { title: "Made on your phone", body: "Game video, your yearbook (PDF) and the Front page (a share image) are made on your iPhone; nothing is sent to us to make them. A video or a yearbook leaves your phone only if you share or save it. Saving a video asks for permission to add to your Photos, and nothing is read from them." },
     { title: "This website", body: "clutchledger.com sets no cookies and runs no advertising. Cloudflare Web Analytics counts its visits — which page, the site you came from, your browser type and your country — without cookies or local storage, and without fingerprinting you or following you to other sites. To show tonight's live scores your browser asks our database (Supabase) for them directly; Cloudflare, which serves the pages, keeps standard request logs." },
@@ -156,7 +151,7 @@ export const REFUNDS = {
     { title: "The free trial", body: "The yearly plan starts with 7 days free the first time. Cancel before the trial ends (on iPhone, at least 24 hours before) and you are not charged." },
     { title: "Cancelling", body: "You can cancel a subscription any time. It stops renewing, and Pro runs to the end of the period you paid for. Cancelling on its own doesn't refund the current period — ask within 14 days (above) if you want that." },
     { title: "Bought in the iPhone app", body: "Purchases made in the iPhone app are sold and refunded by Apple, under Apple's policies — we can't refund them ourselves. Ask Apple at reportaproblem.apple.com, or in Settings › your name › Media & Purchases.", link: { href: "https://reportaproblem.apple.com", label: "reportaproblem.apple.com →" } },
-    { title: "Free Pro time", body: "Free Pro days earned with points and Pro won in a contest cost nothing and have no cash value, so there is nothing to refund; a refund of a purchase never takes them back." },
+    { title: "Free Pro time", body: "The monthly Free Pro day costs nothing and has no cash value, so there is nothing to refund; a refund of a purchase never takes it back." },
     { title: "Contact", body: `${SUPPORT_EMAIL} — we answer within 48 hours. Clutch is operated by ${OPERATOR}.` },
   ],
 };
@@ -172,7 +167,7 @@ export const SUPPORT = {
     { title: "Delete your account", body: "Open the app › You › Delete account. It removes your profile, team, alert settings, calls, capsule, Win Totals sheet and points. You can also e-mail us to ask." },
     { title: "Alerts don't arrive", body: "Check iPhone Settings › Notifications › Clutch, then the app's You › Notifications. The app shows a notice when iOS has them switched off. Alerts arrive in the iPhone app, not in the browser." },
     { title: "Why is the record not better than picking the home team?", body: "When it isn't, the Ledger says so: it prints what is true. Every call is timestamped and sealed before tip-off and graded after the final, wins and misses alike, beside the market, ESPN and picking the home team." },
-    { title: "Points and Free Pro days", body: "Points are earned by playing — calls, Stat Line, the Time Capsule, Win Totals — and when your favourite team wins. They are never bought and never paid out. Every level earns a Free Pro day: 24 hours of Pro at no charge, used when you choose, at most one a week." },
+    { title: "Points, titles and the Free Pro day", body: "Points are earned by playing — calls, Stat Line, the Time Capsule — and when your favourite team wins. They are never bought, never paid out and unlock nothing you pay for; every level earns a title, from Rookie to Hall of Fame. Separately, everyone signed in gets one Free Pro day a month: 24 hours of Pro at no charge, used when you choose." },
     { title: "Report a bug", body: "E-mail us with what happened, your device and browser or iOS version. A screenshot helps." },
     { title: "Contact", body: `${SUPPORT_EMAIL} — we answer within 48 hours. Clutch is operated by ${OPERATOR}.` },
   ],
@@ -182,7 +177,7 @@ export const SUPPORT = {
 export const WIN_TOTALS_RULES = {
   title: "Win Totals official rules",
   updated: "October 1, 2026",
-  intro: "The official rules of Win Totals 2026-27, part two of the Time Capsule in the Clutch app. Win Totals is run by the makers of Clutch. Entering means you accept these rules and Clutch's Terms.",
+  intro: "Closed: Win Totals is closed for the 2026-27 season (October 26, 2026). No entries are taken, no sheets are graded and no prizes are awarded. The rules below are kept for the record. — The official rules of Win Totals 2026-27, part two of the Time Capsule in the Clutch app. Win Totals is run by the makers of Clutch.",
   sections: [
     { title: "Free to enter", body: "Win Totals is free. No purchase or payment of any kind is needed to enter or to win, and buying anything in Clutch does not improve your chances: nothing bought changes a pick, a line or a score. Clutch's season projections are free for everyone until opening tip (the lock); the Machine's picks open at the lock, for everyone. After opening tip, Pro also shows the season simulation's chance on each line — by then no pick can change." },
     { title: "Apple is not involved", body: "Apple is not a sponsor of Win Totals and is not involved in it in any way. Questions about the contest go to Clutch (Contact, below), not to Apple." },
