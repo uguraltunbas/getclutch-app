@@ -52,7 +52,8 @@ import { tonightPage } from "./lib/pages/tonight.mjs";
 import { learnPages } from "./lib/pages/learn.mjs";
 import { weekPages } from "./lib/pages/weeks.mjs";
 import { trPages, TR_WORDS } from "./lib/pages/tr.mjs";
-import { embedPages } from "./lib/pages/embed.mjs";
+import { embedPages, badgeFiles, BADGE } from "./lib/pages/embed.mjs";
+import { feedXml, feedItems, FEED } from "./lib/feed.mjs";
 import { dataPage, dataFiles, dataRows, FILES, FTE_COLUMNS } from "./lib/pages/data.mjs";
 import { TERMS, PRIVACY, REFUNDS, SUPPORT, LEGAL_UPDATED } from "./content/legal.mjs";
 import { FEATURES, PLAN } from "./content/features.mjs";
@@ -204,6 +205,12 @@ for (const f of ["favicon.png", "apple-touch-icon.png", "icon-512.png"]) copyFil
 const data = dataFiles(m);
 mkdirSync(join(OUT, "data"), { recursive: true });
 for (const f of data) writeFileSync(join(OUT, f.path), f.body);
+// The badges (lib/badge.mjs, lib/pages/embed.mjs) and the RSS feed (lib/feed.mjs), rebuilt with the pages.
+const badges = badgeFiles(m);
+mkdirSync(join(OUT, BADGE), { recursive: true });
+for (const b of badges) writeFileSync(join(OUT, b.path), b.body);
+const feed = feedXml(m);
+writeFileSync(join(OUT, FEED), feed);
 writeFileSync(join(OUT, "_headers"), readFileSync(join(HERE, "static", "_headers"), "utf8").replaceAll("__SUPABASE_URL__", SB_URL));
 writeFileSync(join(OUT, "_redirects"), Object.entries(LEGACY).map(([a, b]) => `${a} ${b} 301`).join("\n") + "\n");
 
@@ -286,6 +293,7 @@ ${FEATURES.filter((f) => !f.free).map((f) => `- ${f.label}`).join("\n")}
 - [Playoff chances](${ORIGIN}/playoff-chances/): every team's chance to make the playoffs, from 10,000 simulated seasons, updated nightly
 - [Teams](${ORIGIN}/teams/): each team's next games with Clutch's call, playoff chance and graded finals; head-to-head pages from each
 - [Open data](${ORIGIN}/data/): every number this season as free JSON and CSV (CC BY 4.0), including a CSV in the layout of FiveThirtyEight's retired nba_elo_latest.csv
+- [RSS feed](${ORIGIN}${FEED}): each Learn article and each finished week of graded calls
 
 ## About
 
@@ -335,6 +343,15 @@ for (const s of scan.stale) fail.push(`betting-words allow-list entry matched no
   if (!rows.length) warn.push("open data: no game has a number yet (the files are empty)");
   if (JSON.parse(body(FILES.tonight) || "{}").games == null) fail.push(`${FILES.tonight}: no games list`);
 }
+// A badge per team plus the record, each one line of SVG with no sportsbook word; the feed names every item once.
+if (badges.length !== m.raw.teams.length + 1) fail.push(`${BADGE}: ${badges.length} badges, expected ${m.raw.teams.length + 1}`);
+for (const b of badges) {
+  if (!b.body.startsWith("<svg ") || !/^<svg[^>]* width="(\d+)"/.test(b.body) || +b.body.match(/ width="(\d+)"/)[1] > 480) fail.push(`${b.path}: not a one-line badge`);
+  for (const id of bettingWordsIn(b.text)) fail.push(`betting word: ${b.path} [${id}] ${b.text}`);
+}
+const fed = feedItems(m);
+if ((feed.match(/<item>/g) ?? []).length !== fed.length || new Set(fed.map((i) => i.path)).size !== fed.length) fail.push(`${FEED}: items don't match (${fed.length})`);
+for (const i of fed) for (const id of bettingWordsIn(`${i.title} ${i.description}`)) fail.push(`betting word: ${FEED} [${id}] ${i.title}`);
 const seenTitle = new Map(), seenDesc = new Map();
 for (const p of pages.filter((p) => !p.redirect)) {
   const t = p.html.match(/<title>([^<]*)<\/title>/)?.[1];

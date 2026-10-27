@@ -31,6 +31,15 @@
   Cache-Control: public, max-age=300
   Access-Control-Allow-Origin: *
 
+# The badges (/badge/…, lib/pages/embed.mjs) are shown as images on other sites; GitHub's image proxy keeps them as long as this says.
+/badge/*
+  ! Cache-Control
+  Cache-Control: public, max-age=1800
+
+/feed.xml
+  ! Cache-Control
+  Cache-Control: public, max-age=3600
+
 /sitemap.xml
   ! Cache-Control
   Cache-Control: public, max-age=3600

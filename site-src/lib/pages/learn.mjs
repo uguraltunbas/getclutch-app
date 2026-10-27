@@ -383,6 +383,11 @@ const GLOSSARY = [
   { term: "Likely range", def: "Where a rate could plausibly sit given how few games are behind it. The fewer the games, the wider the range.", href: "/accuracy/" },
 ];
 
+/** The articles for the RSS feed (lib/feed.mjs), dated the day each was published. */
+export function learnFeedItems(m) {
+  return ARTICLES.map((f) => f(m)).filter(Boolean).map((a) => ({ path: `${LEARN}${a.slug}/`, date: a.published, title: a.h1, description: a.description }));
+}
+
 export function learnPages(m) {
   const articles = ARTICLES.map((f) => f(m)).filter(Boolean);
   if (!articles.length) return [];

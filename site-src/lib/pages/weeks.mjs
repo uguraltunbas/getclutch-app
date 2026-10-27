@@ -29,15 +29,24 @@ export function weeksOf(m) {
 
 const homeWon = (c) => { const [a, h] = c.final.split("-").map(Number); return h > a; };
 
-function weekPage(w, m, prev, next) {
+/** A week's numbers and the words the page and the feed share. */
+function weekText(w, today) {
   const { calls, monday, sunday } = w;
   const right = calls.filter((c) => c.correct).length;
   const expected = calls.reduce((a, c) => a + c.claimed_pct / 100, 0);
   const home = calls.filter(homeWon).length;
+  const done = sunday < today;
+  const span = `${shortDate(monday)}–${shortDate(sunday)}`;
+  const headline = `NBA week of ${mediumDate(monday)}: Clutch's calls graded, ${rec(right, calls.length)}`;
+  const description = `Clutch's graded NBA calls for ${span}${done ? "" : " so far"}: ${rec(right, calls.length)}, against ${expected.toFixed(1)} expected wins and ${rec(home, calls.length)} for always picking the home team.`;
+  return { right, expected, home, done, span, headline, description };
+}
+
+function weekPage(w, m, prev, next) {
+  const { calls, monday } = w;
+  const { right, expected, home, done, span, headline, description } = weekText(w, m.today);
   const hits = calls.filter((c) => c.correct).sort((a, b) => b.claimed_pct - a.claimed_pct);
   const misses = calls.filter((c) => !c.correct).sort((a, b) => b.claimed_pct - a.claimed_pct);
-  const done = sunday < m.today;
-  const span = `${shortDate(monday)}–${shortDate(sunday)}`;
   const gameLink = (c) => { const g = m.gameById[c.game_id]; const name = esc(c.matchup.replace(" @ ", " at ")); return g?.path ? `<a href="${g.path}">${name}</a>` : name; };
   const moments = [
     hits[0] ? `<p><strong>Most confident hit:</strong> ${gameLink(hits[0])}, ${esc(shortDate(hits[0].game_date))}: ${esc(hits[0].pick)} at ${Math.round(hits[0].claimed_pct)}%, final ${esc(hits[0].final.replace("-", "–"))}.</p>` : "",
@@ -55,9 +64,16 @@ function weekPage(w, m, prev, next) {
 <p class="mono">${nav}</p>
 </div></div>`;
   const path = weekPath(monday);
-  const title = `NBA week of ${mediumDate(monday)}: Clutch's calls graded, ${rec(right, calls.length)} · Clutch`;
-  const description = `Clutch's graded NBA calls for ${span}${done ? "" : " so far"}: ${rec(right, calls.length)}, against ${expected.toFixed(1)} expected wins and ${rec(home, calls.length)} for always picking the home team.`;
+  const title = `${headline} · Clutch`;
   return { path, title, html: page({ path, title, description, body, current: "ledger", og: "ledger" }) };
+}
+
+/** Finished weeks for the RSS feed (lib/feed.mjs), dated the Monday after; the week in progress waits for its Sunday. */
+export function weekFeedItems(m) {
+  return weeksOf(m).filter((w) => w.sunday < m.today).map((w) => {
+    const { headline, description } = weekText(w, m.today);
+    return { path: weekPath(w.monday), date: shift(w.sunday, 1), title: headline, description };
+  });
 }
 
 export function weekPages(m) {
