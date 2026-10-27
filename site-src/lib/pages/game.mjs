@@ -173,6 +173,9 @@ ${aside(g, m, night)}
       : g.hasCall
         ? `${vs} prediction (${mediumDate(g.date)}): ${g.side.team.nickname} ${pct(g.side.prob)}% to win · Clutch`
         : `${vs} prediction (${mediumDate(g.date)}): win probability on game day · Clutch`;
+  // The game's own share card when this build has one (lib/ogcards.mjs), else the generic image.
+  const card = m.og?.[g.id] ?? null;
+  const og = card?.name ?? "game";
   const team = (t) => ({ "@type": "SportsTeam", name: t.name, sport: "Basketball", url: `${ORIGIN}${m.teamPath(t)}` });
   const ld = {
     "@context": "https://schema.org", "@type": "SportsEvent",
@@ -182,7 +185,7 @@ ${aside(g, m, night)}
     eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
     homeTeam: team(g.home), awayTeam: team(g.away), competitor: [team(g.away), team(g.home)],
     ...venue(g),
-    image: `${ORIGIN}/og/game.jpg`,
+    image: `${ORIGIN}/og/${og}.jpg`,
   };
   const live = g.status !== "final" && g.status !== "postponed" ? true : night.some((x) => x.status !== "final" && x.status !== "postponed");
   const description = `${g.away.name} at ${g.home.name}, ${mediumDate(g.date)}. ${dk}`;
@@ -191,7 +194,7 @@ ${aside(g, m, night)}
     { "@type": "ListItem", position: 2, name: `NBA games, ${mediumDate(g.date)}`, item: `${ORIGIN}/games/${g.date}/` },
     { "@type": "ListItem", position: 3, name: `${g.away.nickname} at ${g.home.nickname}`, item: ORIGIN + g.path },
   ] };
-  return { path: g.path, title, html: page({ path: g.path, title, description, body, current: "tonight", og: "game", ogType: "article", jsonld: [ld, crumbs], live }) };
+  return { path: g.path, title, html: page({ path: g.path, title, description, body, current: "tonight", og, ...(card ? { ogAlt: card.alt } : {}), ogType: "article", jsonld: [ld, crumbs], live }) };
 }
 
 /**

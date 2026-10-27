@@ -164,10 +164,11 @@ ${path === "/" ? `<div class="flisted"><span class="mono">Listed on</span>${LIST
 
 /**
  * A whole page. `path` is the URL path ("/", "/ledger/"); `og` the image
- * name under /og/; `jsonld` one object or a list; `live` adds the small
+ * name under /og/ ("game", or a game's own card "g/<slug>-<hash>") and
+ * `ogAlt` its alt text; `jsonld` one object or a list; `live` adds the small
  * live-score script; `tour` the front page's guide (static/tour.js).
  */
-export function page({ path, title, description, body, current = "", og = "default", ogType = "website", jsonld = null, live = false, tour = false, noindex = false, cssHref = "/site.css", lang = "en" }) {
+export function page({ path, title, description, body, current = "", og = "default", ogAlt = "Clutch — call every game, beat Clutch.", ogType = "website", jsonld = null, live = false, tour = false, noindex = false, cssHref = "/site.css", lang = "en" }) {
   const url = ORIGIN + path;
   description = clipDescription(description);
   const ld = (Array.isArray(jsonld) ? jsonld : jsonld ? [jsonld] : []).map((o) => `<script type="application/ld+json">${JSON.stringify(o).replace(/</g, "\\u003c")}</script>`).join("\n");
@@ -198,7 +199,7 @@ ${pre}
 <meta property="og:image" content="${img}">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Clutch — call every game, beat Clutch.">
+<meta property="og:image:alt" content="${esc(ogAlt)}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@getclutchledger">
 <meta name="twitter:title" content="${esc(title)}">

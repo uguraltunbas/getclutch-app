@@ -2,6 +2,7 @@
 //
 //   node site-src/build.mjs --out _site_v2 [--date 2026-10-03] [--days 7]
 //                           [--save-data f.json] [--load-data f.json]
+//                           [--og-cache dir] [--og-budget 15]
 //
 // Game pages: every game of the season so far (a shared link never breaks);
 // --days N limits them to the last N nights for a quick local build.
@@ -13,6 +14,12 @@
 // (the app's list), a unique title and description, a canonical, sizes in
 // budget, and both editions' contrast (check-contrast.mjs). Any failure exits
 // non-zero and nothing is deployed. Zero dependencies (Node 22+).
+//
+// Share cards (lib/ogcards.mjs): each game page of the last two weeks gets its
+// own 1200×630 card under /og/g/, drawn with the desk's renderer (headless
+// Chrome: CHROME_PATH) and kept in --og-cache (OG_CACHE; default .og-cache/,
+// which site.yml carries from build to build); at most --og-budget new cards a
+// build. Without Chrome the build still passes: those pages keep /og/game.jpg.
 //
 // Env: SUPABASE_URL, SUPABASE_ANON_KEY (required unless --load-data),
 // SITE_DATE (the ET date to build for; default today in New York),
@@ -39,6 +46,7 @@ import { ttfToWoff2 } from "./lib/woff2.mjs";
 import { swatchOn } from "./lib/swatch.mjs";
 import { checkContrast, editions } from "./check-contrast.mjs";
 import { scanPages, selfTest, bettingWordsIn, textSegments } from "./lib/betting.mjs";
+import { planCards, prepareCards, publishCards, cardText, OG_BUDGET, OG_DAYS } from "./lib/ogcards.mjs";
 import { rec, RATE_FLOOR, RECEIPTS_REPO } from "./lib/copy.mjs";
 import { homePage } from "./lib/pages/home.mjs";
 import { gamePage, nightPage } from "./lib/pages/game.mjs";
@@ -83,6 +91,14 @@ else {
 }
 if (arg("--save-data")) writeFileSync(arg("--save-data"), JSON.stringify(raw));
 const m = buildModel(raw);
+
+// ── share cards: drawn (or found in the cache) before the pages, which name them ──
+const OG_CACHE = resolve(arg("--og-cache", process.env.OG_CACHE || join(ROOT, ".og-cache")));
+const ogPlan = planCards(m);
+const ogStart = Date.now();
+const og = prepareCards(ogPlan, { cache: OG_CACHE, deskDir: join(ROOT, "desk-src"), budget: Number(arg("--og-budget", OG_BUDGET)), warn: (s) => warn.push(s) });
+const ogSecs = (Date.now() - ogStart) / 1000;
+m.og = Object.fromEntries(ogPlan.filter((x) => og.ready.has(x.name)).map((x) => [x.g.id, { name: x.name, alt: x.card.alt }]));
 
 // ── pages ──
 const pages = [];
@@ -194,6 +210,7 @@ for (const p of pages) {
 // ── static files ──
 mkdirSync(join(OUT, "og"), { recursive: true });
 for (const f of readdirSync(join(HERE, "static", "og"))) copyFileSync(join(HERE, "static", "og", f), join(OUT, "og", f));
+publishCards(ogPlan, og.ready, { cache: OG_CACHE, out: OUT });
 // Images the e-mails load (ml-engine jobs/announce.py): logo, App Store badge, X icon. Names never change.
 mkdirSync(join(OUT, "email"), { recursive: true });
 for (const f of readdirSync(join(HERE, "static", "email"))) copyFileSync(join(HERE, "static", "email", f), join(OUT, "email", f));
@@ -352,6 +369,14 @@ for (const b of badges) {
 const fed = feedItems(m);
 if ((feed.match(/<item>/g) ?? []).length !== fed.length || new Set(fed.map((i) => i.path)).size !== fed.length) fail.push(`${FEED}: items don't match (${fed.length})`);
 for (const i of fed) for (const id of bettingWordsIn(`${i.title} ${i.description}`)) fail.push(`betting word: ${FEED} [${id}] ${i.title}`);
+// The share cards' words (every planned card, drawn this build or not) and the image each page names.
+for (const x of ogPlan) for (const s of cardText(x.card)) for (const id of bettingWordsIn(s)) fail.push(`betting word: share card /og/${x.name}.jpg [${id}] ${s}`);
+for (const p of pages.filter((p) => !p.redirect)) {
+  for (const [, u] of p.html.matchAll(/<meta (?:property="og:image"|name="twitter:image") content="([^"]*)">/g)) {
+    if (!u.startsWith(`${ORIGIN}/`) || !existsSync(join(OUT, u.slice(ORIGIN.length)))) fail.push(`${p.path}: its share image ${u} is not in the build`);
+  }
+  for (const [, u] of p.html.matchAll(/"image":"([^"]*)"/g)) if (u.startsWith(`${ORIGIN}/og/`) && !existsSync(join(OUT, u.slice(ORIGIN.length)))) fail.push(`${p.path}: its JSON-LD image ${u} is not in the build`);
+}
 const seenTitle = new Map(), seenDesc = new Map();
 for (const p of pages.filter((p) => !p.redirect)) {
   const t = p.html.match(/<title>([^<]*)<\/title>/)?.[1];
@@ -399,6 +424,7 @@ const sizes = indexed.map((p) => Buffer.byteLength(p.html));
 const kinds = { games: m.pageGames.length, nights: Object.keys(m.nights).length, teams: pages.filter((p) => p.path.startsWith("/teams/")).length, matchups: pages.filter((p) => p.path.startsWith("/matchups/")).length };
 console.log(`site ${TODAY} → ${OUT} · web app ${WEB_APP_LIVE ? "LIVE (browser links on)" : "not live (play links → App Store)"}${LAUNCH_UNTIL ? ` · Launch Pass on: Pro free on the web until ${LAUNCH_DAY}` : ""}`);
 console.log(`  ${pages.length} pages (${indexed.length} indexed; ${kinds.games} game pages over ${kinds.nights} nights, ${kinds.teams} team pages, ${kinds.matchups} head-to-head pages), tonight = ${m.tonight ?? "none"}`);
+console.log(`  share cards: ${og.ready.size} of ${ogPlan.length} game pages of the last ${OG_DAYS} days (${og.rendered} drawn now in ${ogSecs.toFixed(1)}s, ${og.missing} on /og/game.jpg until a later build, ${og.pruned} old cards deleted)`);
 console.log(`  html ${(Math.min(...sizes) / 1024).toFixed(1)}–${(Math.max(...sizes) / 1024).toFixed(1)} KB · css ${cssKB.toFixed(1)} KB · live.js ${liveKB.toFixed(2)} KB · theme.js ${themeB} B · tour.js ${tourB} B (${tourGz} B gzip) · fonts ${(fontBytes / 1024).toFixed(0)} KB (${FONTS.length} woff2)`);
 for (const w of warn) console.warn(`  warn: ${w}`);
 if (fail.length) {

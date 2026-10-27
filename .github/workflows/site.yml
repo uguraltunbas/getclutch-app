@@ -23,6 +23,14 @@
 # every App Store link carries it and ct=site-<kind of page>, so App Analytics
 # shows installs from the website per page type. Unset: plain links.
 #
+# Share cards (site-src/lib/ogcards.mjs): every game page of the last two
+# weeks gets its own X / Open Graph card under /og/g/, drawn with the desk's
+# renderer in the runner's Chrome. The cards are kept between builds in
+# .og-cache (actions/cache: restored before the build, saved after a build that
+# passes), so a build draws only what is new or changed — at most 15 — and
+# deletes the cards it no longer uses (superseded numbers or grades, games
+# older than 14 days). A card not drawn yet leaves its page on /og/game.jpg.
+#
 # Actions are pinned to a commit (the tag in the comment); checkout keeps no
 # credentials; wrangler is pinned (wrangler.jsonc and Workers _headers /
 # _redirects need wrangler 4; the action's own default is 3).
@@ -59,8 +67,15 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
+      - name: Share cards from earlier builds
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: .og-cache
+          key: og-cards-${{ github.run_id }}
+          restore-keys: og-cards-
       - name: Build and check
         env:
+          CHROME_PATH: /usr/bin/google-chrome
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
           SITE_DATE: ${{ github.event.inputs.date }}
           WEB_APP_LIVE: ${{ vars.WEB_APP_LIVE }}
