@@ -5,7 +5,7 @@
 
 import { page, esc, ORIGIN, PLAY, WEB_APP_LIVE, teamSlug } from "../html.mjs";
 import { pct, pickSide, normalizeStatus, finalLabel, RATE_FLOOR } from "../copy.mjs";
-import { matchupsOf, prevRecord } from "./matchups.mjs";
+import { matchupsOf, prevRecord, recordIn } from "./matchups.mjs";
 import { dayLabel, shortDate, mediumDate, timeET, seasonOf as seasonOfDate } from "../time.mjs";
 
 export function teamPages(m) {
@@ -50,8 +50,11 @@ export function teamPages(m) {
     const graded = mine.filter((c) => seasonOfCall(c) === gradedSeason);
     const right = graded.filter((c) => c.correct).length;
     const pr = prevRecord(m, t);
+    // This season's record leads, from the site's own finals; last season's sits beside it, smaller (owner, 2026-10-27).
+    const cr = recordIn(m.thisSeason, t);
     const stats = [
-      pr.w + pr.l ? `<div><span class="d">${pr.w}–${pr.l}</span><span class="mono">RECORD · ${esc(m.prevSeason)}</span></div>` : "",
+      `<div><span class="d">${cr.w}–${cr.l}</span><span class="mono">RECORD · ${esc(m.current)}</span></div>`,
+      pr.w + pr.l ? `<div class="was"><span class="d">${pr.w}–${pr.l}</span><span class="mono">LAST SEASON · ${esc(m.prevSeason)}</span></div>` : "",
       pc != null ? `<div><span class="d">${(pc * 100).toFixed(0)}%</span><span class="mono">CLUTCH'S PLAYOFF CHANCE</span></div>` : "",
       graded.length ? `<div><span class="d">${right}–${graded.length - right}</span><span class="mono">CLUTCH'S CALLS IN ${esc(t.nickname.toUpperCase())} GAMES · ${esc(gradedSeason)}${gradedSeason !== m.current && m.last?.retired && m.last.season === gradedSeason ? " · RETIRED MODEL" : ""}</span></div>` : "",
     ].join("");

@@ -1,16 +1,28 @@
 // The front page (direction E, approved): the paper's language and the LED
 // scoreboard. Every number on it is tonight's real one, or says why not.
+// On a phone the first screen holds one button and tonight's LED game card;
+// the page keeps six blocks (owner, 2026-10-27): the hero with the game of the
+// night, tonight's games, three moves, the Ledger, Free and Pro, the close.
+// The questions moved to /faq/, the free paper's cards to /faq/ and /pricing/.
 
-import { page, esc, bar, APP_STORE, ORIGIN, PLAY, PLAY_PRO, WEB_APP_LIVE, LAUNCH_DAY, passLink, webAppLink } from "../html.mjs";
+import { page, esc, bar, APP_STORE, ORIGIN, PLAY, PLAY_PRO, WEB_APP_LIVE, LAUNCH_ON, LAUNCH_WORDS, passLink, webAppLink } from "../html.mjs";
 import { board, gameCard, lineIsWhy, scoreLine, statusText } from "../parts.mjs";
 import { pct, callPoints, comparisons, opener, verdictOf, rec, shortHash, RATE_FLOOR, REGULAR_SEASON_START } from "../copy.mjs";
 import { longDate, dayLabel, shortDate, weekday, timeET, countWord, shift } from "../time.mjs";
-import { FRONT_FREE, FRONT_PRO, FREE_CARDS, FAQ, PLAN } from "../../content/features.mjs";
+import { FRONT_FREE, FRONT_PRO, PLAN } from "../../content/features.mjs";
 import { worstMiss, lastGradedNight } from "../model.mjs";
 import { organizationLd } from "../../content/company.mjs";
 
-/** The game of the night: the biggest matchup still to be decided (two teams' win totals, the desk's proxy for interest). */
-function gameOfTheNight(games) {
+/**
+ * The game of the night: the one the morning's publisher named — the free
+ * predictions/today snapshot's clutch_pick_of_day, the game the app leads
+ * with for every tier (owner, 2026-10-27: one rule, set in the publisher).
+ * Without that id, or when it isn't on the night's list: the biggest matchup
+ * still to be decided (two teams' win totals, the desk's proxy for interest).
+ */
+export function gameOfTheNight(games, publishedId = null) {
+  const named = publishedId ? games.find((g) => g.id === publishedId && g.status !== "postponed") : null;
+  if (named) return named;
   const open = games.filter((g) => g.status !== "final" && g.status !== "postponed");
   const pool = (open.length ? open : games).filter((g) => g.status !== "postponed");
   const withCall = pool.filter((g) => g.hasCall);
@@ -85,10 +97,7 @@ function proof(m) {
 <div class="crow"><span>Clutch</span>${c.small ? "<span></span>" : bar(c.us, "amber")}<span class="d v amber">${v(c.us, c.usRec)}</span></div>
 <div class="crow"><span class="ink3">${esc(c.themLabel)}</span>${c.small ? "<span></span>" : bar(c.them, "cream")}<span class="d v">${v(c.them, c.themRec)}</span></div></div>`;
     }
-    const d = r.vsMarket?.disagree;
-    if (d && d.n > 0) {
-      right += `<div class="split"><span class="d">${d.hits}<span class="dim">/${d.n}</span></span><p>When Model only — Clutch's number before the market — picked a different team from the market, it was right ${d.hits} ${d.hits === 1 ? "time" : "times"} in ${d.n}. ${d.edge_is_readable ? "Ahead, and the sample says it's real." : "Not proven yet — and the Ledger says so."}</p></div>`;
-    }
+    // (Model only against the market — the games the two disagree on — is on the Ledger page.)
   }
   right += `<div class="boxlink"><span><b>Every morning has a receipt</b>The night's calls are hashed and published to a public repository before the first tip. Nobody can change them after — not even us.</span><a href="/receipts/">CHECK IT →</a></div>`;
   // The open data on the front page itself, not only in the footer (owner,
@@ -154,8 +163,8 @@ function guide(lead, isToday) {
     ["call", "Now make your call.", "Pick a side before tip. Upsets you call score more."],
     ["ledger", "Every number is sealed before tip.", "Graded after the final, in public — misses included."],
   ];
-  const [endLine, endLinks] = LAUNCH_DAY
-    ? [`Sign in with Apple or Google and claim your Launch Pass: every Pro feature free on the web until ${LAUNCH_DAY}.`, `<a class="btn" href="${passLink("tour-end")}">Claim your Launch Pass →</a><a class="btn ghost" href="${APP_STORE}">Get the iPhone app</a>`]
+  const [endLine, endLinks] = LAUNCH_ON
+    ? [`Sign in with Apple or Google and claim your Launch Pass: ${LAUNCH_WORDS}.`, `<a class="btn" href="${passLink("tour-end")}">Claim your Launch Pass →</a><a class="btn ghost" href="${APP_STORE}">Get the iPhone app</a>`]
     : WEB_APP_LIVE
       ? ["Call every game in your browser, or on iPhone.", `<a class="btn" href="${webAppLink("tour-end")}">Open Clutch in your browser →</a><a class="btn ghost" href="${APP_STORE}">Get the iPhone app</a>`]
       : ["Call every game in the iPhone app. Every number is on this site too.", `<a class="btn" href="${APP_STORE}">Get the iPhone app →</a>`];
@@ -176,7 +185,8 @@ export function homePage(m) {
   const tonight = m.tonight;
   const games = tonight ? m.nights[tonight] ?? [] : [];
   const isToday = tonight === m.today;
-  const lead = gameOfTheNight(games);
+  const published = tonight ? m.raw.snaps?.[`predictions/today/${tonight}`]?.body?.clutch_pick_of_day?.game_id ?? null : null;
+  const lead = gameOfTheNight(games, published);
   const liveOne = games.find((g) => (g.status === "live" || g.status === "halftime") && g.id !== lead?.id);
   const n = games.length;
   const right = !tonight ? "NO GAMES SCHEDULED" : isToday ? `${countWord(n, false).toUpperCase()} ${n === 1 ? "GAME" : "GAMES"} TONIGHT` : `<span class="hide-s">NO GAMES TONIGHT · </span>NEXT ${esc(dayLabel(tonight).toUpperCase())}`;
@@ -204,21 +214,26 @@ ${liveOne ? `<a class="livechip gl d" href="${liveOne.path}" data-gid="${liveOne
   const nextTip = games.filter((g) => g.status === "scheduled" && g.tipUtc).map((g) => g.tipUtc).sort()[0];
   const lastH = !tonight ? "The paper returns with the next game." : isToday && games.some((g) => g.hasCall) ? "Tonight's paper is out." : isToday ? "Tonight's paper is being set." : `The next paper is out ${weekday(tonight)}.`;
 
+  // One button (owner, 2026-10-27): the web app; the iPhone app is a small link under it.
+  const play = isToday && games.some((g) => g.status !== "final" && g.status !== "postponed") ? "Play tonight in your browser →" : "Play in your browser →";
+  const cta = (where) => WEB_APP_LIVE
+    ? `<div class="cta"><a class="btn lg" href="${webAppLink(where)}">${play}</a><a class="alt" href="${APP_STORE}">Get the iPhone app</a></div>`
+    : `<div class="cta"><a class="btn lg" href="${APP_STORE}">Get the iPhone app →</a><a class="alt" href="/ledger/">Read the Ledger</a></div>`;
+  const promise = LAUNCH_ON
+    ? `<div class="promise"><span><a href="${passLink("hero")}"><b class="o">LAUNCH PASS</b> · PRO FREE ON THE WEB →</a></span></div>`
+    : WEB_APP_LIVE
+      ? '<div class="promise"><span>FREE</span><span>NO DOWNLOAD</span><span>PUBLIC LEDGER</span></div>'
+      : '<div class="promise"><span>FREE</span><span>PUBLIC LEDGER</span><span>COMING TO YOUR BROWSER</span></div>';
+
   const body = `<section class="heroband"><span class="dots" aria-hidden="true"></span><div class="wrap">
 <div class="edition"><span><span class="ed"></span> EDITION<span class="hide-s"> · ${esc(m.current)}</span></span><span class="hide-s">${esc(longDate(m.today).toUpperCase())}</span><span>${right}</span></div>
 <h1 class="h1">Call every game.<br><em>Beat Clutch.</em></h1>
 <div class="hero"><div class="hero-l">
 <p class="lede">Clutch puts a number on every NBA game, tells you why, and seals it before tip. Make your own call — the morning grades you both.</p>
-${LAUNCH_DAY
-    ? `<div class="btns"><a class="btn lg" href="${passLink("hero")}">Claim your free Launch Pass →</a><a class="btn ghost lg" href="${APP_STORE}">Get the iPhone app</a></div>
-<div class="promise"><span><b class="o">LAUNCH PASS</b> · PRO FREE ON THE WEB UNTIL ${esc(LAUNCH_DAY.toUpperCase())}</span></div>`
-    : WEB_APP_LIVE
-      ? `<div class="btns"><a class="btn lg" href="${PLAY}">Play in your browser →</a><a class="btn ghost lg" href="${APP_STORE}">Get the iPhone app</a></div>
-<div class="promise"><span>FREE</span><span>NO DOWNLOAD</span><span>PUBLIC LEDGER</span></div>`
-      : `<div class="btns"><a class="btn lg" href="${APP_STORE}">Get the iPhone app →</a></div>
-<div class="promise"><span>FREE</span><span>PUBLIC LEDGER</span><span>COMING TO YOUR BROWSER</span></div>`}
-<button class="tchip" type="button" data-tour-go>New here? <strong>Take the 1-minute tour</strong><span class="amber" aria-hidden="true">→</span></button>
-</div>${leadBoard}</div></div>
+${cta("hero")}
+${promise}
+</div><div class="hero-r">${leadBoard}
+<button class="tchip" type="button" data-tour-go>New here? <strong>Take the 1-minute tour</strong><span class="amber" aria-hidden="true">→</span></button></div></div></div>
 ${ticker}</section>
 
 <section class="sec t" id="tonight" aria-labelledby="tonight-h"><div class="wrap">
@@ -241,41 +256,20 @@ ${proof(m)}
 ${missBand(m)}
 </div></section>
 
-<section class="sec" aria-labelledby="free-h"><div class="wrap">
-<div class="shead"><div><h2 class="h2" id="free-h">The whole paper is free.</h2><p class="sub">Read everything without an account. Sign in to keep your calls.</p></div></div>
-<div class="g3">${FREE_CARDS.map((f) => `<div class="feat"><span class="mk" aria-hidden="true">${esc(f.mark)}</span><h3>${esc(f.title)}</h3><p>${esc(f.body)}</p></div>`).join("")}</div>
-</div></section>
-
-<section class="sec" aria-label="In your browser or on iPhone"><div class="wrap">
-<div class="duo">
-${WEB_APP_LIVE
-    ? `<div><span class="kick">IN YOUR BROWSER${LAUNCH_DAY ? " · OPEN NOW" : ""}</span><h3>Open a tab. You're in.</h3><p>Tonight's numbers and the why · calls, points and levels · the Ledger and receipts · What-If and Ask Clutch · leagues with friends.</p>${LAUNCH_DAY ? `<p class="offer"><strong>Sign in with Apple or Google and claim your Launch Pass: every Pro feature free on the web until ${esc(LAUNCH_DAY)}.</strong> Claim by ${esc(LAUNCH_DAY)} and keep the Founding fan stamp for good.</p><a class="btn" href="${passLink("browser")}">Claim your free Launch Pass →</a>` : `<a class="btn" href="${PLAY}">Play in your browser →</a>`}</div>
-<div><span class="kick ink3">ON IPHONE, ALSO</span><h3>The best seat in the house.</h3><p>Live Activities on your lock screen · home screen widgets · Siri · iMessage challenges · game videos to share.</p><a class="btn ghost" href="${APP_STORE}">Get the iPhone app</a></div>
-</div>
-<p class="note gap">One account everywhere. Pro bought on one carries over to the other.</p>`
-    : `<div><span class="kick">ON IPHONE, TODAY</span><h3>The best seat in the house.</h3><p>Tonight's numbers and the why · calls, points and levels · the Ledger and receipts · What-If and Ask Clutch · leagues with friends · Live Activities, widgets and Siri.</p><a class="btn" href="${APP_STORE}">Get the iPhone app →</a></div>
-<div><span class="kick ink3">IN YOUR BROWSER, THIS OCTOBER</span><h3>No iPhone? Open a tab.</h3><p>The same paper and the same calls in any browser, on any computer or phone — opening this October. Until then, every number is right here on this site.</p></div>
-</div>`}
-</div></section>
-
 <section class="sec" id="pricing" aria-labelledby="price-h"><div class="wrap">
 <h2 class="h2 hm" id="price-h">Free for good. <em>Pro when you want the whole lab.</em></h2>
 <div class="plans">
 <div class="plan"><h3>Free</h3><div class="price"><span class="d">$0</span><span>for good</span></div><ul>${FRONT_FREE.map((x) => `<li>${esc(x)}</li>`).join("")}</ul><a class="btn ghost" href="${PLAY}">${WEB_APP_LIVE ? "Play free" : "Get the free iPhone app"}</a></div>
-<div class="plan pro"><span class="tag">${PLAN.trialDays} DAYS FREE ON ANNUAL</span><h3>Pro</h3><div class="price"><span class="d amber">${PLAN.monthly}</span><span>a month · or ${PLAN.annual} a year</span></div>${LAUNCH_DAY ? `<p class="offer">Free on the web until ${esc(LAUNCH_DAY)} with the Launch Pass.</p>` : ""}<ul>${FRONT_PRO.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>${LAUNCH_DAY ? `<a class="btn" href="${passLink("pricing")}">Claim your Launch Pass</a>` : `<a class="btn" href="${PLAY_PRO}">Try Pro free for ${PLAN.trialDays} days${WEB_APP_LIVE ? "" : " on iPhone"}</a>`}</div>
+<div class="plan pro"><span class="tag">${PLAN.trialDays} DAYS FREE ON ANNUAL</span><h3>Pro</h3><div class="price"><span class="d amber">${PLAN.monthly}</span><span>a month · or ${PLAN.annual} a year</span></div>${LAUNCH_ON ? '<p class="offer">Free on the web during the launch, with the Launch Pass.</p>' : ""}<ul>${FRONT_PRO.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>${LAUNCH_ON ? `<a class="btn" href="${passLink("pricing")}">Claim your Launch Pass</a>` : `<a class="btn" href="${PLAY_PRO}">Try Pro free for ${PLAN.trialDays} days${WEB_APP_LIVE ? "" : " on iPhone"}</a>`}</div>
 </div>
 <p class="note gap">Prices in US dollars. Cancel any time; Pro runs to the end of the period you paid for. <a href="/pricing/">Everything in Free and Pro →</a> · <a href="/refunds/">Refunds</a> · <a href="/terms/">Terms</a></p>
-</div></section>
-
-<section class="sec" aria-labelledby="faq-h"><div class="wrap">
-<h2 class="h2 hm" id="faq-h">Questions, answered</h2>
-<div class="faq">${FAQ.map((q) => `<div><h3>${esc(q.q)}</h3><p>${esc(q.a)}${q.link ? ` <a href="${q.link.href}">${esc(q.link.label)}</a>` : ""}</p></div>`).join("")}</div>
 </div></section>
 
 <section class="sec" aria-labelledby="last-h"><div class="wrap"><div class="last">
 <span class="mono ink3">${nextTip ? `NEXT TIP ${esc(dayLabel(tonight).toUpperCase())} · ${esc(timeET(nextTip))}` : esc(longDate(m.today).toUpperCase())}</span>
 <h2 class="h2" id="last-h">${esc(lastH)}</h2>
-<div class="btns">${LAUNCH_DAY ? `<a class="btn lg" href="${passLink("closing")}">Claim your free Launch Pass →</a><a class="btn ghost lg" href="${APP_STORE}">Get the iPhone app</a>` : WEB_APP_LIVE ? `<a class="btn lg" href="${PLAY}">Play in your browser →</a><a class="btn ghost lg" href="${APP_STORE}">Get the iPhone app</a>` : `<a class="btn lg" href="${APP_STORE}">Get the iPhone app →</a><a class="btn ghost lg" href="/ledger/">Read the Ledger</a>`}</div>
+${cta("closing")}
+<a class="more" href="/faq/">Questions, answered →</a>
 </div></div></section>
 ${guide(lead, isToday)}`;
 

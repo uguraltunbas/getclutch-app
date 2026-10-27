@@ -115,8 +115,12 @@ a.logo:hover{color:var(--ink)}
 .heroband .h1{padding-top:52px}
 .hero{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:56px;align-items:center;padding:40px 0 76px}
 .hero-l{display:flex;flex-flow:column;gap:26px}
+.cta{display:flex;flex-wrap:wrap;align-items:center;gap:4px 24px}
+.alt{display:inline-flex;align-items:center;min-height:44px;font-size:16px;color:var(--ink2);text-decoration:underline;text-underline-offset:4px}
+.hero-r{min-width:0}.hero-r .tchip{margin-top:34px}
 .promise{display:flex;gap:22px;flex-wrap:wrap;font-family:var(--mono);font-size:12px;letter-spacing:.12em;color:var(--ink3)}
 .promise .o{color:var(--amberText)}
+.promise a{color:inherit}.promise a:hover{color:var(--ink)}
 .promise span::before,.offer::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--amber);margin-right:8px;vertical-align:1px}
 .inst{position:relative}
 .blob{position:absolute;width:200px;height:260px;filter:blur(80px);opacity:.38;pointer-events:none}
@@ -242,15 +246,6 @@ a.bk:hover{color:var(--ink)}
 .miss .mono{color:var(--hot);font-size:11.5px}
 .miss .q{font-family:var(--display);font-style:italic;font-size:20px;line-height:1.35}
 .miss .go{font-family:var(--mono);font-size:12.5px;letter-spacing:.12em;color:var(--amberText);white-space:nowrap}
-.feat{display:flex;flex-flow:column;gap:10px}
-.feat .mk{width:40px;height:40px;border:1px solid;border-color:color-mix(in srgb,currentColor 60%,#0000);display:flex;align-items:center;justify-content:center;font-family:var(--num);font-weight:900;font-size:18px;color:var(--amberText)}
-.feat h3{font-family:var(--display);font-weight:700;font-size:22px}
-.feat p{font-size:15px;line-height:1.55;color:var(--ink2)}
-.duo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border:1px solid var(--rule)}
-.duo>div{padding:30px 32px;display:flex;flex-flow:column;gap:14px;align-items:flex-start}
-.duo>div+div{border-left:1px solid var(--rule);background:var(--panel)}
-.duo h3{font-family:var(--display);font-weight:900;font-size:34px;line-height:1.05}
-.duo p{font-size:15.5px;line-height:1.9;color:var(--ink2)}
 .plans{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
 .plan{border:1px solid var(--rule);padding:28px;display:flex;flex-flow:column;gap:16px;position:relative}
 .plan.pro{border:2px solid var(--amber);background:var(--panel);padding:27px}
@@ -266,11 +261,11 @@ a.bk:hover{color:var(--ink)}
 .plan .btn{margin-top:auto;align-self:flex-start}
 .faq{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:48px}
 .faq>div{border-top:1px solid var(--rule);padding:18px 0 22px;display:flex;flex-flow:column;gap:8px}
-.faq h3{font-family:var(--display);font-weight:700;font-size:21px}
+.faq h2{font-family:var(--display);font-weight:700;font-size:21px}
 .faq p{font-size:15.5px;line-height:1.6;color:var(--ink2)}
 .last{border-top:3px double var(--ink);border-bottom:1px solid var(--rule);padding:48px 0;display:flex;flex-flow:column;align-items:center;gap:22px;text-align:center}
 .last .h2{font-size:72px}
-.last .btns{justify-content:center}
+.last .btns,.last .cta{justify-content:center}
 
 /* footer */
 .foot{padding:56px 0;margin-top:104px}
@@ -365,6 +360,7 @@ a.bk:hover{color:var(--ink)}
 .stat>div{display:flex;flex-flow:column;gap:4px}
 .stat .d{font-size:64px;line-height:.9}
 .stat .mono{color:var(--ink3);font-size:11px}
+.stat .was .d{font-size:30px;color:var(--ink2)}
 .ftable{width:100%;border-collapse:collapse}
 .ftable th{font-family:var(--mono);font-weight:500;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);text-align:left;padding:10px 12px 10px 0;border-bottom:1px solid var(--rule)}
 .ftable td{padding:12px 12px 12px 0;border-bottom:1px solid var(--rule2);font-size:15px;line-height:1.5;color:var(--ink2);vertical-align:top}
@@ -398,7 +394,6 @@ a.bk:hover{color:var(--ink)}
    page), the amber ring, the glass card with its amber edge. Square corners;
    every button 44 px or more. */
 .offer{font-size:15px;line-height:1.55;color:var(--ink)}
-.duo .offer{line-height:1.55;color:var(--ink)}
 .tchip{display:none;align-self:flex-start;align-items:center;gap:8px;min-height:44px;padding:9px 14px;background:var(--panel);border:1px solid var(--rule);border-left:3px solid var(--amber);border-radius:0;color:var(--ink2);font:15px/1.3 var(--body);cursor:pointer}
 .tchip strong{color:var(--ink)}
 [data-theme]:not([data-toured]) .tchip{display:inline-flex}
@@ -426,11 +421,10 @@ a.bk:hover{color:var(--ink)}
 @media (max-width:980px){.hero,.proof{grid-template-columns:minmax(0,1fr);gap:36px}.nav,.signin{display:none}.menu{display:block}.stack{grid-template-columns:minmax(0,1fr)}.aside{border-left:0;padding-left:0}.gh1,.gh1.long{font-size:64px;letter-spacing:-2px}}
 @media (max-width:760px){
 .wrap,.wrap.n{padding:0 16px}
-.h1{font-size:50px;letter-spacing:-1.5px}.heroband .h1{padding-top:34px}
+.h1{font-size:50px;letter-spacing:-1.5px}.heroband .h1{padding-top:22px}
 .h2{font-size:38px;letter-spacing:-1px}.last .h2{font-size:44px}
-.hero{padding:28px 0 56px}.lede{font-size:18px}
-.g3,.faq,.plans,.duo,.fgrid{grid-template-columns:minmax(0,1fr);gap:24px}
-.duo{gap:0}.duo>div+div{border-left:0;border-top:1px solid var(--rule)}.duo>div{padding:24px 20px}
+.hero{padding:20px 0 48px;gap:24px}.hero-l{gap:16px}.lede{font-size:18px}
+.g3,.faq,.plans,.fgrid{grid-template-columns:minmax(0,1fr);gap:24px}
 .big{font-size:104px}
 .hide-s{display:none!important}.show-s{display:inline}
 .cards{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:8px;gap:12px}
@@ -441,7 +435,7 @@ a.bk:hover{color:var(--ink)}
 .livechip{left:12px;bottom:-22px;font-size:13px}
 .inst{margin-bottom:12px}
 .sec{padding-top:72px}.sec.t{padding-top:56px}
-.miss{grid-template-columns:minmax(0,1fr);gap:8px}.feat{display:grid;grid-template-columns:40px minmax(0,1fr);column-gap:14px;row-gap:4px}.feat .mk{grid-row:span 2}.feat h3{align-self:center}.arow{grid-template-columns:minmax(0,1fr);gap:2px}
+.miss{grid-template-columns:minmax(0,1fr);gap:8px}.arow{grid-template-columns:minmax(0,1fr);gap:2px}
 .gh1,.gh1.long{font-size:44px;letter-spacing:-1px}.deck{font-size:20px}
 .why{column-count:1}.gradebox{grid-template-columns:minmax(0,1fr);gap:8px}
 .rh1{font-size:44px;letter-spacing:-1px}.rdeck{font-size:17px}

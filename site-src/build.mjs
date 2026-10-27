@@ -25,10 +25,10 @@
 // SITE_DATE (the ET date to build for; default today in New York),
 // WEB_APP_LIVE (true once app.clutchledger.com is open: the "play" links and
 // the browser copy turn on; until then they point at the iPhone app),
-// WEB_LAUNCH_PRO_UNTIL (an ISO date: with WEB_APP_LIVE, the Launch Pass copy —
-// Pro free on the web through that date — shows while New York's date is on
-// or before it; from the day after, the plain web-app copy comes back at the
-// next build),
+// WEB_LAUNCH_PRO_UNTIL (an ISO date, a guard the site never prints: with
+// WEB_APP_LIVE, the Launch Pass copy — Pro free on the web during the launch,
+// which ends when web sales open — shows while New York's date is on or before
+// it; from the day after, the plain web-app copy comes back at the next build),
 // APP_STORE_PT (App Store Connect's provider token: App Store links then
 // carry pt= and ct=site-<kind of page>, counted in App Analytics › Campaigns).
 
@@ -40,8 +40,8 @@ import { fileURLToPath } from "node:url";
 
 import { supabase, loadAll } from "./lib/data.mjs";
 import { buildModel } from "./lib/model.mjs";
-import { etDate, seasonOf, mediumDate } from "./lib/time.mjs";
-import { FONTS, ORIGIN, APP, APP_STORE, INDEXNOW_KEY, WEB_APP_LIVE, WIN_TOTALS_RULES_URL, DESCRIPTION_MAX, LAUNCH_INPUT, LAUNCH_VALID, LAUNCH_UNTIL, LAUNCH_DAY } from "./lib/html.mjs";
+import { etDate, seasonOf } from "./lib/time.mjs";
+import { FONTS, ORIGIN, APP, APP_STORE, INDEXNOW_KEY, WEB_APP_LIVE, WIN_TOTALS_RULES_URL, DESCRIPTION_MAX, LAUNCH_INPUT, LAUNCH_VALID, LAUNCH_UNTIL, LAUNCH_ON, LAUNCH_WORDS } from "./lib/html.mjs";
 import { ttfToWoff2 } from "./lib/woff2.mjs";
 import { swatchOn } from "./lib/swatch.mjs";
 import { checkContrast, editions } from "./check-contrast.mjs";
@@ -51,7 +51,7 @@ import { rec, RATE_FLOOR, RECEIPTS_REPO } from "./lib/copy.mjs";
 import { homePage } from "./lib/pages/home.mjs";
 import { gamePage, nightPage } from "./lib/pages/game.mjs";
 import { ledgerPage, receiptsPage } from "./lib/pages/paper.mjs";
-import { howPage, pricingPage, companyPage, termsPage, privacyPage, refundsPage, supportPage } from "./lib/pages/about.mjs";
+import { howPage, pricingPage, faqPage, companyPage, termsPage, privacyPage, refundsPage, supportPage } from "./lib/pages/about.mjs";
 import { teamPages, notFoundPage } from "./lib/pages/teams.mjs";
 import { accuracyPage, backtestSentence, backtestBands } from "./lib/pages/accuracy.mjs";
 import { matchupPages } from "./lib/pages/matchups.mjs";
@@ -105,7 +105,7 @@ const pages = [];
 pages.push(homePage(m), tonightPage(m));
 for (const g of m.pageGames) pages.push(gamePage(g, m));
 for (const d of Object.keys(m.nights)) pages.push(nightPage(d, m));
-pages.push(ledgerPage(m), accuracyPage(m), receiptsPage(m), howPage(m), pricingPage(), companyPage(), termsPage(), privacyPage(), refundsPage(), supportPage());
+pages.push(ledgerPage(m), accuracyPage(m), receiptsPage(m), howPage(m), pricingPage(), faqPage(), companyPage(), termsPage(), privacyPage(), refundsPage(), supportPage());
 pages.push(...teamPages(m));
 pages.push(...matchupPages(m));
 const playoffs = playoffsPage(m);
@@ -295,7 +295,7 @@ ${FEATURES.filter((f) => !f.free).map((f) => `- ${f.label}`).join("\n")}
 
 ## Where it runs
 
-- In any browser at ${APP}/: everything to follow and call, signed in with Apple or Google.${LAUNCH_UNTIL ? ` Every Pro feature is free on the web until ${mediumDate(LAUNCH_UNTIL)} (the Launch Pass).` : ""}
+- In any browser at ${APP}/: everything to follow and call, signed in with Apple or Google.${LAUNCH_ON ? ` The Launch Pass: ${LAUNCH_WORDS}.` : ""}
 - The iPhone app (${APP_STORE}): the same, plus Live Activities on the lock screen, home screen widgets, Siri and iMessage challenges.
 - One account everywhere; Pro bought on one carries over to the other.
 - Points come from your calls and level you up through titles (Rookie to Hall of Fame); they can't be bought or sold, have no cash value and unlock nothing paid. Everyone signed in also gets one Free Pro day a month.
@@ -410,6 +410,20 @@ if (LAUNCH_INPUT) {
   else if (!WEB_APP_LIVE) warn.push(`WEB_LAUNCH_PRO_UNTIL is ${LAUNCH_INPUT} but WEB_APP_LIVE is off: no Launch Pass copy`);
   else if (!LAUNCH_UNTIL) warn.push(`the Launch Pass is over (it ran through WEB_LAUNCH_PRO_UNTIL ${LAUNCH_INPUT}; today is ${etDate()} ET): the plain web-app copy is back; the variable can go`);
 }
+// The Launch Pass runs until web sales open (owner, 2026-10-27): no words near it give an end date
+// ("until Nov 3", "by Nov 3", "through Dec 31"), on any page or in llms.txt.
+{
+  const END = /\b(?:until|till|by|through|thru|ends?|ending)\s+(?:on\s+)?(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+\d{1,2}\b/i;
+  const near = (where, text) => {
+    for (const m of text.matchAll(/launch pass/gi)) {
+      const around = text.slice(Math.max(0, m.index - 160), m.index + 200);
+      if (END.test(around)) { fail.push(`${where}: the Launch Pass with an end date — "${around.match(END)[0]}"`); return; }
+    }
+  };
+  for (const p of pages.filter((p) => !p.redirect)) near(p.path, textSegments(p.html).join(" "));
+  near("/llms.txt", llms);
+  if (!END.test("PRO FREE ON THE WEB UNTIL NOV 3") || END.test("Model fit on games through June")) fail.push("Launch Pass end-date self-test");
+}
 const cssKB = Buffer.byteLength(css) / 1024, liveKB = Buffer.byteLength(live) / 1024, themeB = Buffer.byteLength(themeJs);
 const tourB = Buffer.byteLength(tourJs), tourGz = gzipSync(tourJs, { level: 9 }).length;
 // 34 KB since the Theme button moved to the masthead's corner at every width (it had
@@ -422,7 +436,7 @@ if (tourGz > 3072) fail.push(`guide script ${tourGz} bytes gzipped (budget 3 KB)
 // ── report ──
 const sizes = indexed.map((p) => Buffer.byteLength(p.html));
 const kinds = { games: m.pageGames.length, nights: Object.keys(m.nights).length, teams: pages.filter((p) => p.path.startsWith("/teams/")).length, matchups: pages.filter((p) => p.path.startsWith("/matchups/")).length };
-console.log(`site ${TODAY} → ${OUT} · web app ${WEB_APP_LIVE ? "LIVE (browser links on)" : "not live (play links → App Store)"}${LAUNCH_UNTIL ? ` · Launch Pass on: Pro free on the web until ${LAUNCH_DAY}` : ""}`);
+console.log(`site ${TODAY} → ${OUT} · web app ${WEB_APP_LIVE ? "LIVE (browser links on)" : "not live (play links → App Store)"}${LAUNCH_ON ? ` · Launch Pass on (guard ${LAUNCH_UNTIL}, never printed)` : ""}`);
 console.log(`  ${pages.length} pages (${indexed.length} indexed; ${kinds.games} game pages over ${kinds.nights} nights, ${kinds.teams} team pages, ${kinds.matchups} head-to-head pages), tonight = ${m.tonight ?? "none"}`);
 console.log(`  share cards: ${og.ready.size} of ${ogPlan.length} game pages of the last ${OG_DAYS} days (${og.rendered} drawn now in ${ogSecs.toFixed(1)}s, ${og.missing} on /og/game.jpg until a later build, ${og.pruned} old cards deleted)`);
 console.log(`  html ${(Math.min(...sizes) / 1024).toFixed(1)}–${(Math.max(...sizes) / 1024).toFixed(1)} KB · css ${cssKB.toFixed(1)} KB · live.js ${liveKB.toFixed(2)} KB · theme.js ${themeB} B · tour.js ${tourB} B (${tourGz} B gzip) · fonts ${(fontBytes / 1024).toFixed(0)} KB (${FONTS.length} woff2)`);

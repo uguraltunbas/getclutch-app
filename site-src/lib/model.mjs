@@ -97,11 +97,13 @@ export function buildModel(raw) {
   for (const g of pageGames) (nights[g.date] ??= []).push(g);
 
   const current = raw.season;
-  // Last season's finals (data.mjs): the teams and the score only, for the head-to-head lines.
-  const lastSeason = (raw.lastSeason ?? []).map((g) => ({
+  // Finals (data.mjs), the teams and the score only: last season's for the head-to-head lines, this
+  // season's regular season for each team's record.
+  const finals = (rows) => (rows ?? []).map((g) => ({
     id: g.id, date: g.game_date, home: T[g.home_team_id], away: T[g.away_team_id], homeScore: g.home_score, awayScore: g.away_score,
     period: g.period, seasonType: g.season_type, playIn: String(g.nba_id ?? "").startsWith("005"),
   })).filter((g) => g.home && g.away && g.homeScore != null && g.awayScore != null);
+  const lastSeason = finals(raw.lastSeason), thisSeason = finals(raw.thisSeason);
   const record = ledger && ledgerStage(ledger, current) === "season" ? headlineRecord(ledger) : null;
   const last = lastSeasonOf(ledger, current);
   const sealed = sealedGames(raw.receipts, PRESEASON_START);
@@ -116,7 +118,7 @@ export function buildModel(raw) {
     seasonBoard: snap(`season/${current}`)?.body ?? null,
     accuracy: snap("model/accuracy")?.body ?? null,
     receipts: raw.receipts ?? [], receiptGames, gameById: Object.fromEntries(games.map((g) => [g.id, g])), current, now,
-    lastSeason, prevSeason: raw.prevSeason ?? null,
+    thisSeason, lastSeason, prevSeason: raw.prevSeason ?? null,
     teamPath: (t) => `/teams/${teamSlug(t)}/`,
     retired: (g) => isRetiredModel(g.modelVersion),
   };

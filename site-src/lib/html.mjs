@@ -4,7 +4,7 @@
 // neither — so team colours are classes in the stylesheet, widths are SVG
 // attributes, and Day or Night is set by a tiny external script in <head>.
 
-import { etDate, shortDate } from "./time.mjs";
+import { etDate } from "./time.mjs";
 
 export const ORIGIN = "https://clutchledger.com";
 export const APP = "https://app.clutchledger.com";
@@ -42,22 +42,23 @@ export const PLAY_PRO = WEB_APP_LIVE ? `${APP}/paywall` : APP_STORE;
 
 /**
  * The Launch Pass (owner, 2026-10-07): sign in on the web app, tap Claim, and
- * every Pro feature is free on the web through a date — WEB_LAUNCH_PRO_UNTIL,
- * an ISO date (a repository variable, like WEB_APP_LIVE): the pass is Pro
- * through that day in New York and can still be claimed on it. It shows only
- * while the web app is live and New York's date when the site is built (the
- * real clock, not --date) is on or before it: from the day after, the copy
- * falls back to the plain web-app wording by itself, at the next build.
- * Unset, malformed or past: no Launch Pass anywhere (build.mjs warns).
- * The prices stay on the page either way.
+ * every Pro feature is free on the web. It runs until web sales open (owner,
+ * 2026-10-27), so the site gives it no end date anywhere (build.mjs checks).
+ * WEB_LAUNCH_PRO_UNTIL, an ISO date (a repository variable, like
+ * WEB_APP_LIVE), is only a guard: the pass shows while the web app is live and
+ * New York's date when the site is built (the real clock, not --date) is on or
+ * before it; from the day after, the copy falls back to the plain web-app
+ * wording by itself, at the next build. Unset, malformed or past: no Launch
+ * Pass anywhere (build.mjs warns). The prices stay on the page either way.
  */
 export const LAUNCH_INPUT = (process.env.WEB_LAUNCH_PRO_UNTIL ?? "").trim();
 const isDay = (s) => { const t = Date.parse(`${s}T12:00:00Z`); return /^\d{4}-\d{2}-\d{2}$/.test(s) && !Number.isNaN(t) && new Date(t).toISOString().slice(0, 10) === s; };
 export const LAUNCH_VALID = isDay(LAUNCH_INPUT);
-/** The Launch Pass's last date ("2026-11-03") while it is on, else null. */
+/** The guard's date ("2026-12-31") while the Launch Pass is on, else null. Never printed on a page. */
 export const LAUNCH_UNTIL = WEB_APP_LIVE && LAUNCH_VALID && etDate() <= LAUNCH_INPUT ? LAUNCH_INPUT : null;
-/** "Nov 3", the site's short date ("" when the Launch Pass is off). */
-export const LAUNCH_DAY = LAUNCH_UNTIL ? shortDate(LAUNCH_UNTIL) : "";
+export const LAUNCH_ON = LAUNCH_UNTIL != null;
+/** What the pass gives, in the words every page uses: no date, since it ends when web sales open. */
+export const LAUNCH_WORDS = "every Pro feature free on the web during the launch";
 /**
  * Links into the web app from this site carry UTM tags (owner, 2026-10-07),
  * so the app can count where readers came from: the Launch Pass claim page
@@ -153,7 +154,7 @@ function footer(path) {
 <div class="fgrid">
 <div class="fbrand"><span class="logo">Clutch</span><p>NBA analytics for fans. A number for every game, the reasons behind it, and a public record of every call.</p></div>
 <nav aria-label="The paper"><span class="mono">The paper</span><a href="/tonight/">Tonight</a><a href="/ledger/">The Ledger</a><a href="/accuracy/">Accuracy</a><a href="/receipts/">Proof</a><a href="/teams/">Teams</a><a href="/playoff-chances/">Playoff chances</a></nav>
-<nav aria-label="About"><span class="mono">About</span><a href="/how-it-works/">How it works</a><a href="/learn/">Learn</a><a href="/widget/">Widget</a><a href="/data/">Open data</a><a href="/feed.xml">RSS</a><a href="/tr/" hreflang="tr" lang="tr">Türkçe</a><a href="/pricing/">Pricing</a><a href="/company/">Company</a><a href="/support/">Support</a><a href="${APP_STORE}">iPhone app</a></nav>
+<nav aria-label="About"><span class="mono">About</span><a href="/how-it-works/">How it works</a><a href="/faq/">FAQ</a><a href="/learn/">Learn</a><a href="/widget/">Widget</a><a href="/data/">Open data</a><a href="/feed.xml">RSS</a><a href="/tr/" hreflang="tr" lang="tr">Türkçe</a><a href="/pricing/">Pricing</a><a href="/company/">Company</a><a href="/support/">Support</a><a href="${APP_STORE}">iPhone app</a></nav>
 <nav aria-label="Legal"><span class="mono">Legal</span><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="/refunds/">Refunds</a></nav>
 <nav aria-label="Follow"><span class="mono">Follow</span><a href="${X_URL}" rel="me">X</a><a href="${LINKEDIN_URL}" rel="me">LinkedIn</a></nav>
 </div>

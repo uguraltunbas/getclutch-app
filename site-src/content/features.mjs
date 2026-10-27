@@ -1,4 +1,4 @@
-import { WEB_APP_LIVE, LAUNCH_DAY, passLink, webAppLink } from "../lib/html.mjs";
+import { WEB_APP_LIVE, LAUNCH_ON, LAUNCH_WORDS, passLink, webAppLink } from "../lib/html.mjs";
 
 // What Free and Pro contain — the app's ONE list, copied word for word from
 // the mobile repo's lib/constants/plans.ts (FEATURES, 1.0.6 · Faz 6 · Dalga A).
@@ -50,26 +50,24 @@ export const PLAN = {
 export const FRONT_FREE = [0, 1, 2, 5, 6, 8].map((i) => FEATURES[i].label);
 export const FRONT_PRO = [16, 17, 18, 19, 23, 24].map((i) => FEATURES[i].label);
 
-/** The free paper, in six (front page). Each line names something the free app does today. */
-export const FREE_CARDS = [
-  { mark: "?", title: "The why", body: "The top reasons behind every number, in plain words — never just a percentage." },
-  { mark: "!", title: "Who's out", body: "Tonight's official injury report, by minutes." },
-  { mark: "~", title: "What-If", body: "Change who plays and watch the number move. FLIP IT, and FLIP IT duels with friends." },
-  { mark: "/", title: "Ask Clutch", body: "Ask anything about tonight. Answers come from Clutch's own numbers, no daily limit." },
-  { mark: "#", title: "Leagues", body: "Private leagues with friends. Who beat Clutch most this week?" },
-  { mark: "%", title: "Playoff chances", body: "Every team's chances, updated every night of the season." },
-];
-
+/**
+ * The questions page (/faq/). The front page used to carry these, the free
+ * paper in six cards and the browser-or-iPhone pair; it links here now (owner,
+ * 2026-10-27: the phone's first screen, the front page cut to its core).
+ */
+const IPHONE_EXTRAS = "The iPhone app adds Live Activities on the lock screen, home screen widgets, Siri, iMessage challenges and game videos to share.";
 export const FAQ = [
+  { q: "What's free?", a: "The whole paper, for good: every game's number with the top reasons behind it, tonight's official injury report by minutes, What-If (change who plays and watch the number move), Ask Clutch, private leagues with friends and every team's playoff chances, updated nightly. Read everything without an account; sign in to keep your calls." },
   { q: "What do points get me?", a: "Levels and titles, from Rookie to Hall of Fame — bragging rights, nothing paid. Points come from your calls and your team's wins; they can't be bought or sold and have no cash value. Separately, everyone signed in gets one Free Pro day a month." },
   { q: "Where does the number come from?", a: "A model trained on past seasons — form, rest, travel and the official injury report — blended with the market's price. How it works shows every piece." },
   { q: "Is Clutch any good?", a: "Look at the Ledger. Every call is there, graded beside the market, ESPN and picking the home team, misses included. Where the sample is too small, it says so." },
   // `link` (optional): a link after the answer (href already escaped for an attribute).
-  LAUNCH_DAY
-    ? { q: "Do I need an iPhone?", a: `No. Everything to follow and call runs in your browser — sign in with Apple or Google and claim your Launch Pass: every Pro feature free on the web until ${LAUNCH_DAY}. The iPhone app adds the lock screen, widgets and Siri.`, link: { href: passLink("faq"), label: "Claim your Launch Pass →" } }
+  LAUNCH_ON
+    ? { q: "Do I need an iPhone?", a: `No. Everything to follow and call runs in your browser — sign in with Apple or Google and claim your Launch Pass: ${LAUNCH_WORDS}, and the Founding fan stamp for good. ${IPHONE_EXTRAS}`, link: { href: passLink("faq"), label: "Claim your Launch Pass →" } }
     : WEB_APP_LIVE
-      ? { q: "Do I need an iPhone?", a: "No. Everything to follow and call runs in your browser. The iPhone app adds the lock screen, widgets and Siri.", link: { href: webAppLink("faq"), label: "Open Clutch in your browser →" } }
+      ? { q: "Do I need an iPhone?", a: `No. Everything to follow and call runs in your browser. ${IPHONE_EXTRAS}`, link: { href: webAppLink("faq"), label: "Open Clutch in your browser →" } }
       : { q: "Do I need an iPhone?", a: "Today, to make calls, yes: Clutch is an iPhone app. The browser version opens this October, with the same paper and the same calls. Every number is on this site already." },
+  ...(WEB_APP_LIVE ? [{ q: "Is it one account on the web and on iPhone?", a: "Yes. One account everywhere: sign in the same way on both, and Pro bought on one carries over to the other." }] : []),
   { q: "What does Pro add?", a: "Model only — Clutch's own number before the market — the projected final, every factor, late-news alerts and the simulation." },
   { q: "Can I cancel?", a: "Any time. Pro runs to the end of the period you paid for, and the 7-day free trial on the yearly plan costs nothing if you cancel before it ends (on iPhone, at least 24 hours before)." },
 ];

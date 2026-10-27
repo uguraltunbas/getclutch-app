@@ -3,8 +3,8 @@
 // Company (who makes Clutch, content/company.mjs), the legal pages and Support. (Win Totals' official rules live on the
 // GitHub Pages site the App Store links to, not on this domain.)
 
-import { page, esc, prose, APP_STORE, ORIGIN, PLAY, PLAY_PRO, WEB_APP_LIVE, LAUNCH_DAY, passLink } from "../html.mjs";
-import { FEATURES, PLAN } from "../../content/features.mjs";
+import { page, esc, prose, APP_STORE, ORIGIN, PLAY, PLAY_PRO, WEB_APP_LIVE, LAUNCH_ON, passLink, webAppLink } from "../html.mjs";
+import { FEATURES, PLAN, FAQ } from "../../content/features.mjs";
 import { TERMS, PRIVACY, REFUNDS, SUPPORT, SUPPORT_EMAIL, OPERATOR, PADDLE_BUYER_TERMS } from "../../content/legal.mjs";
 import { mediumDate } from "../time.mjs";
 import { COMPANY, organizationLd } from "../../content/company.mjs";
@@ -69,7 +69,7 @@ export function pricingPage() {
 <div class="body">
 <div class="plans">
 <div class="plan"><h2 class="side-h">Free</h2><div class="price"><span class="d">$0</span><span>for good · no card · sign in to keep your calls</span></div><ul><li>Every game's number, the market's beside it, and the top three reasons</li><li>Call any game for points and level titles, plus one Free Pro day a month</li><li>The Ledger and the receipts, for everyone</li></ul><a class="btn ghost" href="${PLAY}">${WEB_APP_LIVE ? "Play free in your browser" : "Get the free iPhone app"}</a></div>
-<div class="plan pro"><span class="tag">${PLAN.trialDays} DAYS FREE ON ANNUAL</span><h2 class="side-h">${esc(PLAN.name)}</h2><div class="price"><span class="d amber">${PLAN.monthly}</span><span>a month</span></div><div class="price"><span class="d amber">${PLAN.annual}</span><span>a year — ${PLAN.annualPerMonth} a month, ${PLAN.trialDays} days free the first time</span></div>${LAUNCH_DAY ? `<p class="offer">Free on the web until ${esc(LAUNCH_DAY)} with the Launch Pass.</p>` : ""}<ul><li>Model only, the projected final and every factor</li><li>Late-news alerts and every close game</li><li>The simulation, and the season simulated nightly</li></ul>${LAUNCH_DAY ? `<a class="btn" href="${passLink("pricing-page")}">Claim your Launch Pass</a>` : `<a class="btn" href="${PLAY_PRO}">Try Pro free for ${PLAN.trialDays} days${WEB_APP_LIVE ? "" : " on iPhone"}</a>`}</div>
+<div class="plan pro"><span class="tag">${PLAN.trialDays} DAYS FREE ON ANNUAL</span><h2 class="side-h">${esc(PLAN.name)}</h2><div class="price"><span class="d amber">${PLAN.monthly}</span><span>a month</span></div><div class="price"><span class="d amber">${PLAN.annual}</span><span>a year — ${PLAN.annualPerMonth} a month, ${PLAN.trialDays} days free the first time</span></div>${LAUNCH_ON ? '<p class="offer">Free on the web during the launch, with the Launch Pass.</p>' : ""}<ul><li>Model only, the projected final and every factor</li><li>Late-news alerts and every close game</li><li>The simulation, and the season simulated nightly</li></ul>${LAUNCH_ON ? `<a class="btn" href="${passLink("pricing-page")}">Claim your Launch Pass</a>` : `<a class="btn" href="${PLAY_PRO}">Try Pro free for ${PLAN.trialDays} days${WEB_APP_LIVE ? "" : " on iPhone"}</a>`}</div>
 </div>
 <section aria-labelledby="all"><h2 class="sh" id="all">Everything in Free and Pro</h2><div class="scroll"><table class="ftable"><thead><tr><th scope="col">What you get</th><th scope="col" class="c">Free</th><th scope="col" class="c">Pro</th></tr></thead><tbody>${rows}</tbody></table></div></section>
 <section class="blk" aria-labelledby="bill"><h2 id="bill">Billing, plainly</h2>
@@ -82,6 +82,22 @@ export function pricingPage() {
   const desc = `Clutch is free for good: every NBA game's number, the market, the top reasons and the Ledger. Clutch Pro: ${PLAN.monthly} a month or ${PLAN.annual} a year, ${PLAN.trialDays} days free.`;
   const ld = { "@context": "https://schema.org", "@type": "Product", name: PLAN.name, description: desc, image: ORIGIN + "/og/pricing.jpg", brand: { "@type": "Brand", name: "Clutch" }, url: ORIGIN + "/pricing/", offers: [{ "@type": "Offer", name: "Monthly", price: "9.99", priceCurrency: "USD", url: ORIGIN + "/pricing/" }, { "@type": "Offer", name: "Yearly", price: "59.99", priceCurrency: "USD", url: ORIGIN + "/pricing/" }] };
   return { path: "/pricing/", title: "Pricing: Free for good, Clutch Pro $9.99 a month · Clutch", html: page({ path: "/pricing/", title: "Pricing: Free for good, Clutch Pro $9.99 a month · Clutch", description: desc, body, current: "pricing", og: "pricing", jsonld: ld }) };
+}
+
+/**
+ * The questions page (owner, 2026-10-27): the front page's questions, the free
+ * paper and the browser-or-iPhone answer, now that the front page links here.
+ */
+export function faqPage() {
+  const body = `<div class="wrap"><div class="rhead"><span class="kick">QUESTIONS</span><h1 class="rh1">Questions, answered.</h1><p class="rdeck">What's free, what points get you, where the number comes from and whether you need an iPhone. Anything else: <a href="mailto:${SUPPORT_EMAIL}">${SUPPORT_EMAIL}</a>.</p></div>
+<div class="body">
+<div class="faq">${FAQ.map((q) => `<div><h2>${esc(q.q)}</h2><p>${esc(q.a)}${q.link ? ` <a href="${q.link.href}">${esc(q.link.label)}</a>` : ""}</p></div>`).join("")}</div>
+<div class="btns">${WEB_APP_LIVE ? `<a class="btn" href="${webAppLink("faq-page")}">Play in your browser →</a>` : `<a class="btn" href="${APP_STORE}">Get the iPhone app →</a>`}<a class="btn ghost" href="/how-it-works/">How it works</a></div>
+</div></div>`;
+  const desc = "Clutch, answered: what's free, what points get you, where the NBA win probability comes from, whether you need an iPhone, what Pro adds and how to cancel.";
+  const ld = { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: FAQ.map((q) => ({ "@type": "Question", name: q.q, acceptedAnswer: { "@type": "Answer", text: q.a } })) };
+  const title = "FAQ: what's free, points, the iPhone app and Pro · Clutch";
+  return { path: "/faq/", title, html: page({ path: "/faq/", title, description: desc, body, og: "default", jsonld: ld }) };
 }
 
 export function companyPage() {

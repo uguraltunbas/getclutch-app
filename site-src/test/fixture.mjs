@@ -155,7 +155,8 @@ export function fixture(today) {
   const lines = teams.map((t) => ({ team_id: t.id, line: WIN_TOTAL[t.abbreviation], source: "consensus", as_of: "2026-09-30", season: "2026-27" }));
   const upcoming = games.filter((g) => g.game_date >= today);
   const recent = games.filter((g) => g.status === "final").reverse();
-  return { today, days: pageDates.length, teams, games, tonight, pageDates, preds, lines, snaps, receiptsByDate, receipts, receiptGames, players: [], recent, upcoming, lastSeason: [], prevSeason: `${+season.slice(0, 4) - 1}-${season.slice(2, 4)}`, season, builtAt: `${today}T16:00:00.000Z` };
+  const thisSeason = games.filter((g) => g.status === "final" && g.season_type === "Regular Season");
+  return { today, days: pageDates.length, teams, games, tonight, pageDates, preds, lines, snaps, receiptsByDate, receipts, receiptGames, players: [], recent, upcoming, thisSeason, lastSeason: [], prevSeason: `${+season.slice(0, 4) - 1}-${season.slice(2, 4)}`, season, builtAt: `${today}T16:00:00.000Z` };
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

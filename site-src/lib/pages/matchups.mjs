@@ -169,10 +169,10 @@ export function matchupPages(m) {
   return [...matchupIndex(m).values()].sort((x, y) => x.path.localeCompare(y.path)).map((s) => matchupPage(s, m));
 }
 
-/** A team's record last season (regular season, play-in left out): { w, l, vs: { oppId: { w, l } } }. */
-export function prevRecord(m, t) {
+/** A team's regular-season record in a list of finals (play-in left out): { w, l, vs: { oppId: { w, l } } }. */
+export function recordIn(finals, t) {
   const out = { w: 0, l: 0, vs: {} };
-  for (const g of m.lastSeason) {
+  for (const g of finals) {
     if (g.seasonType !== "Regular Season" || g.playIn || (g.home.id !== t.id && g.away.id !== t.id)) continue;
     const isHome = g.home.id === t.id, won = isHome === g.homeScore > g.awayScore;
     const v = (out.vs[(isHome ? g.away : g.home).id] ??= { w: 0, l: 0 });
@@ -180,6 +180,9 @@ export function prevRecord(m, t) {
   }
   return out;
 }
+
+/** Last season's record, and against each opponent (the head-to-head lines). */
+export const prevRecord = (m, t) => recordIn(m.lastSeason, t);
 
 /** A team's head-to-head pages, by opponent's name (the team pages list them). */
 export function matchupsOf(m, t) {
