@@ -178,7 +178,7 @@ export function dataPage(m) {
 <p class="gap">In a browser or a bot (the files allow any origin):</p><pre class="scroll"><code>${esc(js)}</code></pre></section>
 
 <section class="blk" aria-labelledby="fte"><h2 id="fte">Coming from FiveThirtyEight?</h2>
-<p>FiveThirtyEight's NBA forecast closed in 2025, and its <code>nba_elo.csv</code> and <code>nba_elo_latest.csv</code> addresses now send you to ABC News. <a href="${FILES.fte}">nba-538-format.csv</a> has the same columns up to the scores (team1 at home, the same team codes, the season as the year it ends), with Clutch's number in <code>clutch_prob1</code> and <code>clutch_prob2</code>. <a href="/learn/fivethirtyeight-nba-predictions/">What changed and how to switch →</a></p></section>
+<p>FiveThirtyEight's NBA forecast stopped after the 2022-23 season, the site closed in 2025, and its <code>nba_elo.csv</code> and <code>nba_elo_latest.csv</code> addresses now send you to ABC News. <a href="${FILES.fte}">nba-538-format.csv</a> has the same columns up to the scores (team1 at home, the same team codes, the season as the year it ends), with Clutch's number in <code>clutch_prob1</code> and <code>clutch_prob2</code>. <a href="/learn/fivethirtyeight-nba-predictions/">What changed and how to switch →</a></p></section>
 
 <section class="blk" aria-labelledby="credit"><h2 id="credit">Credit</h2>
 <p>${DATA_LICENSE_LINE} A line like this under your chart or post is enough:</p><pre class="scroll"><code>${esc(CREDIT)}</code></pre></section>
