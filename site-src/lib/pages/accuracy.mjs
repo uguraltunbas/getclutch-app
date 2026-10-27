@@ -180,7 +180,7 @@ ${calibrationSection(m)}
 ${backtestSection(m)}
 ${lastSeasonLine(m)}
 ${questions(m)}
-<section class="blk" aria-labelledby="src"><h2 id="src">Where these numbers come from</h2><p>Every number Clutch publishes is sealed with a SHA-256 fingerprint in <a href="${RECEIPTS_REPO}">a public repository</a> before tip, and the Ledger grades that sealed number after the final. This page is rebuilt from the Ledger every morning; nothing on it is typed by hand. <a href="/receipts/">How to check a seal yourself →</a></p><p>${DATA_LICENSE_LINE} Scores are public record; ESPN BPI and market figures belong to their sources.</p></section>
+<section class="blk" aria-labelledby="src"><h2 id="src">Where these numbers come from</h2><p>Every number Clutch publishes is sealed with a SHA-256 fingerprint in <a href="${RECEIPTS_REPO}">a public repository</a> before tip, and the Ledger grades that sealed number after the final. This page is rebuilt from the Ledger every morning; nothing on it is typed by hand. <a href="/receipts/">How to check a seal yourself →</a></p><p>${DATA_LICENSE_LINE} Scores are public record; ESPN BPI and market figures belong to their sources. <a href="/data/">Download every number as JSON or CSV →</a></p></section>
 </div></div>`;
   const title = "How accurate is Clutch? NBA predictions, graded · Clutch";
   const description = r

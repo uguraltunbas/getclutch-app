@@ -1,7 +1,7 @@
 // Every read the site makes, with the public anon key — the same rows the
 // free app reads, and nothing else:
 //
-//   teams, games (this season's, and last season's finals), win_total_lines (line, source, as_of — never the prices),
+//   teams, games (this season's, and last season's finals; nba_id marks the play-in and the playoff round), win_total_lines (line, source, as_of — never the prices),
 //   players (who is listed on the injury report), receipts,
 //   receipt_games (game id + the sealed home win probability; 049, public)
 //   game_predictions        only the columns migration 031 grants to anon:
@@ -65,7 +65,7 @@ async function snapshots(db, keys) {
   return out;
 }
 
-const GAME_COLS = "id,game_date,game_time_utc,status,season_type,home_team_id,away_team_id,home_score,away_score,period,clock,neutral_site";
+const GAME_COLS = "id,game_date,game_time_utc,status,season_type,home_team_id,away_team_id,home_score,away_score,period,clock,neutral_site,nba_id";
 
 /**
  * Everything one build needs. `today` is the ET date the build is for;
@@ -140,7 +140,7 @@ export async function loadAll(db, { today, days = 7, warn = console.warn }) {
   // Last season's finals, for the head-to-head lines ("Rockets won the season series 3–1"); ~1,320
   // rows, so paged. nba_id marks the play-in (005…, stored as Regular Season), which no series counts.
   const prevSeason = `${+season.slice(0, 4) - 1}-${season.slice(2, 4)}`;
-  const lastSeason = await soft("last season's finals", () => getAll(db, `games?select=${GAME_COLS},nba_id&season=eq.${prevSeason}&status=eq.final&season_type=in.(${encodeURIComponent('"Regular Season"')},Playoffs)&order=id`), []);
+  const lastSeason = await soft("last season's finals", () => getAll(db, `games?select=${GAME_COLS}&season=eq.${prevSeason}&status=eq.final&season_type=in.(${encodeURIComponent('"Regular Season"')},Playoffs)&order=id`), []);
   // Predictions for each team's next game (the team pages say Clutch's call when it exists).
   const nextIds = [];
   const seen = new Set();

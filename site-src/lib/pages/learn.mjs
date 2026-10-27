@@ -6,10 +6,12 @@
 // it is listed in ARTICLES.
 
 import { page, esc, ORIGIN } from "../html.mjs";
-import { rec, RATE_FLOOR, pct, leadText, shortHash, sealFileUrl, RECEIPTS_REPO, RECEIPTS_ACTIVITY_URL } from "../copy.mjs";
+import { rec, RATE_FLOOR, pct, leadText, shortHash, sealFileUrl, RECEIPTS_REPO, RECEIPTS_ACTIVITY_URL, DATA_LICENSE_LINE } from "../copy.mjs";
 import { mediumDate, shortDate, timeET } from "../time.mjs";
 import { lastGradedNight } from "../model.mjs";
 import { COMPANY } from "../../content/company.mjs";
+import { dataRows, DATA, FILES } from "./data.mjs";
+import { backtestSentence } from "./accuracy.mjs";
 
 const LEARN = "/learn/";
 const b3 = (x) => (x == null ? "—" : x.toFixed(3));
@@ -289,8 +291,65 @@ ${earlySentence ? `<section class="blk" aria-labelledby="early"><h2 id="early">E
   };
 }
 
+// ── After FiveThirtyEight ─────────────────────────────────────────────
+
+// The old addresses and where they went, as checked by hand on CHECKED (curl: each a 302 to ABC News's politics page).
+const FTE_GONE = ["projects.fivethirtyeight.com/2025-nba-predictions/", "projects.fivethirtyeight.com/nba-model/nba_elo_latest.csv", "projects.fivethirtyeight.com/nba-model/nba_elo.csv"];
+const FTE_CHECKED = "2026-10-27";
+
+function fteArticle(m) {
+  const rows = dataRows(m);
+  if (!rows.length) return null;
+  const r = m.record;
+  const live = r?.n ? `This season so far Clutch's calls are ${rec(r.hits, r.n)} on ${r.n} graded ${r.n === 1 ? "game" : "games"}, every one sealed before tip.` : "This season's first calls are graded the morning after its first finals.";
+  const test = backtestSentence(m.accuracy?.benchmark);
+  const py = `import pandas as pd\n\n# was: https://projects.fivethirtyeight.com/nba-model/nba_elo_latest.csv\ngames = pd.read_csv("${ORIGIN}${FILES.fte}")\n\n# code that reads elo_prob1 / elo_prob2 can point at Clutch's columns:\ngames = games.rename(columns={"clutch_prob1": "elo_prob1", "clutch_prob2": "elo_prob2"})`;
+  const rr = `games <- read.csv("${ORIGIN}${FILES.fte}")`;
+  const body = `
+<section class="panel" aria-labelledby="short"><span class="kick">THE SHORT ANSWER</span><h2 id="short">The forecast closed in 2025. Its links now go to ABC News.</h2>
+<p class="sub">ABC News closed FiveThirtyEight on March 5, 2025, and since May 2026 its old pages and data files redirect to ABC News's politics section, so links and code that read them break. Clutch publishes a pregame win probability for every NBA game, sealed in public before tip and graded after the final, free to download in the same CSV layout: change one address and rename one column.</p></section>
+
+<section aria-labelledby="links"><h2 class="sh" id="links">Where the old addresses go now</h2>
+<div class="scroll"><table class="tbl"><caption class="vh">FiveThirtyEight's NBA addresses and where they lead now</caption><thead><tr><th scope="col">OLD ADDRESS</th><th scope="col">NOW</th></tr></thead><tbody>${FTE_GONE.map((u) => `<tr><td><code>${esc(u)}</code></td><td>ABC News's politics page</td></tr>`).join("")}</tbody></table></div>
+<p class="note">Checked on ${esc(mediumDate(FTE_CHECKED))}. FiveThirtyEight's data repository on GitHub still points at the two files, so tutorials and class notebooks built on them stop at the first line.</p></section>
+
+<section class="blk" aria-labelledby="switch"><h2 id="switch">Switch in one line</h2>
+<p><a href="${FILES.fte}">nba-538-format.csv</a> holds every game of the ${esc(m.current)} season that has Clutch's number (${rows.length.toLocaleString("en-US")} so far), rebuilt four times a day. In Python:</p><pre class="scroll"><code>${esc(py)}</code></pre>
+<p class="gap">In R:</p><pre class="scroll"><code>${esc(rr)}</code></pre>
+<p class="gap">The same games as JSON, with each call's result and seal, are on <a href="${DATA}">the open data page</a>.</p></section>
+
+<section class="blk" aria-labelledby="same"><h2 id="same">What's the same</h2>
+<p>One row per game, with FiveThirtyEight's first columns in their order: <code>date</code>, <code>season</code> as the year the season ends (2027 for ${esc(m.current)}), <code>neutral</code> as 0 or 1, <code>playoff</code> blank in the regular season, <code>team1</code> at home and <code>team2</code> away with FiveThirtyEight's team codes (BRK, CHO, PHO), and <code>score1</code> and <code>score2</code> once the game is final.</p></section>
+
+<section class="blk" aria-labelledby="diff"><h2 id="diff">What's different</h2>
+<p><strong>The number.</strong> It is Clutch's, not Elo or RAPTOR: a model of each team's form, rest, travel and the injury report, blended with the market's price before tip. It sits in <code>clutch_prob1</code> and <code>clutch_prob2</code>; there are no team-rating columns.</p>
+<p><strong>The years.</strong> This season only, from opening night. FiveThirtyEight's file went back to 1946; Clutch's sealed numbers start this season.</p>
+<p><strong>The schedule.</strong> A game's row appears once Clutch has a number for it, usually the morning of the game, not weeks ahead.</p>
+<p><strong>The record.</strong> Every number is sealed with a SHA-256 fingerprint in a public repository before tip, so no row can be changed after the final. <a href="/learn/check-a-prediction-came-first/">How to check one →</a></p></section>
+
+<section class="blk" aria-labelledby="good"><h2 id="good">How good is it?</h2>
+<p>${esc(live)}${test ? ` ${esc(test)}` : ""}</p>
+<p><a href="/accuracy/">The live record, band by band →</a> · <a href="/learn/espn-bpi-accuracy/">ESPN BPI and the market on the same games →</a></p></section>
+
+<section class="blk" aria-labelledby="else"><h2 id="else">Other places to look</h2>
+<p>ESPN's BPI gives a win probability for every game on ESPN's site, and the market's price can be read as one too. Clutch's game pages show both beside its own number, and the Ledger grades all three on the same games every night. <a href="/ledger/">The Ledger →</a></p></section>
+
+<p class="note">${DATA_LICENSE_LINE} FiveThirtyEight is ABC News's; Clutch is not affiliated with FiveThirtyEight, ABC News, ESPN or the NBA.</p>`;
+  return {
+    slug: "fivethirtyeight-nba-predictions",
+    h1: "FiveThirtyEight's NBA predictions are gone. What to use now.",
+    kick: "DATA",
+    title: "FiveThirtyEight NBA predictions are gone: a free alternative · Clutch",
+    description: "FiveThirtyEight's NBA forecast and nba_elo_latest.csv now redirect to ABC News. Clutch's free, graded win probability for every game, in the same CSV layout.",
+    deck: "FiveThirtyEight's NBA forecast was the free, open win probability many fans, writers and students leaned on. Its pages and data files now lead to ABC News. Here is what changed, and a free number for every game, graded in public, in the same CSV layout.",
+    published: "2026-10-27",
+    modified: "2026-10-27",
+    body,
+  };
+}
+
 /** The articles, in the order the hub lists them. Each builder returns null when its data isn't loaded. */
-const ARTICLES = [winProbArticle, brierArticle, bpiArticle, sealArticle];
+const ARTICLES = [winProbArticle, brierArticle, bpiArticle, sealArticle, fteArticle];
 
 function articlePage(a) {
   const path = `${LEARN}${a.slug}/`;
@@ -341,7 +400,7 @@ export function learnPages(m) {
     hasDefinedTerm: terms.map((t) => ({ "@type": "DefinedTerm", name: t.term, description: t.def, url: ORIGIN + t.href })),
   };
   return [
-    { path: LEARN, title: hubTitle, html: page({ path: LEARN, title: hubTitle, description: "What NBA win probabilities mean, how they are graded, and how ESPN BPI, the market and Clutch hold up: four explainers and the key terms, with every figure rebuilt from the data.", body: hub, current: "how", og: "default", jsonld: [termSet] }) },
+    { path: LEARN, title: hubTitle, html: page({ path: LEARN, title: hubTitle, description: "What NBA win probabilities mean, how they are graded, and how ESPN BPI, the market and Clutch hold up: five articles and the key terms, with every figure rebuilt from the data.", body: hub, current: "how", og: "default", jsonld: [termSet] }) },
     ...articles.map(articlePage),
   ];
 }

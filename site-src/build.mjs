@@ -53,6 +53,7 @@ import { learnPages } from "./lib/pages/learn.mjs";
 import { weekPages } from "./lib/pages/weeks.mjs";
 import { trPages, TR_WORDS } from "./lib/pages/tr.mjs";
 import { embedPages } from "./lib/pages/embed.mjs";
+import { dataPage, dataFiles, dataRows, FILES, FTE_COLUMNS } from "./lib/pages/data.mjs";
 import { TERMS, PRIVACY, REFUNDS, SUPPORT, LEGAL_UPDATED } from "./content/legal.mjs";
 import { FEATURES, PLAN } from "./content/features.mjs";
 
@@ -95,6 +96,7 @@ pages.push(...learnPages(m));
 pages.push(...weekPages(m));
 pages.push(...trPages(m));
 pages.push(...embedPages(m));
+pages.push(dataPage(m));
 if (playoffs) pages.push(playoffs); else warn.push("no season board: /playoff-chances/ left out");
 pages.push(notFoundPage());
 // Old GitHub Pages links on the new domain: 301s in _redirects only (no .html
@@ -198,6 +200,10 @@ for (const f of readdirSync(join(HERE, "static", "email"))) copyFileSync(join(HE
 mkdirSync(join(OUT, "badges"), { recursive: true });
 for (const f of readdirSync(join(HERE, "static", "badges"))) copyFileSync(join(HERE, "static", "badges", f), join(OUT, "badges", f));
 for (const f of ["favicon.png", "apple-touch-icon.png", "icon-512.png"]) copyFileSync(join(HERE, "static", f), join(OUT, f));
+// The open data (lib/pages/data.mjs): Clutch's own numbers as JSON and CSV, rebuilt with the pages.
+const data = dataFiles(m);
+mkdirSync(join(OUT, "data"), { recursive: true });
+for (const f of data) writeFileSync(join(OUT, f.path), f.body);
 writeFileSync(join(OUT, "_headers"), readFileSync(join(HERE, "static", "_headers"), "utf8").replaceAll("__SUPABASE_URL__", SB_URL));
 writeFileSync(join(OUT, "_redirects"), Object.entries(LEGACY).map(([a, b]) => `${a} ${b} 301`).join("\n") + "\n");
 
@@ -279,11 +285,12 @@ ${FEATURES.filter((f) => !f.free).map((f) => `- ${f.label}`).join("\n")}
 - [Proof](${ORIGIN}/receipts/): every night's sealed files and how to check one yourself
 - [Playoff chances](${ORIGIN}/playoff-chances/): every team's chance to make the playoffs, from 10,000 simulated seasons, updated nightly
 - [Teams](${ORIGIN}/teams/): each team's next games with Clutch's call, playoff chance and graded finals; head-to-head pages from each
+- [Open data](${ORIGIN}/data/): every number this season as free JSON and CSV (CC BY 4.0), including a CSV in the layout of FiveThirtyEight's retired nba_elo_latest.csv
 
 ## About
 
 - [How it works](${ORIGIN}/how-it-works/): the model, the two-season test and its limits
-- [Learn](${ORIGIN}/learn/): what NBA win probability means, calibration and the Brier score, how accurate ESPN BPI is, and how to check a prediction came before the game
+- [Learn](${ORIGIN}/learn/): what NBA win probability means, calibration and the Brier score, how accurate ESPN BPI is, and how to check a prediction came before the game, and what to use now that FiveThirtyEight's NBA forecast is gone
 - [Pricing](${ORIGIN}/pricing/): what is free and what Pro adds
 - [Company](${ORIGIN}/company/): who makes Clutch
 - [The sealed files on GitHub](${RECEIPTS_REPO})
@@ -312,6 +319,22 @@ for (const p of pages.filter((p) => p.path.startsWith("/tr/"))) for (const seg o
 if (!TR_WORDS.test("Bugünün kupon önerisi") || TR_WORDS.test("Kazanma olasılığı ve playoff şansı")) fail.push("Turkish betting-word self-test");
 for (const line of llms.split("\n")) for (const id of bettingWordsIn(line)) fail.push(`betting word: /llms.txt [${id}] ${line}`);
 for (const s of scan.stale) fail.push(`betting-words allow-list entry matched nothing (remove it): ${s}`);
+// The open data: four files, one set of games. Each probability in [0, 1] with its other side summing to 1,
+// the 538-layout file's header exactly FTE_COLUMNS, and as many rows in every season file as games.json holds.
+{
+  const rows = dataRows(m);
+  const body = (p) => data.find((f) => f.path === p)?.body ?? "";
+  const json = JSON.parse(body(FILES.games) || "{}");
+  if ((json.games ?? []).length !== rows.length) fail.push(`${FILES.games}: ${(json.games ?? []).length} games, expected ${rows.length}`);
+  for (const p of [FILES.gamesCsv, FILES.fte]) { const n = body(p).trimEnd().split("\n").length - 1; if (n !== rows.length) fail.push(`${p}: ${n} rows, expected ${rows.length}`); }
+  if (body(FILES.fte).split("\n")[0] !== FTE_COLUMNS.join(",")) fail.push(`${FILES.fte}: header is not ${FTE_COLUMNS.join(",")}`);
+  for (const r of rows) {
+    const a = r.clutch_home_win_prob, b = r.clutch_away_win_prob;
+    if (!(a >= 0 && a <= 1) || Math.abs(a + b - 1) > 1e-4) fail.push(`${FILES.games}: ${r.game_id} probabilities ${a} / ${b}`);
+  }
+  if (!rows.length) warn.push("open data: no game has a number yet (the files are empty)");
+  if (JSON.parse(body(FILES.tonight) || "{}").games == null) fail.push(`${FILES.tonight}: no games list`);
+}
 const seenTitle = new Map(), seenDesc = new Map();
 for (const p of pages.filter((p) => !p.redirect)) {
   const t = p.html.match(/<title>([^<]*)<\/title>/)?.[1];

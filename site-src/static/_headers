@@ -25,6 +25,12 @@
   Cache-Control: public, max-age=86400
   Access-Control-Allow-Origin: *
 
+# The open data (/data/…, lib/pages/data.mjs): readable from any site or notebook, refreshed with each build.
+/data/*
+  ! Cache-Control
+  Cache-Control: public, max-age=300
+  Access-Control-Allow-Origin: *
+
 /sitemap.xml
   ! Cache-Control
   Cache-Control: public, max-age=3600

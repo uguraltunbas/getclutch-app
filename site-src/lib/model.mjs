@@ -81,7 +81,7 @@ export function buildModel(raw) {
 
     return {
       id: g.id, date: g.game_date, path: `/games/${g.game_date}/${slug}/`, home, away, neutral: g.neutral_site === true, tipUtc: g.game_time_utc, status, period: g.period, clock: g.clock,
-      homeScore: scored ? hs : null, awayScore: scored ? as : null, preseason, seasonType: g.season_type,
+      homeScore: scored ? hs : null, awayScore: scored ? as : null, preseason, seasonType: g.season_type, nbaId: g.nba_id ?? null,
       hasCall, homeProb, side, market, marketSide, marketState, differs,
       reasons: hasCall ? topReasons(pred?.key_factors, explain) : [],
       explain, absences, receipt: mapReceipt(rr, now), call, grade,
