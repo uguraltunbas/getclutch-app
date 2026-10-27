@@ -143,7 +143,10 @@ export function fixture(today) {
   const homeWins = graded.filter((g) => g.home_score > g.away_score).length;
   const ledger = calls.length ? {
     available: true, season, total_calls: calls.length, correct: right, hit_rate: Math.round((right / calls.length) * 1000) / 10,
-    baselines: { always_home: { hit_rate: Math.round((homeWins / calls.length) * 1000) / 10 } }, model_versions: ["clutch-2.1.0"], date_range: [regStart, shift(today, -1)], seasons: [],
+    baselines: { always_home: { hit_rate: Math.round((homeWins / calls.length) * 1000) / 10 } }, model_versions: ["clutch-2.1.0"], date_range: [regStart, shift(today, -1)],
+    // Each season carries its own calls left out as unprovable: none this season; last season's are printed under it on the Ledger.
+    excluded_unprovable: 0,
+    seasons: [{ season: `${+season.slice(0, 4) - 1}-${season.slice(2, 4)}`, n: 62, correct: 37, hit_rate: 59.7, always_home: 59.7, model_versions: ["v1.0.0"], excluded_unprovable: 31 }],
   } : { available: false };
   const ledgerAt = `${today}T08:40:00+00:00`;
 

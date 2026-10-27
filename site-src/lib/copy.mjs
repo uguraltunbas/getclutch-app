@@ -186,12 +186,13 @@ export function headlineRecord(l) {
   };
 }
 
+/** A past season from the ledger's seasons[], with its own count of calls left out as unprovable (older bodies have none: no note). */
 function summaryRecord(s) {
   const ci = wilson(s.correct, s.n);
   return {
     season: s.season, n: s.n, hits: s.correct, hitRate: s.hit_rate, homeRate: s.always_home,
     lift: Math.round((s.hit_rate - s.always_home) * 10) / 10, liftReadable: !!ci && ci[0] > s.always_home, ci,
-    tracks: s.tracks ?? null, retired: isRetired(s.model_versions), excluded: null, dateRange: s.date_range ?? null, vsMarket: null, playoffs: null,
+    tracks: s.tracks ?? null, retired: isRetired(s.model_versions), excluded: s.excluded_unprovable ?? null, dateRange: s.date_range ?? null, vsMarket: null, playoffs: null,
   };
 }
 
