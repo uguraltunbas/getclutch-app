@@ -360,6 +360,7 @@ a.bk:hover{color:var(--ink)}
 .panel h2,.blk h2{font-family:var(--display);font-weight:700;font-size:26px;margin-bottom:8px}
 .blk p{font-size:16px;line-height:1.65;color:var(--ink2);max-width:760px}
 .blk p+p{margin-top:12px}
+.blk dl{max-width:760px}.blk dt{font-weight:700;font-size:16px;margin-top:14px}.blk dd{margin:4px 0 0;font-size:16px;line-height:1.65;color:var(--ink2)}
 .stat{display:flex;gap:28px;flex-wrap:wrap;align-items:flex-end}
 .stat>div{display:flex;flex-flow:column;gap:4px}
 .stat .d{font-size:64px;line-height:.9}

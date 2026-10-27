@@ -307,14 +307,41 @@ function articlePage(a) {
   return { path, title: a.title, html: page({ path, title: a.title, description: a.description, body, current: "how", og: "ledger", ogType: "article", jsonld: [ld, crumbs] }) };
 }
 
+// The hub's terms: each one short, each linked to the page that explains it in full.
+// A link to an article is kept only while that article is built.
+const GLOSSARY = [
+  { term: "Win probability", def: "The chance, from 0% to 100%, that a team wins a game. Clutch gives one before every NBA game, and the two sides add up to 100%.", href: `${LEARN}what-is-win-probability/` },
+  { term: "Pregame and live win probability", def: "A pregame number is made before tip and stays fixed. A live number moves with every possession. Only the pregame one can be graded as a forecast.", href: `${LEARN}what-is-win-probability/` },
+  { term: "Calibration", def: "Whether the numbers mean what they say: of all the games called at 70%, that side should win about 70 in 100.", href: `${LEARN}calibration-and-brier-score/` },
+  { term: "Brier score", def: "The average squared gap between the probability and what happened (1 for a win, 0 for a loss). Lower is better; saying 50% every game scores 0.250.", href: `${LEARN}calibration-and-brier-score/` },
+  { term: "Graded call", def: "The side a number puts over 50%, marked right or wrong after the final. Every call of the season is listed in the Ledger.", href: "/ledger/" },
+  { term: "Sealed prediction", def: "A number written to a public, timestamped record before tip, so anyone can check it was not changed after the final.", href: `${LEARN}check-a-prediction-came-first/` },
+  { term: "The market's price", def: "What the wider market makes of a game, read as a fair probability (both sides adding up to 100%). Clutch's call blends its model with it; Model only is the number before the blend.", href: "/how-it-works/" },
+  { term: "ESPN BPI", def: "ESPN's Basketball Power Index: a well-known team rating that also gives a win probability for each game.", href: `${LEARN}espn-bpi-accuracy/` },
+  { term: "Always home", def: "The simplest yardstick: pick the home team in every game. A forecast that can't beat it isn't adding much.", href: "/accuracy/" },
+  { term: "Likely range", def: "Where a rate could plausibly sit given how few games are behind it. The fewer the games, the wider the range.", href: "/accuracy/" },
+];
+
 export function learnPages(m) {
   const articles = ARTICLES.map((f) => f(m)).filter(Boolean);
   if (!articles.length) return [];
+  const built = new Set(articles.map((a) => `${LEARN}${a.slug}/`));
+  const terms = GLOSSARY.filter((t) => !t.href.startsWith(LEARN) || built.has(t.href));
+  const r = m.record;
+  const standing = r?.n
+    ? `<p>This season so far: ${rec(r.hits, r.n)} on ${r.n} graded ${r.n === 1 ? "call" : "calls"}, every one sealed before tip. <a href="/accuracy/">How the numbers hold up, band by band →</a></p>`
+    : `<p>The season's first calls are graded the morning after its first finals. <a href="/accuracy/">The accuracy report →</a></p>`;
   const hub = `<div class="wrap r"><div class="rhead"><span class="kick">LEARN</span><h1 class="rh1">NBA win probability, explained.</h1><p class="rdeck">What the numbers mean, how they are graded, and how the well-known ones hold up. Every figure on these pages comes from the data and is rebuilt every day.</p></div>
-<div class="body">${articles.map((a) => `<section class="blk"><span class="kick">${esc(a.kick)}</span><h2><a href="${LEARN}${a.slug}/">${esc(a.h1)}</a></h2><p>${esc(a.description)}</p></section>`).join("")}</div></div>`;
+<div class="body">${articles.map((a) => `<section class="blk"><span class="kick">${esc(a.kick)}</span><h2><a href="${LEARN}${a.slug}/">${esc(a.h1)}</a></h2><p>${esc(a.description)}</p></section>`).join("")}
+<section class="blk" aria-labelledby="terms"><h2 id="terms">The terms, in a sentence each</h2><dl>${terms.map((t) => `<dt><a href="${t.href}">${esc(t.term)}</a></dt><dd>${esc(t.def)}</dd>`).join("")}</dl></section>
+<section class="blk" aria-labelledby="standing"><h2 id="standing">Where Clutch stands</h2>${standing}</section></div></div>`;
   const hubTitle = "Learn: NBA win probability, explained · Clutch";
+  const termSet = {
+    "@context": "https://schema.org", "@type": "DefinedTermSet", name: "NBA win probability terms", url: ORIGIN + LEARN,
+    hasDefinedTerm: terms.map((t) => ({ "@type": "DefinedTerm", name: t.term, description: t.def, url: ORIGIN + t.href })),
+  };
   return [
-    { path: LEARN, title: hubTitle, html: page({ path: LEARN, title: hubTitle, description: "What NBA win probabilities mean, how they are graded, and how ESPN BPI, the market and Clutch hold up, with every figure rebuilt from the data.", body: hub, current: "how", og: "default" }) },
+    { path: LEARN, title: hubTitle, html: page({ path: LEARN, title: hubTitle, description: "What NBA win probabilities mean, how they are graded, and how ESPN BPI, the market and Clutch hold up: four explainers and the key terms, with every figure rebuilt from the data.", body: hub, current: "how", og: "default", jsonld: [termSet] }) },
     ...articles.map(articlePage),
   ];
 }
