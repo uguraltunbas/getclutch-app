@@ -91,6 +91,9 @@ function proof(m) {
     }
   }
   right += `<div class="boxlink"><span><b>Every morning has a receipt</b>The night's calls are hashed and published to a public repository before the first tip. Nobody can change them after — not even us.</span><a href="/receipts/">CHECK IT →</a></div>`;
+  // The open data on the front page itself, not only in the footer (owner,
+  // 2026-10-27: a public-APIs list's reviewer looked here and couldn't find it).
+  right += `<div class="boxlink"><span><b>Every number is open data</b>Every game's win probability this season as JSON and CSV files any app can fetch — free, no key, no sign-up, CC BY 4.0.</span><a href="/data/">GET THE DATA →</a></div>`;
   return `<div class="proof"><div class="proof-l" data-tour="ledger">${left}</div><div class="proof-r">${right}</div></div>`;
 }
 
