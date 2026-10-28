@@ -14,6 +14,11 @@
 // Since October 21, 2026 §03 says what Clutch is not without naming it
 // (no betting word at all): the old disclaimer was the same pattern as the
 // footer line that tripped the review.
+// Since October 28, 2026 Privacy says what the web app's own policy says
+// (mobile app/privacy-policy.tsx, d82239e): Paddle sells the web plan and keeps
+// the card and billing details, a web plan is cancelled from its Manage button,
+// and in the web app usage includes the landing page, the referrer and an
+// opened alert (notification_log.opened_at, migration 079).
 //
 // A body is plain text: "\n" separates paragraphs, a line starting "• " is
 // a list item. The support e-mail and https links become links when rendered.
@@ -78,7 +83,7 @@ export const TERMS = {
 
 export const PRIVACY = {
   title: "Privacy",
-  updated: "October 26, 2026",
+  updated: "October 28, 2026",
   intro: "Clutch is an NBA analytics app. You can read every page without an account. This policy says what we collect when you do sign in or use a feature that needs one, why, and who else touches it.",
   sections: [
     {
@@ -88,8 +93,8 @@ export const PRIVACY = {
         "• Your choices: a favourite team, notification settings, Appearance (Dark/Light), the calls you make on the Play tab with how they were graded and how sure you said you were, your Stat Line results, your upset calls, your Time Capsule calls, your Win Totals sheet (see Win Totals, below), the leagues you create or join, your points and Buzzer beater shots.\n" +
         "• Reports: if you report a league name or a member's name, we keep the report (who reported, the name reported, the reason) for 180 days to review it; a reported member's name is removed from it if they delete their account.\n" +
         "• Device: a push token when you switch alerts on, device model and OS version.\n" +
-        "• Usage: which screens you open and which features you tap, without the content of what you read.\n" +
-        "• Purchases: your subscription status, from Apple via RevenueCat. We never see card details.",
+        "• Usage: which screens you open and which features you tap, without the content of what you read; in the web app (app.clutchledger.com), also the page you arrived on and the site or link that brought you. When you open one of our alerts, we note that it was opened.\n" +
+        "• Purchases: your subscription status, from Apple or Paddle via RevenueCat. We never see card details.",
     },
     {
       title: "Buying on the web",
@@ -102,10 +107,10 @@ export const PRIVACY = {
         "• Supabase — accounts and database (stored with encryption at rest and in transit; row-level security keeps your rows yours).\n" +
         "• RevenueCat — subscription status.\n" +
         "• Apple and Google — sign-in; Apple — payments in the iPhone app.\n" +
-        "• Paddle — payments on the web (merchant of record).\n" +
+        "• Paddle — sells Clutch Pro on the web as our reseller and merchant of record: it takes the payment and keeps your card and billing details.\n" +
         "• Expo — delivers push notifications.\n" +
         "• Resend — sends our e-mails.\n" +
-        "• PostHog — product analytics.\n" +
+        "• PostHog — product analytics. In the web app it uses no cookies and stores nothing on your device.\n" +
         "• Sentry — crash reports.\n" +
         "• Cloudflare — serves this website and counts its visits (Web Analytics, without cookies).\n" +
         "We don't sell personal information. The only readers who see anything of yours are the members of a league you join: your display name, your standing and your calls in that league. Nothing else you do in the app is shown to other readers.",
@@ -119,7 +124,7 @@ export const PRIVACY = {
     },
     { title: "Made on your phone", body: "Game video, your yearbook (PDF) and the Front page (a share image) are made on your iPhone; nothing is sent to us to make them. A video or a yearbook leaves your phone only if you share or save it. Saving a video asks for permission to add to your Photos, and nothing is read from them." },
     { title: "This website", body: "clutchledger.com sets no cookies and runs no advertising. Cloudflare Web Analytics counts its visits — which page, the site you came from, your browser type and your country — without cookies or local storage, and without fingerprinting you or following you to other sites. To show tonight's live scores your browser asks our database (Supabase) for them directly; Cloudflare, which serves the pages, keeps standard request logs." },
-    { title: "Your choices", body: "Alerts can be switched off in the app or in iOS Settings. To stop e-mails from Clutch, reply STOP to any of them. You can delete your account from the You tab; that removes your profile, team, alert settings, calls, capsule, Win Totals sheet and points, and — if you signed in with Apple — revokes Clutch's access to your Apple ID. Subscriptions are not cancelled by deleting the account: one bought in the iPhone app is managed by Apple; one bought on the web is cancelled in the web app under You › Subscription, or from the link in Paddle's receipt e-mail (or write to us and we cancel it for you)." },
+    { title: "Your choices", body: "Alerts can be switched off in the app, in iOS Settings or in your browser's settings. To stop e-mails from Clutch, reply STOP to any of them. You can delete your account from the You tab; that removes your profile, team, alert settings, calls, capsule, Win Totals sheet and points, and — if you signed in with Apple — revokes Clutch's access to your Apple ID. Deleting the account doesn't cancel a subscription: one bought on the web is cancelled in the web app (You › Your plan › Manage) or from the link in Paddle's receipt e-mail (or write to us and we cancel it for you); one bought in the iPhone app is cancelled in the iPhone's Settings." },
     {
       title: "Your rights",
       body: `You can see, correct or delete what Clutch holds about you. Most of it is on the You tab, and deleting your account there removes it. To ask for a copy of your data, a correction, or anything the app can't do for you, write to ${SUPPORT_EMAIL}; we answer within 48 hours. Depending on where you live (for example the EU, the UK or California) these are your rights by law, and you can also complain to your data protection authority.`,
@@ -161,7 +166,7 @@ export const SUPPORT = {
   updated: LEGAL_UPDATED,
   intro: "Answers to the questions people actually ask. Anything else: write to us.",
   sections: [
-    { title: "Cancel a subscription", body: "Bought in the iPhone app: Settings › your name › Subscriptions › Clutch › Cancel. Those subscriptions are managed by Apple, not inside the app.\nBought on the web: in the web app under You › Subscription, or from the link in Paddle's receipt e-mail — or write to us and we cancel it for you. Either way, Pro runs to the end of the period you paid for." },
+    { title: "Cancel a subscription", body: "Bought in the iPhone app: Settings › your name › Subscriptions › Clutch › Cancel. Those subscriptions are managed by Apple, not inside the app.\nBought on the web: in the web app, You › Your plan › Manage, or from the link in Paddle's receipt e-mail — or write to us and we cancel it for you. Either way, Pro runs to the end of the period you paid for." },
     { title: "Get a refund", body: "Web purchases: a full refund within 14 days of a purchase or renewal — see the Refund Policy. iPhone purchases: Apple handles refunds at reportaproblem.apple.com.", link: { href: "/refunds/", label: "Refund Policy →" } },
     { title: "Restore a purchase", body: "In the iPhone app: You › Restore purchases, signed in with the same account you bought with. On the web: sign in with the same account; Pro follows the account." },
     { title: "Delete your account", body: "Open the app › You › Delete account. It removes your profile, team, alert settings, calls, capsule, Win Totals sheet and points. You can also e-mail us to ask." },
