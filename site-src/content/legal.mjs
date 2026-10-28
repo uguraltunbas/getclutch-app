@@ -163,14 +163,14 @@ export const REFUNDS = {
 
 export const SUPPORT = {
   title: "Support",
-  updated: LEGAL_UPDATED,
+  updated: "October 28, 2026",
   intro: "Answers to the questions people actually ask. Anything else: write to us.",
   sections: [
     { title: "Cancel a subscription", body: "Bought in the iPhone app: Settings › your name › Subscriptions › Clutch › Cancel. Those subscriptions are managed by Apple, not inside the app.\nBought on the web: in the web app, You › Your plan › Manage, or from the link in Paddle's receipt e-mail — or write to us and we cancel it for you. Either way, Pro runs to the end of the period you paid for." },
     { title: "Get a refund", body: "Web purchases: a full refund within 14 days of a purchase or renewal — see the Refund Policy. iPhone purchases: Apple handles refunds at reportaproblem.apple.com.", link: { href: "/refunds/", label: "Refund Policy →" } },
     { title: "Restore a purchase", body: "In the iPhone app: You › Restore purchases, signed in with the same account you bought with. On the web: sign in with the same account; Pro follows the account." },
     { title: "Delete your account", body: "Open the app › You › Delete account. It removes your profile, team, alert settings, calls, capsule, Win Totals sheet and points. You can also e-mail us to ask." },
-    { title: "Alerts don't arrive", body: "Check iPhone Settings › Notifications › Clutch, then the app's You › Notifications. The app shows a notice when iOS has them switched off. Alerts arrive in the iPhone app, not in the browser." },
+    { title: "Alerts don't arrive", body: "In the iPhone app: check Settings › Notifications › Clutch, then the app's You › Notifications. The app shows a notice when iOS has them switched off.\nIn a browser: sign in, open You › Notifications, switch them on and allow them when the browser asks. If the browser blocked them, allow notifications for app.clutchledger.com in its settings. On an iPhone or iPad a browser tab can't show alerts: tap Share › Add to Home Screen, then open Clutch from there (iOS 16.4 or later)." },
     { title: "Why is the record not better than picking the home team?", body: "When it isn't, the Ledger says so: it prints what is true. Every call is timestamped and sealed before tip-off and graded after the final, wins and misses alike, beside the market, ESPN and picking the home team." },
     { title: "Points, titles and the Free Pro day", body: "Points are earned by playing — calls, Stat Line, the Time Capsule — and when your favourite team wins. They are never bought, never paid out and unlock nothing you pay for; every level earns a title, from Rookie to Hall of Fame. Separately, everyone signed in gets one Free Pro day a month: 24 hours of Pro at no charge, used when you choose." },
     { title: "Report a bug", body: "E-mail us with what happened, your device and browser or iOS version. A screenshot helps." },
