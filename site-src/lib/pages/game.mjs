@@ -10,6 +10,8 @@ import { matchupFor } from "./matchups.mjs";
 import { longDate, mediumDate, shortDate, weekday, timeET, isoET } from "../time.mjs";
 
 const the = (t) => `the ${t.nickname}`;
+/** A typical NBA game, tip to final buzzer: the SportsEvent's endDate. */
+const GAME_LENGTH_MS = 150 * 60 * 1000;
 
 export function headline(g) {
   if (g.status === "postponed") return `${g.away.nickname} at ${g.home.nickname}: postponed.`;
@@ -180,10 +182,14 @@ ${aside(g, m, night)}
   const ld = {
     "@context": "https://schema.org", "@type": "SportsEvent",
     name: `${g.away.name} at ${g.home.name}`, description: dk, url: ORIGIN + g.path, sport: "Basketball",
-    ...(g.tipUtc ? { startDate: isoET(g.tipUtc) } : { startDate: g.date }),
+    // No tip time yet: the game's day for both ends. With one, the end is the
+    // usual NBA game length after the tip (an estimate — Search Console asks for it).
+    ...(g.tipUtc ? { startDate: isoET(g.tipUtc), endDate: isoET(Date.parse(g.tipUtc) + GAME_LENGTH_MS) } : { startDate: g.date, endDate: g.date }),
     eventStatus: g.status === "postponed" ? "https://schema.org/EventPostponed" : "https://schema.org/EventScheduled",
     eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
-    homeTeam: team(g.home), awayTeam: team(g.away), competitor: [team(g.away), team(g.home)],
+    homeTeam: team(g.home), awayTeam: team(g.away), competitor: [team(g.away), team(g.home)], performer: [team(g.away), team(g.home)],
+    organizer: { "@type": "SportsOrganization", name: "National Basketball Association", url: "https://www.nba.com/" },
+    // No `offers`: Clutch sells no tickets and links to no ticket seller (Search Console's warning stays, on purpose).
     ...venue(g),
     image: `${ORIGIN}/og/${og}.jpg`,
   };

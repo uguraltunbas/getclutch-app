@@ -80,7 +80,16 @@ export function pricingPage() {
 <p class="note">Pro is analytics: nothing bought changes a call or a point. <a href="/terms/">Terms</a> · <a href="/privacy/">Privacy</a> · <a href="/refunds/">Refunds</a></p>
 </div></div>`;
   const desc = `Clutch is free for good: every NBA game's number, the market, the top reasons and the Ledger. Clutch Pro: ${PLAN.monthly} a month or ${PLAN.annual} a year, ${PLAN.trialDays} days free.`;
-  const ld = { "@context": "https://schema.org", "@type": "Product", name: PLAN.name, description: desc, image: ORIGIN + "/og/pricing.jpg", brand: { "@type": "Brand", name: "Clutch" }, url: ORIGIN + "/pricing/", offers: [{ "@type": "Offer", name: "Monthly", price: "9.99", priceCurrency: "USD", url: ORIGIN + "/pricing/" }, { "@type": "Offer", name: "Yearly", price: "59.99", priceCurrency: "USD", url: ORIGIN + "/pricing/" }] };
+  // What Search Console's merchant report asks of each offer, said truthfully
+  // for a subscription: always available, nothing shipped (opens at once, $0),
+  // and the web's 14-day refund (/refunds/). No review or rating: there are none to cite.
+  const offer = (name, price) => ({
+    "@type": "Offer", name, price, priceCurrency: "USD", url: ORIGIN + "/pricing/",
+    availability: "https://schema.org/InStock",
+    shippingDetails: { "@type": "OfferShippingDetails", shippingRate: { "@type": "MonetaryAmount", value: 0, currency: "USD" }, shippingDestination: { "@type": "DefinedRegion", addressCountry: "US" }, deliveryTime: { "@type": "ShippingDeliveryTime", handlingTime: { "@type": "QuantitativeValue", minValue: 0, maxValue: 0, unitCode: "DAY" }, transitTime: { "@type": "QuantitativeValue", minValue: 0, maxValue: 0, unitCode: "DAY" } } },
+    hasMerchantReturnPolicy: { "@type": "MerchantReturnPolicy", applicableCountry: "US", returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow", merchantReturnDays: 14, returnFees: "https://schema.org/FreeReturn", merchantReturnLink: ORIGIN + "/refunds/" },
+  });
+  const ld = { "@context": "https://schema.org", "@type": "Product", name: PLAN.name, description: desc, image: ORIGIN + "/og/pricing.jpg", brand: { "@type": "Brand", name: "Clutch" }, url: ORIGIN + "/pricing/", offers: [offer("Monthly", "9.99"), offer("Yearly", "59.99")] };
   return { path: "/pricing/", title: "Pricing: Free for good, Clutch Pro $9.99 a month · Clutch", html: page({ path: "/pricing/", title: "Pricing: Free for good, Clutch Pro $9.99 a month · Clutch", description: desc, body, current: "pricing", og: "pricing", jsonld: ld }) };
 }
 
