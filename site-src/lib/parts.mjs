@@ -90,7 +90,7 @@ export function cardLine(g) {
     const had = `Clutch had the ${g.side.team.nickname} at ${pct(g.side.prob)}.`;
     return g.grade === "right" ? `${had} It held.` : g.grade === "missed" ? `${had} It missed.` : g.preseason ? `${had} Preseason: not graded.` : had;
   }
-  if (g.status === "live" || g.status === "halftime") return g.hasCall ? `Live. Clutch had the ${g.side.team.nickname} at ${pct(g.side.prob)} before tip.` : "Live.";
+  if (g.status === "live" || g.status === "halftime") return g.hasCall ? `Clutch had the ${g.side.team.nickname} at ${pct(g.side.prob)} before tip.` : "Live.";
   if (!g.hasCall) return "Clutch's number lands the morning of the game.";
   if (g.preseason) return g.reasons[0] ? `${g.reasons[0].label}. Preseason: not graded.` : "Preseason: sealed before tip, not graded.";
   if (g.differs) return `The market differs: it has ${g.side.other.nickname} at ${pct(g.side.isHome ? 1 - g.market : g.market)}.`;

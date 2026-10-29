@@ -1,6 +1,6 @@
-// /tonight/ — one address that is always the next night of games: each game
-// in a sentence (who Clutch favours and by how much, when it tips), the cards,
-// and how last night's calls came out. The dated page (/games/<date>/) stays
+// /tonight/ — one address that is always the next night of games: the cards
+// first, then each game in a sentence (who Clutch favours and by how much, when
+// it tips), and how last night's calls came out. The dated page (/games/<date>/) stays
 // the night's permanent record; this one carries the "today" searches and
 // keeps the links it earns from day to day.
 
@@ -39,12 +39,12 @@ export function tonightPage(m) {
     body = `<div class="wrap"><div class="rhead"><span class="kick">Tonight</span><h1 class="rh1">No NBA games on the schedule yet.</h1><p class="rdeck">This page shows the next night of games as soon as it is on the schedule, with Clutch's win probability for each.</p></div><div class="body">${lastBlock}</div></div>`;
   } else {
     const h1 = isToday ? "NBA predictions today" : `NBA predictions for ${weekday(date)}`;
-    const deck = `${games.length} ${games.length === 1 ? "game" : "games"} ${isToday ? "tonight" : `on ${longDate(date)}`}. Clutch's win probability for each, sealed before tip, with the market's number beside it. Every one is graded after the final.`;
+    const deck = `${games.length} ${games.length === 1 ? "game" : "games"} ${isToday ? "tonight" : `on ${longDate(date)}`}, each sealed before tip and graded after the final.`;
     body = `<div class="wrap"><div class="rhead"><span class="kick">${isToday ? "Tonight" : "Next up"} · ${esc(longDate(date))}</span><h1 class="rh1">${esc(h1)}</h1><p class="rdeck">${esc(deck)}</p></div>
 <div class="body">
-<section class="blk" aria-labelledby="glance"><h2 id="glance">At a glance</h2><ul class="spots">${games.map(glance).join("")}</ul></section>
 <div class="cards">${games.map((g) => gameCard(g)).join("")}</div>
-<p class="note">Amber is Clutch's number for the side it favours; the cream segment is the market's number for that side. Times are Eastern. <a href="/games/${date}/">This night's permanent page →</a> · <a href="${PLAYOFFS_PATH}">Every team's playoff chances →</a></p>
+<p class="note">Amber is Clutch's number, cream the market's. Times are Eastern. <a href="/games/${date}/">This night's page →</a> · <a href="${PLAYOFFS_PATH}">Playoff chances →</a></p>
+<section class="blk" aria-labelledby="glance"><h2 id="glance">At a glance</h2><ul class="spots">${games.map(glance).join("")}</ul></section>
 ${lastBlock}
 </div></div>`;
   }
