@@ -90,7 +90,7 @@ function widgetPage(m) {
   const badgeHtml = `<a href="${ORIGIN}${m.teamPath(hou)}"><img src="${houBadge}" alt="${hou.name} win probability · Clutch" height="20"></a>`;
   const recordMd = `[![Clutch's graded NBA calls](${ORIGIN}${badgePath("record")})](${ORIGIN}/ledger/)`;
   const teams = m.raw.teams.slice().sort((a, b) => a.name.localeCompare(b.name)).map((t) => `<code>${esc(teamSlug(t))}</code>`).join(" · ");
-  const body = `<div class="wrap r"><div class="rhead"><span class="kick">FOR FAN SITES · FREE</span><h1 class="rh1">Put Clutch's number on your site.</h1><p class="rdeck">Two small boxes for blogs, newsletters' web pages and team sites: tonight's NBA games with Clutch's win probability, or your team's next game. Free, no sign-up, no tracking in the box, and they update by themselves four times a day.</p></div>
+  const body = `<div class="wrap r"><div class="rhead"><span class="kick">For fan sites · Free</span><h1 class="rh1">Put Clutch's number on your site.</h1><p class="rdeck">Two small boxes for blogs, newsletters' web pages and team sites: tonight's NBA games with Clutch's win probability, or your team's next game. Free, no sign-up, no tracking in the box, and they update by themselves four times a day.</p></div>
 <div class="body">
 <section class="blk" aria-labelledby="tonight"><h2 id="tonight">Tonight's games</h2><p>Every game of the next NBA night, each with Clutch's number for the side it favours, the tip time (Eastern), and the final once it's in.</p>
 <iframe class="gap" src="/embed/tonight/" width="100%" height="440" title="Preview: NBA win probability tonight" loading="lazy"></iframe>
@@ -98,7 +98,7 @@ function widgetPage(m) {
 <section class="blk" aria-labelledby="team"><h2 id="team">Your team's next game</h2><p>One team: its next game with Clutch's win probability, its last graded call and its playoff chance.</p>
 <iframe class="gap" src="/embed/team/${esc(teamSlug(hou))}/" width="100%" height="260" title="Preview: ${esc(hou.name)} next game" loading="lazy"></iframe>
 <p class="gap">Copy this, then put your team's name in the two addresses in place of <code>${esc(teamSlug(hou))}</code>:</p><pre class="scroll"><code>${esc(teamCode)}</code></pre>
-<details class="gap"><summary class="mono">THE 30 TEAM NAMES</summary><p class="note">${teams}</p></details></section>
+<details class="gap"><summary class="mono">The 30 team names</summary><p class="note">${teams}</p></details></section>
 <section class="blk" aria-labelledby="badge"><h2 id="badge">A badge, where a box won't fit</h2><p>GitHub, Substack and most forums won't show a box, but they show an image. The badge is one line, your team's next game with Clutch's number or the season's graded record, and it updates with the site.</p>
 <p class="gap"><img src="${badgePath(teamSlug(hou))}" alt="${esc(hou.name)} win probability · Clutch" height="20"> <img src="${badgePath("record")}" alt="Clutch's graded NBA calls" height="20"></p>
 <p class="gap">Markdown (GitHub, Discourse forums, many blogs), with your team's name in both addresses in place of <code>${esc(teamSlug(hou))}</code>:</p><pre class="scroll"><code>${esc(badgeMd)}</code></pre>

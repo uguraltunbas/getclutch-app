@@ -45,31 +45,31 @@ function tickerItems(m, games, tonightIsToday) {
   const first = open.map((g) => g.tipUtc).filter(Boolean).sort()[0];
   if (games.length) {
     const n = games.length;
-    const when = tonightIsToday ? "TONIGHT" : dayLabel(games[0].date).toUpperCase();
-    it.push(`${n} ${n === 1 ? "GAME" : "GAMES"} ${when}${first ? ` · FIRST TIP ${timeET(first)}` : ""}`);
-  } else it.push("NO GAMES ON THE SCHEDULE YET");
-  if (games.some((g) => g.preseason)) it.push("PRESEASON · YOUR CALLS COUNT FOR POINTS");
+    const when = tonightIsToday ? "tonight" : dayLabel(games[0].date);
+    it.push(`${n} ${n === 1 ? "game" : "games"} ${when}${first ? ` · First tip ${timeET(first)}` : ""}`);
+  } else it.push("No games on the schedule yet");
+  if (games.some((g) => g.preseason)) it.push("Preseason · Your calls count for points");
   const sealed = games.filter((g) => g.receipt?.state === "sealed");
   if (sealed.length && sealed.length === games.filter((g) => g.status !== "postponed").length) {
     const t = sealed.map((g) => g.receipt.seal.committedAt).sort()[0];
-    it.push(`ALL ${countWord(sealed.length, false).toUpperCase()} SEALED ${timeET(t)}`);
-  } else if (sealed.length) it.push(`${sealed.length} OF ${games.length} SEALED BEFORE TIP`);
+    it.push(`All ${countWord(sealed.length, false)} sealed ${timeET(t)}`);
+  } else if (sealed.length) it.push(`${sealed.length} of ${games.length} sealed before tip`);
   for (const g of games.filter((g) => g.differs && g.status === "scheduled").slice(0, 2)) {
     const mTeam = g.market >= 0.5 ? g.home : g.away;
-    it.push(`${g.away.abbreviation} @ ${g.home.abbreviation}: CLUTCH ${g.side.team.abbreviation} ${pct(g.side.prob)} · MARKET ${mTeam.abbreviation} ${pct(g.market >= 0.5 ? g.market : 1 - g.market)}`);
+    it.push(`${g.away.abbreviation} @ ${g.home.abbreviation}: Clutch ${g.side.team.abbreviation} ${pct(g.side.prob)} · Market ${mTeam.abbreviation} ${pct(g.market >= 0.5 ? g.market : 1 - g.market)}`);
   }
   for (const g of games.filter((g) => g.status === "scheduled")) {
     const out = g.absences.find((a) => /^out$/i.test(a.status));
-    if (out) { it.push(`${String(out.name).split(" ").slice(-1)[0].toUpperCase()} OUT (${out.team})`); if (it.length > 8) break; }
+    if (out) { it.push(`${String(out.name).split(" ").slice(-1)[0].replace(/\b\w/g, (c) => c.toUpperCase())} out (${out.team})`); if (it.length > 8) break; }
   }
-  if (m.record) it.push(`LEDGER ${m.record.season}: ${rec(m.record.hits, m.record.n)}`);
-  else it.push(`THE ${m.current} LEDGER STARTS ${shortDate(REGULAR_SEASON_START).toUpperCase()}`);
+  if (m.record) it.push(`Ledger ${m.record.season}: ${rec(m.record.hits, m.record.n)}`);
+  else it.push(`The ${m.current} Ledger starts ${shortDate(REGULAR_SEASON_START)}`);
   const y = shift(m.today, -1);
   const wm = worstMiss(m, y);
   const yCalls = m.calls.filter((c) => c.game_date === y);
-  if (yCalls.length) it.push(`LAST NIGHT ${yCalls.filter((c) => c.correct).length} OF ${yCalls.length}`);
-  if (wm) it.push(`WORST MISS: ${wm.call.pick} AT ${Math.round(wm.call.claimed_pct)}`);
-  if (m.sealed > 0) it.push(`${m.sealed.toLocaleString("en-US")} GAMES SEALED BEFORE TIP SO FAR`);
+  if (yCalls.length) it.push(`Last night ${yCalls.filter((c) => c.correct).length} of ${yCalls.length}`);
+  if (wm) it.push(`Worst miss: ${wm.call.pick} at ${Math.round(wm.call.claimed_pct)}`);
+  if (m.sealed > 0) it.push(`${m.sealed.toLocaleString("en-US")} games sealed before tip so far`);
   return it;
 }
 
@@ -79,30 +79,30 @@ function proof(m) {
   let left;
   if (stage === "season") {
     const v = verdictOf(r);
-    left = `<span class="kick">THE LEDGER · ${esc(r.season)}${r.retired ? " · THE RETIRED MODEL" : ""}</span><span class="big">${rec(r.hits, r.n)}</span>
+    left = `<span class="kick">The Ledger · ${esc(r.season)}${r.retired ? " · The retired model" : ""}</span><span class="big">${rec(r.hits, r.n)}</span>
 <h3>${r.n >= RATE_FLOOR ? `${r.hitRate.toFixed(1)}% right, in public.` : "Too early for a rate."}</h3>
 <p>Every call is written down before tip and graded after the final. We publish the misses too — that's the point. Against picking the home team every night: ${esc(v.line.toLowerCase())}.</p>`;
   } else {
     const o = opener(m.current, m.today, m.sealed, !!m.last);
-    left = `<span class="kick">THE LEDGER · ${esc(m.current)}</span><span class="big">0–0</span><h3>${esc(o.title)}</h3><p>${esc(o.body)}</p>${o.sealedLine ? `<span class="mono amber">${esc(o.sealedLine)} ✓</span>` : o.sealedNote ? `<span class="note">${esc(o.sealedNote)}</span>` : ""}`;
+    left = `<span class="kick">The Ledger · ${esc(m.current)}</span><span class="big">0–0</span><h3>${esc(o.title)}</h3><p>${esc(o.body)}</p>${o.sealedLine ? `<span class="mono amber">${esc(o.sealedLine)} ✓</span>` : o.sealedNote ? `<span class="note">${esc(o.sealedNote)}</span>` : ""}`;
   }
-  left += `<a class="more" href="/ledger/">SEE EVERY CALL →</a> <a class="more" href="/accuracy/">HOW ACCURATE? →</a>`;
+  left += `<a class="more" href="/ledger/">See every call →</a> <a class="more" href="/accuracy/">How accurate? →</a>`;
   let right = "";
   if (r) {
-    const label = stage === "season" ? "" : `<span class="mono ink3">LAST SEASON · ${esc(r.season)}${r.retired ? " · THE RETIRED MODEL" : ""} · ${r.n} GRADED CALLS</span>`;
+    const label = stage === "season" ? "" : `<span class="mono ink3">Last season · ${esc(r.season)}${r.retired ? " · The retired model" : ""} · ${r.n} graded calls</span>`;
     right += label;
     for (const c of comparisons(r)) {
       const v = (x, recd) => (c.small ? recd : x.toFixed(1));
-      right += `<div class="cmp"><div class="cmp-h"><span class="t">${esc(c.title)}</span><span class="mono">THE SAME ${c.n} GAMES</span></div>
+      right += `<div class="cmp"><div class="cmp-h"><span class="t">${esc(c.title)}</span><span class="mono">The same ${c.n} games</span></div>
 <div class="crow"><span>Clutch</span>${c.small ? "<span></span>" : bar(c.us, "amber")}<span class="d v amber">${v(c.us, c.usRec)}</span></div>
 <div class="crow"><span class="ink3">${esc(c.themLabel)}</span>${c.small ? "<span></span>" : bar(c.them, "cream")}<span class="d v">${v(c.them, c.themRec)}</span></div></div>`;
     }
     // (Model only against the market — the games the two disagree on — is on the Ledger page.)
   }
-  right += `<div class="boxlink"><span><b>Every morning has a receipt</b>The night's calls are hashed and published to a public repository before the first tip. Nobody can change them after — not even us.</span><a href="/receipts/">CHECK IT →</a></div>`;
+  right += `<div class="boxlink"><span><b>Every morning has a receipt</b>The night's calls are hashed and published to a public repository before the first tip. Nobody can change them after — not even us.</span><a href="/receipts/">Check it →</a></div>`;
   // The open data on the front page itself, not only in the footer (owner,
   // 2026-10-27: a public-APIs list's reviewer looked here and couldn't find it).
-  right += `<div class="boxlink"><span><b>Every number is open data</b>Every game's win probability this season as JSON and CSV files any app can fetch — free, no key, no sign-up, CC BY 4.0.</span><a href="/data/">GET THE DATA →</a></div>`;
+  right += `<div class="boxlink"><span><b>Every number is open data</b>Every game's win probability this season as JSON and CSV files any app can fetch — free, no key, no sign-up, CC BY 4.0.</span><a href="/data/">Get the data →</a></div>`;
   return `<div class="proof"><div class="proof-l" data-tour="ledger">${left}</div><div class="proof-r">${right}</div></div>`;
 }
 
@@ -111,13 +111,13 @@ function missBand(m) {
   const c = m.corrections;
   const link = (gid) => m.pageGames.find((g) => g.id === gid)?.path ?? "/ledger/";
   if (c && c.kind === "correction" && c.headline && c.date >= shift(m.today, -2)) {
-    return `<a class="miss" href="${link(c.game_id)}"><span class="mono">${c.date === y ? "LAST NIGHT'S WORST MISS" : `WORST MISS · ${esc(shortDate(c.date).toUpperCase())}`}</span><span class="q">${esc(c.headline)}</span><span class="go">WHAT FOOLED IT →</span></a>`;
+    return `<a class="miss" href="${link(c.game_id)}"><span class="mono">${c.date === y ? "Last night's worst miss" : `Worst miss · ${esc(shortDate(c.date))}`}</span><span class="q">${esc(c.headline)}</span><span class="go">What fooled it →</span></a>`;
   }
   const wm = worstMiss(m, y);
-  if (wm) return `<a class="miss" href="${link(wm.call.game_id)}"><span class="mono">LAST NIGHT'S WORST MISS</span><span class="q">${esc(missSentence(m, wm.call))}</span><span class="go">THE GAME →</span></a>`;
+  if (wm) return `<a class="miss" href="${link(wm.call.game_id)}"><span class="mono">Last night's worst miss</span><span class="q">${esc(missSentence(m, wm.call))}</span><span class="go">The game →</span></a>`;
   const d = lastGradedNight(m, m.today);
   const last = d && worstMiss(m, d);
-  if (last) return `<a class="miss" href="/ledger/"><span class="mono">THE LEDGER'S LAST MISS · ${esc(shortDate(d).toUpperCase())}</span><span class="q">${esc(missSentence(m, last.call))}</span><span class="go">EVERY CALL →</span></a>`;
+  if (last) return `<a class="miss" href="/ledger/"><span class="mono">The Ledger's last miss · ${esc(shortDate(d))}</span><span class="q">${esc(missSentence(m, last.call))}</span><span class="go">Every call →</span></a>`;
   return "";
 }
 
@@ -137,9 +137,9 @@ function comingUp(m, tonight, n) {
   for (const g of m.games) if (g.date > tonight && g.status !== "postponed") { if (!by.has(g.date)) by.set(g.date, []); by.get(g.date).push(g); }
   const nights = [...by.entries()].sort(([a], [b]) => (a < b ? -1 : 1)).slice(0, 5);
   if (!nights.length) return "";
-  return `<div class="ahead"><span class="mono ink3">COMING UP</span>${nights.map(([d, gs]) => {
+  return `<div class="ahead"><span class="mono ink3">Coming up</span>${nights.map(([d, gs]) => {
     const first = gs.map((g) => g.tipUtc).filter(Boolean).sort()[0];
-    return `<div class="arow"><span class="d">${esc(dayLabel(d).toUpperCase())}</span><span>${gs.length} ${gs.length === 1 ? "game" : "games"}${gs.some((g) => g.preseason) ? ", preseason" : ""}${first ? ` · first tip ${esc(timeET(first))}` : ""}</span><span class="ink3">${gs.slice(0, 7).map((g) => `${esc(g.away.abbreviation)} @ ${esc(g.home.abbreviation)}`).join(" · ")}</span></div>`;
+    return `<div class="arow"><span class="d">${esc(dayLabel(d))}</span><span>${gs.length} ${gs.length === 1 ? "game" : "games"}${gs.some((g) => g.preseason) ? ", preseason" : ""}${first ? ` · first tip ${esc(timeET(first))}` : ""}</span><span class="ink3">${gs.slice(0, 7).map((g) => `${esc(g.away.abbreviation)} @ ${esc(g.home.abbreviation)}`).join(" · ")}</span></div>`;
   }).join("")}<p class="note gap">Each night's numbers land that morning and are sealed before tip.</p></div>`;
 }
 
@@ -171,7 +171,7 @@ function guide(lead, isToday, play) {
   return `<template id="tour"><div class="tour">
 <div class="tdim"></div><div class="tdim"></div><div class="tdim"></div><div class="tdim"></div><div class="tring"></div>
 <div class="tcard gl" role="dialog" aria-modal="true" aria-labelledby="tour-h" aria-describedby="tour-p" tabindex="-1">
-<p class="tn"><span class="tc"></span>CLUTCH IN A MINUTE<span class="te"> · DONE</span></p>
+<p class="tn"><span class="tc"></span>Clutch in a minute<span class="te"> · Done</span></p>
 <h2 id="tour-h"></h2>
 <p id="tour-p"></p>
 <div class="tb"><button type="button" class="tsk" data-a="skip">Skip</button><button type="button" class="btn ghost" data-a="back">Back</button><button type="button" class="btn" data-a="next">Next</button></div>
@@ -189,16 +189,16 @@ export function homePage(m) {
   const lead = gameOfTheNight(games, published);
   const liveOne = games.find((g) => (g.status === "live" || g.status === "halftime") && g.id !== lead?.id);
   const n = games.length;
-  const right = !tonight ? "NO GAMES SCHEDULED" : isToday ? `${countWord(n, false).toUpperCase()} ${n === 1 ? "GAME" : "GAMES"} TONIGHT` : `<span class="hide-s">NO GAMES TONIGHT · </span>NEXT ${esc(dayLabel(tonight).toUpperCase())}`;
+  const right = !tonight ? "No games scheduled" : isToday ? `${countWord(n)} ${n === 1 ? "game" : "games"} tonight` : `<span class="hide-s">No games tonight · </span>Next ${esc(dayLabel(tonight))}`;
 
   const leadBoard = lead
     ? `<div class="inst a-${lead.away.abbreviation} h-${lead.home.abbreviation}"><span class="blob l" aria-hidden="true"></span><span class="blob r" aria-hidden="true"></span>
-${board(lead, { kicker: isToday ? "GAME OF THE NIGHT" : `NEXT UP<span class="hide-s"> · ${esc(dayLabel(lead.date).toUpperCase())}</span>`, link: lead.path, tour: true })}
+${board(lead, { kicker: isToday ? "Game of the night" : `Next up<span class="hide-s"> · ${esc(dayLabel(lead.date))}</span>`, link: lead.path, tour: true })}
 ${liveOne ? `<a class="livechip gl d" href="${liveOne.path}" data-gid="${liveOne.id}" data-a="${liveOne.away.abbreviation}" data-h="${liveOne.home.abbreviation}"><span class="pulse" aria-hidden="true"></span><span data-live="sc">${esc(scoreLine(liveOne))}</span><span class="hot" data-live="st">${esc(statusText(liveOne))}</span></a>` : ""}</div>`
     : `<div class="panel"><h2>The schedule isn't out yet.</h2><p class="sub">Clutch's numbers return with the next night of games.</p></div>`;
 
   const ticks = tickerItems(m, games, isToday);
-  const ticker = `<div class="ticker gl" role="region" aria-label="Stop press"><span class="lbl">STOP PRESS</span><div class="view"><div class="tick"><span>${ticks.map(esc).join("</span><span>")}</span><span aria-hidden="true">${ticks.map(esc).join('</span><span aria-hidden="true">')}</span></div></div></div>`;
+  const ticker = `<div class="ticker gl" role="region" aria-label="Stop press"><span class="lbl">Stop press</span><div class="view"><div class="tick"><span>${ticks.map(esc).join("</span><span>")}</span><span aria-hidden="true">${ticks.map(esc).join('</span><span aria-hidden="true">')}</span></div></div></div>`;
 
   const sealedAll = games.length && games.every((g) => g.status === "postponed" || g.receipt?.state === "sealed");
   const firstSeal = sealedAll ? games.filter((g) => g.receipt?.seal).map((g) => g.receipt.seal.committedAt).sort()[0] : null;
@@ -223,13 +223,13 @@ ${liveOne ? `<a class="livechip gl d" href="${liveOne.path}" data-gid="${liveOne
     ? `<div class="cta"><a class="btn lg" href="${webAppLink(where)}">${play}</a><a class="alt" href="${APP_STORE}">Get the iPhone app</a></div>`
     : `<div class="cta"><a class="btn lg" href="${APP_STORE}">Get the iPhone app →</a><a class="alt" href="/ledger/">Read the Ledger</a></div>`;
   const promise = LAUNCH_ON
-    ? `<div class="promise"><span><a href="${passLink("hero")}"><b class="o">LAUNCH PASS</b> · PRO FREE ON THE WEB →</a></span></div>`
+    ? `<div class="promise"><span><a href="${passLink("hero")}"><b class="o">Launch Pass</b> · Pro free on the web →</a></span></div>`
     : WEB_APP_LIVE
-      ? '<div class="promise"><span>FREE</span><span>NO DOWNLOAD</span><span>PUBLIC LEDGER</span></div>'
-      : '<div class="promise"><span>FREE</span><span>PUBLIC LEDGER</span><span>COMING TO YOUR BROWSER</span></div>';
+      ? '<div class="promise"><span>Free</span><span>No download</span><span>Public Ledger</span></div>'
+      : '<div class="promise"><span>Free</span><span>Public Ledger</span><span>Coming to your browser</span></div>';
 
   const body = `<section class="heroband"><span class="dots" aria-hidden="true"></span><div class="wrap">
-<div class="edition"><span><span class="ed"></span> EDITION<span class="hide-s"> · ${esc(m.current)}</span></span><span class="hide-s">${esc(longDate(m.today).toUpperCase())}</span><span>${right}</span></div>
+<div class="edition"><span><span class="ed"></span> Edition<span class="hide-s"> · ${esc(m.current)}</span></span><span class="hide-s">${esc(longDate(m.today))}</span><span>${right}</span></div>
 <h1 class="h1">Call every game.<br><em>Beat Clutch.</em></h1>
 <div class="hero"><div class="hero-l">
 <p class="lede">Clutch puts a number on every NBA game, tells you why, and seals it before tip. Make your own call — the morning grades you both.</p>
@@ -240,7 +240,7 @@ ${promise}
 ${ticker}</section>
 
 <section class="sec t" id="tonight" aria-labelledby="tonight-h"><div class="wrap">
-<div class="shead"><div><h2 class="h2" id="tonight-h">${isToday ? "Tonight, in numbers" : "Next up, in numbers"}</h2><p class="sub">${esc(tonightSub)}</p></div>${tonight ? `<a class="more" href="/tonight/">ALL OF ${isToday ? "TONIGHT" : esc(dayLabel(tonight).toUpperCase())} →</a>` : ""}</div>
+<div class="shead"><div><h2 class="h2" id="tonight-h">${isToday ? "Tonight, in numbers" : "Next up, in numbers"}</h2><p class="sub">${esc(tonightSub)}</p></div>${tonight ? `<a class="more" href="/tonight/">All of ${isToday ? "Tonight" : esc(dayLabel(tonight))} →</a>` : ""}</div>
 <div class="cards">${games.map((g) => gameCard(g, g.id === lead?.id && lineIsWhy(g))).join("")}</div>
 ${comingUp(m, tonight, games.length)}
 </div></section>
@@ -251,7 +251,7 @@ ${comingUp(m, tonight, games.length)}
 <div class="g3 mt">
 <div class="move"><span class="no" aria-hidden="true">01</span><h3>Clutch makes its call</h3><p>Every morning, a win probability for every game — built from form, rest, travel, the official injury report and the market. Sealed and published before the first tip.</p><span class="hash">${latestSeal ? `sha256 ${esc(shortHash(latestSeal.sha256))}` : "sha256 · the first seal lands Oct 3"}</span></div>
 <div class="move"><span class="no" aria-hidden="true">02</span><h3>You make yours</h3><p>Pick a side before tip. Upsets you call score more, and every level earns a new title.</p>${pts ? `<span class="pills">${pts.map(([t, p, clutch]) => (clutch ? `<span class="pill">${esc(t.nickname)} +${p} pts · <span class="amber">Clutch's call</span></span>` : `<span class="pill you">✓ Your call · ${esc(t.nickname)} +${p} pts</span>`)).join("")}</span>` : ""}</div>
-<div class="move"><span class="no" aria-hidden="true">03</span><h3>The morning grades you both</h3><p>Every call goes in the Ledger, misses included. Beat Clutch on a night and it goes in your Scrapbook.</p><span class="pills"><span class="chip win">RIGHT</span><span class="chip loss">MISSED</span></span></div>
+<div class="move"><span class="no" aria-hidden="true">03</span><h3>The morning grades you both</h3><p>Every call goes in the Ledger, misses included. Beat Clutch on a night and it goes in your Scrapbook.</p><span class="pills"><span class="chip win">✓ Right</span><span class="chip loss">✗ Missed</span></span></div>
 </div></div></section>
 
 <section class="sec" id="ledger" aria-label="The Ledger"><div class="wrap">
@@ -263,13 +263,13 @@ ${missBand(m)}
 <h2 class="h2 hm" id="price-h">Free for good. <em>Pro when you want the whole lab.</em></h2>
 <div class="plans">
 <div class="plan"><h3>Free</h3><div class="price"><span class="d">$0</span><span>for good</span></div><ul>${FRONT_FREE.map((x) => `<li>${esc(x)}</li>`).join("")}</ul><a class="btn ghost" href="${PLAY}">${WEB_APP_LIVE ? play : "Get the free iPhone app"}</a></div>
-<div class="plan pro"><span class="tag">${PLAN.trialDays} DAYS FREE ON ANNUAL</span><h3>Pro</h3><div class="price"><span class="d amber">${priceFig(PLAN.monthly)}</span><span>a month · or ${PLAN.annual} a year</span></div>${LAUNCH_ON ? '<p class="offer">Free on the web during the launch, with the Launch Pass.</p>' : ""}<ul>${FRONT_PRO.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>${LAUNCH_ON ? `<a class="btn" href="${passLink("pricing")}">Claim your Launch Pass</a>` : `<a class="btn" href="${PLAY_PRO}">Try Pro free for ${PLAN.trialDays} days${WEB_APP_LIVE ? "" : " on iPhone"}</a>`}</div>
+<div class="plan pro"><span class="tag">${PLAN.trialDays} days free on annual</span><h3>Pro</h3><div class="price"><span class="d amber">${priceFig(PLAN.monthly)}</span><span>a month · or ${PLAN.annual} a year</span></div>${LAUNCH_ON ? '<p class="offer">Free on the web during the launch, with the Launch Pass.</p>' : ""}<ul>${FRONT_PRO.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>${LAUNCH_ON ? `<a class="btn" href="${passLink("pricing")}">Claim your Launch Pass</a>` : `<a class="btn" href="${PLAY_PRO}">Try Pro free for ${PLAN.trialDays} days${WEB_APP_LIVE ? "" : " on iPhone"}</a>`}</div>
 </div>
 <p class="note gap">Prices in US dollars. Cancel any time; Pro runs to the end of the period you paid for. <a href="/pricing/">Everything in Free and Pro →</a> · <a href="/refunds/">Refunds</a> · <a href="/terms/">Terms</a></p>
 </div></section>
 
 <section class="sec" aria-labelledby="last-h"><div class="wrap"><div class="last">
-<span class="mono ink3">${nextTip ? `NEXT TIP ${esc(dayLabel(tonight).toUpperCase())} · ${esc(timeET(nextTip))}` : esc(longDate(m.today).toUpperCase())}</span>
+<span class="mono ink3">${nextTip ? `Next tip ${esc(dayLabel(tonight))} · ${esc(timeET(nextTip))}` : esc(longDate(m.today))}</span>
 <h2 class="h2" id="last-h">${esc(lastH)}</h2>
 ${cta("closing")}
 <a class="more" href="/faq/">Questions, answered →</a>

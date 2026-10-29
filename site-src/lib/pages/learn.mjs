@@ -57,11 +57,11 @@ function winProbArticle(m) {
     ["72% and up", "Comfortably", "A strong favourite. Even at 80%, one game in five goes the other way."],
   ];
   const body = `
-<section class="panel" aria-labelledby="short"><span class="kick">THE SHORT ANSWER</span><h2 id="short">A number for how often this game goes one way.</h2>
+<section class="panel" aria-labelledby="short"><span class="kick">The short answer</span><h2 id="short">A number for how often this game goes one way.</h2>
 <p class="sub">A win probability is a single number for how likely a team is to win a game. When Clutch gives ${exName} ${esc(ex.when)}, it means that in games like this one, a team in that position wins about ${ex.p} times in 100 and loses about ${100 - ex.p}. It is not a promise: a ${ex.p}% favourite should lose about one game in ${inN === 2 ? "two" : inN === 3 ? "three" : inN === 4 ? "four" : inN === 5 ? "five" : inN}.</p></section>
 
 <section aria-labelledby="read"><h2 class="sh" id="read">How to read the number</h2>
-<div class="scroll"><table class="tbl"><caption class="vh">What each range of win probability means</caption><thead><tr><th scope="col">NUMBER</th><th scope="col">CLUTCH SAYS</th><th scope="col">WHAT IT MEANS</th></tr></thead><tbody>${bands.map(([n, w, d]) => `<tr><td class="num">${n}</td><td class="amber">${esc(w)}</td><td>${esc(d)}</td></tr>`).join("")}</tbody></table></div>
+<div class="scroll"><table class="tbl"><caption class="vh">What each range of win probability means</caption><thead><tr><th scope="col">Number</th><th scope="col">Clutch says</th><th scope="col">What it means</th></tr></thead><tbody>${bands.map(([n, w, d]) => `<tr><td class="num">${n}</td><td class="amber">${esc(w)}</td><td>${esc(d)}</td></tr>`).join("")}</tbody></table></div>
 <p class="note">The words are the ones over each number on Clutch's game pages. The number always belongs to the side Clutch favours; the other side's is 100 minus it.</p></section>
 
 <section class="blk" aria-labelledby="made"><h2 id="made">Where the number comes from</h2>
@@ -85,7 +85,7 @@ ${lastCalls.length ? `<section class="blk" aria-labelledby="upsets"><h2 id="upse
   return {
     slug: "what-is-win-probability",
     h1: "What is NBA win probability?",
-    kick: "THE BASICS",
+    kick: "The basics",
     title: "What is NBA win probability? How to read it · Clutch",
     description: "What an NBA win probability means, how to read 55% or 75%, where the number comes from, and how to tell a good one from a bad one.",
     deck: "A win probability is one number for how likely a team is to win a game. Here is what it means, how it is made, and how to tell a good one from a bad one.",
@@ -112,7 +112,7 @@ function brierArticle(m) {
   const bands = (m.record ? m.ledger?.calibration ?? [] : []).filter((b) => b && b.n > 0);
   const band = (b) => `${Math.round(b.lo * 100)}–${Math.round(b.hi * 100)}%`;
   const body = `
-<section class="panel" aria-labelledby="short"><span class="kick">THE SHORT ANSWER</span><h2 id="short">Does 70% happen 70% of the time, and how confident was it when it mattered?</h2>
+<section class="panel" aria-labelledby="short"><span class="kick">The short answer</span><h2 id="short">Does 70% happen 70% of the time, and how confident was it when it mattered?</h2>
 <p class="sub">Calibration asks whether a forecaster's numbers come true as often as they say: of all the games called at 70%, the favourite should win about 70 in 100. The Brier score turns calibration and confidence into one number per forecaster. Lower is better and a coin flip on every game scores 0.250. Over the last two NBA seasons the market's final price scored ${sc(T("market"))}, ESPN BPI ${sc(T("espn_bpi"))}, and picking the home team every night ${sc(T("always_home"))}.</p></section>
 
 <section class="blk" aria-labelledby="cal"><h2 id="cal">Calibration</h2>
@@ -121,7 +121,7 @@ function brierArticle(m) {
 
 <section aria-labelledby="brier"><h2 class="sh" id="brier">The Brier score, one game at a time</h2>
 <p class="sub">For each game, take the number given to the side that lost and square it; average over every game. A favourite at ${pct(worst.q)}% that loses costs ${b3(worst.q ** 2)}; the same favourite winning costs ${b3((1 - worst.q) ** 2)}. Here are Clutch's graded calls from ${esc(shortDate(last))}, scored:</p>
-<div class="scroll gap"><table class="tbl"><caption class="vh">Brier score for each call on ${esc(shortDate(last))}</caption><thead><tr><th scope="col">GAME</th><th scope="col" class="num">CLUTCH</th><th scope="col">RESULT</th><th scope="col" class="num">COST</th></tr></thead><tbody>${rows.map((r) => `<tr><td>${esc(r.c.matchup.replace(" @ ", " at "))}</td><td class="num">${esc(r.c.pick)} ${Math.round(r.c.claimed_pct)}%</td><td>${r.c.correct ? '<span class="chip win">RIGHT</span>' : '<span class="chip loss">MISSED</span>'}</td><td class="num">${b3(r.cost)}</td></tr>`).join("")}</tbody></table></div>
+<div class="scroll gap"><table class="tbl"><caption class="vh">Brier score for each call on ${esc(shortDate(last))}</caption><thead><tr><th scope="col">Game</th><th scope="col" class="num">Clutch</th><th scope="col">Result</th><th scope="col" class="num">Cost</th></tr></thead><tbody>${rows.map((r) => `<tr><td>${esc(r.c.matchup.replace(" @ ", " at "))}</td><td class="num">${esc(r.c.pick)} ${Math.round(r.c.claimed_pct)}%</td><td>${r.c.correct ? '<span class="chip win">✓ Right</span>' : '<span class="chip loss">✗ Missed</span>'}</td><td class="num">${b3(r.cost)}</td></tr>`).join("")}</tbody></table></div>
 <p class="note">The night's average: ${b3(avg)} on ${rows.length} ${rows.length === 1 ? "game" : "games"}. One night says little; the seasons below are 1,300 games each.</p></section>
 
 <section class="blk" aria-labelledby="good"><h2 id="good">What a good score looks like</h2>
@@ -135,7 +135,7 @@ function brierArticle(m) {
   return {
     slug: "calibration-and-brier-score",
     h1: "Calibration and the Brier score, explained",
-    kick: "THE BASICS",
+    kick: "The basics",
     title: "Calibration and the Brier score, explained with NBA games · Clutch",
     description: "How to grade a forecaster: calibration (does 70% happen 70% of the time?) and the Brier score, with real NBA calls scored one game at a time.",
     deck: "Two ways to grade anyone who puts a number on a game: does it come true as often as it says, and was it confident when it mattered? With real NBA calls, scored one game at a time.",
@@ -164,7 +164,7 @@ function sealArticle(m) {
   const held = night.filter((c) => c.correct).length;
   const excluded = m.record?.excluded ?? 0;
   const body = `
-<section class="panel" aria-labelledby="short"><span class="kick">THE SHORT ANSWER</span><h2 id="short">Look for a fingerprint, a clock nobody can set, and the misses.</h2>
+<section class="panel" aria-labelledby="short"><span class="kick">The short answer</span><h2 id="short">Look for a fingerprint, a clock nobody can set, and the misses.</h2>
 <p class="sub">A real pregame prediction leaves three marks: a fingerprint of the numbers published before tip, a timestamp the forecaster cannot set, and a record that keeps every miss. Screenshots and posts made after the final prove nothing, and a dated blog post can be edited the next morning.</p></section>
 
 <section class="blk" aria-labelledby="why"><h2 id="why">Why it matters</h2>
@@ -189,7 +189,7 @@ function sealArticle(m) {
   return {
     slug: "check-a-prediction-came-first",
     h1: "How to check a prediction was made before the game",
-    kick: "PROOF",
+    kick: "Proof",
     title: "How to check an NBA prediction was made before the game · Clutch",
     description: "Anyone can say they called it after the final. Three marks of a real pregame prediction, shown on a real night of sealed NBA numbers.",
     deck: "Anyone can say they called it once the final is in. Here is how to tell a real pregame prediction from one written afterwards, with a real night of Clutch's sealed numbers as the example.",
@@ -243,19 +243,19 @@ function bpiArticle(m) {
     : "This season the Ledger grades both after every final, on the same games.";
 
   const rows = [["ESPN BPI", "espn_bpi", true], ["The market's final price", "market"], ["Clutch's call", "clutch"], ["Clutch, Model only", "model"], ["Always the home team", "always_home"]];
-  const head = seasons.map((s) => `<th scope="col" class="num">${esc(s)} RIGHT</th><th scope="col" class="num">SCORE</th>`).join("");
+  const head = seasons.map((s) => `<th scope="col" class="num">${esc(s)} right</th><th scope="col" class="num">Score</th>`).join("");
   const table = rows.map(([l, k, lead]) => `<tr><td${lead ? ' class="amber"' : ""}>${esc(l)}</td>${seasons.map((s) => `<td class="num${lead ? " amber" : ""}">${p1(T(s, k)?.acc)}</td><td class="num${lead ? " amber" : ""}">${b3(T(s, k)?.brier)}</td>`).join("")}</tr>`).join("");
   const diffs = seasons.map((s) => { const d = bench[s].diffs_brier ?? {}; return `${s}: Clutch's call minus BPI ${s4(d.clutch_vs_espn[0])} (likely range ${s4(d.clutch_vs_espn[1])} to ${s4(d.clutch_vs_espn[2])}); Model only minus BPI ${s4(d.model_vs_espn[0])} (${s4(d.model_vs_espn[1])} to ${s4(d.model_vs_espn[2])})`; }).join(". ");
   const trained = m.accuracy?.training_info?.trained_at?.slice(0, 10);
 
   const body = `
-<section class="panel" aria-labelledby="short"><span class="kick">THE SHORT ANSWER</span><h2 id="short">Good at picking winners. Its probabilities trail the market's.</h2>
+<section class="panel" aria-labelledby="short"><span class="kick">The short answer</span><h2 id="short">Good at picking winners. Its probabilities trail the market's.</h2>
 <p class="sub">ESPN BPI picked the winner in ${each((s) => `${p1(T(s, "espn_bpi").acc)} of games in ${s}`)}. That is about as often as anything does: the market's final price picked ${each((s) => p1(T(s, "market").acc))}, and picking the home team every night managed ${each((s) => p1(T(s, "always_home").acc))}.</p>
 <p class="sub gap">Where BPI falls behind is the quality of the number itself. On the Brier score, which grades the probability and not just the side, BPI scored ${each((s) => b3(T(s, "espn_bpi").brier))}; the market's final price scored ${each((s) => b3(T(s, "market").brier))}${marketLower ? ", better in both seasons" : ""}. A good independent model lands about where BPI does: Clutch's own number, before it looks at the market, scored ${each((s) => b3(T(s, "model").brier))}.</p></section>
 
 <section aria-labelledby="table"><h2 class="sh" id="table">${n.toLocaleString("en-US")} games, graded the same way</h2>
-<div class="scroll"><table class="tbl"><caption class="vh">Share of winners right and Brier score, by season</caption><thead><tr><th scope="col">NUMBER</th>${head}</tr></thead><tbody>${table}</tbody></table></div>
-<p class="note">RIGHT: how often the side given over 50% won. SCORE: the Brier score, lower is better; a coin flip on every game scores 0.250. Every row is graded on exactly the same ${seasons.map((s) => `${bench[s].n.toLocaleString("en-US")} games in ${s}`).join(" and ")}.</p></section>
+<div class="scroll"><table class="tbl"><caption class="vh">Share of winners right and Brier score, by season</caption><thead><tr><th scope="col">Number</th>${head}</tr></thead><tbody>${table}</tbody></table></div>
+<p class="note">Right: how often the side given over 50% won. Score: the Brier score, lower is better; a coin flip on every game scores 0.250. Every row is graded on exactly the same ${seasons.map((s) => `${bench[s].n.toLocaleString("en-US")} games in ${s}`).join(" and ")}.</p></section>
 
 <section class="blk" aria-labelledby="why"><h2 id="why">Why picking the winner isn't the whole story</h2>
 <p>Most NBA games have a clear favourite, and favourites win about two games in three. Any sensible number picks those games, so every source above lands near 69% and the share of winners barely separates them. What separates them is the number. A 90% call that loses should cost more than a 55% call that loses, and a team given 70% should win about 70 times in 100.</p>
@@ -281,7 +281,7 @@ ${earlySentence ? `<section class="blk" aria-labelledby="early"><h2 id="early">E
   return {
     slug: "espn-bpi-accuracy",
     h1: "How accurate is ESPN BPI?",
-    kick: "DATA STUDY",
+    kick: "Data study",
     title: `How accurate is ESPN BPI? ${n.toLocaleString("en-US")} NBA games graded · Clutch`,
     description: `ESPN BPI picked the winner in about ${Math.round(T(seasons[1], "espn_bpi").acc * 100)}% of NBA games. We graded its probabilities on ${n.toLocaleString("en-US")} games beside the market, Clutch and the home team.`,
     deck: `We graded ESPN's pregame win probability on every game of the last two NBA seasons where it was on record (${n.toLocaleString("en-US")} games), beside the market's final price, Clutch, and picking the home team.`,
@@ -308,11 +308,11 @@ function fteArticle(m) {
   const py = `import pandas as pd\n\n# was: https://projects.fivethirtyeight.com/nba-model/nba_elo_latest.csv\ngames = pd.read_csv("${ORIGIN}${FILES.fte}")\n\n# code that reads elo_prob1 / elo_prob2 can point at Clutch's columns:\ngames = games.rename(columns={"clutch_prob1": "elo_prob1", "clutch_prob2": "elo_prob2"})`;
   const rr = `games <- read.csv("${ORIGIN}${FILES.fte}")`;
   const body = `
-<section class="panel" aria-labelledby="short"><span class="kick">THE SHORT ANSWER</span><h2 id="short">The last forecast was 2022-23. Its links now go to ABC News.</h2>
+<section class="panel" aria-labelledby="short"><span class="kick">The short answer</span><h2 id="short">The last forecast was 2022-23. Its links now go to ABC News.</h2>
 <p class="sub">FiveThirtyEight's NBA forecast stopped after the 2022-23 season: the last row of its data is the Finals game of June 12, 2023. ABC News closed FiveThirtyEight on March 5, 2025, and since May 2026 its old pages and data files redirect to ABC News's politics section, so links and code that read them break. Clutch publishes a pregame win probability for every NBA game, sealed in public before tip and graded after the final, free to download in the same CSV layout: change one address and rename one column.</p></section>
 
 <section aria-labelledby="links"><h2 class="sh" id="links">Where the old addresses go now</h2>
-<div class="scroll"><table class="tbl"><caption class="vh">FiveThirtyEight's NBA addresses and where they lead now</caption><thead><tr><th scope="col">OLD ADDRESS</th><th scope="col">NOW</th></tr></thead><tbody>${FTE_GONE.map((u) => `<tr><td><code>${esc(u)}</code></td><td>ABC News's politics page</td></tr>`).join("")}</tbody></table></div>
+<div class="scroll"><table class="tbl"><caption class="vh">FiveThirtyEight's NBA addresses and where they lead now</caption><thead><tr><th scope="col">Old address</th><th scope="col">Now</th></tr></thead><tbody>${FTE_GONE.map((u) => `<tr><td><code>${esc(u)}</code></td><td>ABC News's politics page</td></tr>`).join("")}</tbody></table></div>
 <p class="note">Checked on ${esc(mediumDate(FTE_CHECKED))}. FiveThirtyEight's data repository on GitHub still points at the two files, so tutorials and class notebooks built on them stop at the first line.</p></section>
 
 <section class="blk" aria-labelledby="switch"><h2 id="switch">Switch in one line</h2>
@@ -340,7 +340,7 @@ function fteArticle(m) {
   return {
     slug: "fivethirtyeight-nba-predictions",
     h1: "FiveThirtyEight's NBA predictions are gone. What to use now.",
-    kick: "DATA",
+    kick: "Data",
     title: "FiveThirtyEight NBA predictions are gone: a free alternative · Clutch",
     description: "FiveThirtyEight's NBA forecast and nba_elo_latest.csv now redirect to ABC News. Clutch's free, graded win probability for every game, in the same CSV layout.",
     deck: "FiveThirtyEight's NBA forecast was the free, open win probability many fans, writers and students leaned on. It stopped after 2022-23, and its pages and data files now lead to ABC News. Here is what changed, and a free number for every game, graded in public, in the same CSV layout.",
@@ -355,7 +355,7 @@ const ARTICLES = [winProbArticle, brierArticle, bpiArticle, sealArticle, fteArti
 
 function articlePage(a) {
   const path = `${LEARN}${a.slug}/`;
-  const body = `<div class="wrap r"><div class="rhead"><span class="kick">LEARN · ${esc(a.kick)}</span><h1 class="rh1">${esc(a.h1)}</h1><p class="rdeck">${esc(a.deck)}</p><p class="mono ink3">BY ${esc(COMPANY.founder.toUpperCase())} · ${esc(mediumDate(a.published).toUpperCase())}${a.modified !== a.published ? ` · UPDATED ${esc(mediumDate(a.modified).toUpperCase())}` : ""}</p></div>
+  const body = `<div class="wrap r"><div class="rhead"><span class="kick">Learn · ${esc(a.kick)}</span><h1 class="rh1">${esc(a.h1)}</h1><p class="rdeck">${esc(a.deck)}</p><p class="mono ink3">By ${esc(COMPANY.founder)} · ${esc(mediumDate(a.published))}${a.modified !== a.published ? ` · Updated ${esc(mediumDate(a.modified))}` : ""}</p></div>
 <div class="body">${a.body}</div></div>`;
   const ld = {
     "@context": "https://schema.org", "@type": "Article",
@@ -397,7 +397,7 @@ export function learnPages(m) {
   const standing = r?.n
     ? `<p>This season so far: ${rec(r.hits, r.n)} on ${r.n} graded ${r.n === 1 ? "call" : "calls"}, every one sealed before tip. <a href="/accuracy/">How the numbers hold up, band by band →</a></p>`
     : `<p>The season's first calls are graded the morning after its first finals. <a href="/accuracy/">The accuracy report →</a></p>`;
-  const hub = `<div class="wrap r"><div class="rhead"><span class="kick">LEARN</span><h1 class="rh1">NBA win probability, explained.</h1><p class="rdeck">What the numbers mean, how they are graded, and how the well-known ones hold up. Every figure on these pages comes from the data and is rebuilt every day.</p></div>
+  const hub = `<div class="wrap r"><div class="rhead"><span class="kick">Learn</span><h1 class="rh1">NBA win probability, explained.</h1><p class="rdeck">What the numbers mean, how they are graded, and how the well-known ones hold up. Every figure on these pages comes from the data and is rebuilt every day.</p></div>
 <div class="body">${articles.map((a) => `<section class="blk"><span class="kick">${esc(a.kick)}</span><h2><a href="${LEARN}${a.slug}/">${esc(a.h1)}</a></h2><p>${esc(a.description)}</p></section>`).join("")}
 <section class="blk" aria-labelledby="terms"><h2 id="terms">The terms, in a sentence each</h2><dl>${terms.map((t) => `<dt><a href="${t.href}">${esc(t.term)}</a></dt><dd>${esc(t.def)}</dd>`).join("")}</dl></section>
 <section class="blk" aria-labelledby="standing"><h2 id="standing">Where Clutch stands</h2>${standing}</section></div></div>`;

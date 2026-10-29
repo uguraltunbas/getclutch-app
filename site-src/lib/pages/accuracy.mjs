@@ -51,16 +51,16 @@ export function backtestSentence(bench) {
 function liveSection(m) {
   const r = m.record;
   if (!r) {
-    return `<section class="panel" aria-labelledby="live"><span class="kick">${esc(m.current)} · GRADED LIVE</span><h2 id="live">No graded calls yet this season.</h2><p class="sub">The regular season's first finals are graded the morning after. Until then this report has nothing live to say — and it won't borrow a number from the test below.</p></section>`;
+    return `<section class="panel" aria-labelledby="live"><span class="kick">${esc(m.current)} · Graded live</span><h2 id="live">No graded calls yet this season.</h2><p class="sub">The regular season's first finals are graded the morning after. Until then this report has nothing live to say — and it won't borrow a number from the test below.</p></section>`;
   }
   const v = verdictOf(r);
   const rate = r.n >= RATE_FLOOR && r.hitRate != null;
-  let html = `<section class="panel" aria-labelledby="live"><span class="kick">${esc(r.season)} · GRADED LIVE · SEALED BEFORE TIP</span><h2 id="live">This season, call by call</h2>
-<div class="stat"><div><span class="d">${r.n}</span><span class="mono">GRADED CALLS</span></div><div><span class="d">${rec(r.hits, r.n)}</span><span class="mono">RIGHT–WRONG</span></div>${rate ? `<div><span class="d amber dec">${r.hitRate.toFixed(1)}%</span><span class="mono">${r.ci ? `LIKELY RANGE ${Number(r.ci[0]).toFixed(1)}–${Number(r.ci[1]).toFixed(1)}%` : "RIGHT"}</span></div>` : ""}<div><span class="mono ${v.tone === "win" ? "" : "ink3"}">${esc(v.line)}</span></div></div>`;
+  let html = `<section class="panel" aria-labelledby="live"><span class="kick">${esc(r.season)} · Graded live · Sealed before tip</span><h2 id="live">This season, call by call</h2>
+<div class="stat"><div><span class="d">${r.n}</span><span class="mono">Graded calls</span></div><div><span class="d">${rec(r.hits, r.n)}</span><span class="mono">Right–wrong</span></div>${rate ? `<div><span class="d amber dec">${r.hitRate.toFixed(1)}%</span><span class="mono">${r.ci ? `Likely range ${Number(r.ci[0]).toFixed(1)}–${Number(r.ci[1]).toFixed(1)}%` : "Right"}</span></div>` : ""}<div><span class="mono ${v.tone === "win" ? "" : "ink3"}">${esc(v.line)}</span></div></div>`;
   if (!rate) html += `<p class="note gap">${esc(callWord(r.n))} is too few to say how good Clutch is: a rate needs ${RATE_FLOOR} at least, so until then every number on this page is printed as right–wrong. The page rebuilds every morning; the rates fill in as the season does.</p>`;
   for (const c of comparisons(r)) {
     const val = (x, recd) => (c.small ? recd : `${x.toFixed(1)}%`);
-    html += `<div class="cmp gap"><div class="cmp-h"><span class="t">${esc(c.title)}</span><span class="mono">THE SAME ${c.n} GAMES</span></div>
+    html += `<div class="cmp gap"><div class="cmp-h"><span class="t">${esc(c.title)}</span><span class="mono">The same ${c.n} games</span></div>
 <div class="crow"><span>Clutch</span>${c.small ? "<span></span>" : bar(c.us, "amber")}<span class="d v amber">${val(c.us, c.usRec)}</span></div>
 <div class="crow"><span class="ink3">${esc(c.themLabel)}</span>${c.small ? "<span></span>" : bar(c.them, "cream")}<span class="d v">${val(c.them, c.themRec)}</span></div></div>`;
   }
@@ -68,13 +68,13 @@ function liveSection(m) {
   const t = r.tracks;
   const scores = [["Clutch's call", t?.all_games?.clutch, true], ["ESPN BPI", t?.vs_espn?.espn_bpi], ["The market · final price", t?.with_line?.market]].filter(([, x]) => x?.brier != null && x.n >= RATE_FLOOR);
   if (scores.length > 1) {
-    html += `<div class="scroll gap"><table class="tbl"><caption class="vh">Accuracy score this season, lower is better</caption><thead><tr><th scope="col">NUMBER</th><th scope="col" class="num">ACCURACY SCORE</th><th scope="col" class="num">GAMES</th></tr></thead><tbody>${scores.map(([l, x, lead]) => `<tr><td${lead ? ' class="amber"' : ""}>${esc(l)}</td><td class="num${lead ? " amber" : ""}">${b3(x.brier)}</td><td class="num">${x.n}</td></tr>`).join("")}</tbody></table></div><p class="note">The accuracy score (the Brier score) grades the probability itself, not just the side: lower is better, 0.250 is a coin flip.</p>`;
+    html += `<div class="scroll gap"><table class="tbl"><caption class="vh">Accuracy score this season, lower is better</caption><thead><tr><th scope="col">Number</th><th scope="col" class="num">Accuracy score</th><th scope="col" class="num">Games</th></tr></thead><tbody>${scores.map(([l, x, lead]) => `<tr><td${lead ? ' class="amber"' : ""}>${esc(l)}</td><td class="num${lead ? " amber" : ""}">${b3(x.brier)}</td><td class="num">${x.n}</td></tr>`).join("")}</tbody></table></div><p class="note">The accuracy score (the Brier score) grades the probability itself, not just the side: lower is better, 0.250 is a coin flip.</p>`;
   }
   const notes = [];
   if (r.excluded) notes.push(`${r.excluded} more ${r.excluded === 1 ? "call is" : "calls are"} left out because ${r.excluded === 1 ? "it" : "they"} can't be proven to predate tip; the count is printed so the record can't quietly shrink.`);
   if (r.dateRange?.start) notes.push(`Graded games from ${mediumDate(r.dateRange.start)} to ${mediumDate(r.dateRange.end)}. Preseason is never graded.`);
   if (notes.length) html += `<p class="note gap">${notes.map(esc).join(" ")}</p>`;
-  return html + `<p class="gap"><a class="more" href="/ledger/">EVERY GRADED CALL, IN THE LEDGER →</a></p></section>`;
+  return html + `<p class="gap"><a class="more" href="/ledger/">Every graded call, in the Ledger →</a></p></section>`;
 }
 
 function calibrationSection(m) {
@@ -91,8 +91,8 @@ function calibrationSection(m) {
     return `<tr><td>${esc(bandLabel(b))}</td><td class="num">${b.n}</td><td class="num">${b.claimed_pct != null ? `${b.claimed_pct.toFixed(0)}%` : "—"}</td><td class="num${ok ? " amber" : ""}">${ok ? `${b.actual_pct.toFixed(0)}%` : `${b.hits} of ${b.n}`}</td><td class="num">${ok && b.ci_low_pct != null ? `${b.ci_low_pct.toFixed(0)}–${b.ci_high_pct.toFixed(0)}%` : "—"}</td></tr>`;
   }).join("");
   return `<section class="blk" aria-labelledby="cal"><h2 id="cal">When Clutch says 70%, does it happen 70%?</h2>${intro}${lead}
-<div class="scroll gap"><table class="tbl"><caption class="vh">Calibration: Clutch's number against how often it came true, ${esc(m.current)}</caption><thead><tr><th scope="col">CLUTCH'S BAND</th><th scope="col" class="num">CALLS</th><th scope="col" class="num">SAID</th><th scope="col" class="num">HAPPENED</th><th scope="col" class="num">LIKELY RANGE</th></tr></thead><tbody>${rows}</tbody></table></div>
-<p class="note">SAID is the average of Clutch's numbers in the band; HAPPENED is how often that side won. A band shows its rate and likely range from ${RATE_FLOOR} calls.</p></section>`;
+<div class="scroll gap"><table class="tbl"><caption class="vh">Calibration: Clutch's number against how often it came true, ${esc(m.current)}</caption><thead><tr><th scope="col">Clutch's band</th><th scope="col" class="num">Calls</th><th scope="col" class="num">Said</th><th scope="col" class="num">Happened</th><th scope="col" class="num">Likely range</th></tr></thead><tbody>${rows}</tbody></table></div>
+<p class="note">Said is the average of Clutch's numbers in the band; Happened is how often that side won. A band shows its rate and likely range from ${RATE_FLOOR} calls.</p></section>`;
 }
 
 /** The test's seasons pooled into the live Ledger's four bands — only for the
@@ -121,7 +121,7 @@ function backtestBandsBlock(m) {
   const rows = t.bands.map((b) => `<tr><td>${esc(bandLabel(b))}</td><td class="num">${b.n.toLocaleString("en-US")}</td><td class="num">${b.said.toFixed(1)}%</td><td class="num amber">${b.happened.toFixed(1)}%</td><td class="num">${b.ciLow.toFixed(0)}–${b.ciHigh.toFixed(0)}%</td></tr>`).join("");
   return `<h3 class="side-h gap">When the test said 70%, did it happen 70%?</h3>
 <p><strong>${esc(lead)}</strong></p>
-<div class="scroll gap"><table class="tbl"><caption class="vh">Calibration in the walk-forward test, ${esc(t.seasons.join(" and "))}</caption><thead><tr><th scope="col">CLUTCH'S BAND</th><th scope="col" class="num">GAMES</th><th scope="col" class="num">SAID</th><th scope="col" class="num">HAPPENED</th><th scope="col" class="num">LIKELY RANGE</th></tr></thead><tbody>${rows}</tbody></table></div>
+<div class="scroll gap"><table class="tbl"><caption class="vh">Calibration in the walk-forward test, ${esc(t.seasons.join(" and "))}</caption><thead><tr><th scope="col">Clutch's band</th><th scope="col" class="num">Games</th><th scope="col" class="num">Said</th><th scope="col" class="num">Happened</th><th scope="col" class="num">Likely range</th></tr></thead><tbody>${rows}</tbody></table></div>
 <p class="note">The same bands as the live table above, counted the same way on the side Clutch favoured, over both test seasons together. A replay, so it says how the method holds up; the live bands say how this season's sealed numbers do.</p>`;
 }
 
@@ -130,13 +130,13 @@ function backtestSection(m) {
   const seasons = Object.keys(bench).sort().reverse();
   if (!seasons.length) return "";
   const rows = [["Clutch's call", "clutch", true], ["ESPN BPI", "espn_bpi"], ["The market · final price", "market"], ["Always the home team", "always_home"]];
-  const head = seasons.map((s) => `<th scope="col" class="num">${esc(s)} RIGHT</th><th scope="col" class="num">SCORE</th>`).join("");
+  const head = seasons.map((s) => `<th scope="col" class="num">${esc(s)} right</th><th scope="col" class="num">Score</th>`).join("");
   const body = rows.map(([l, k, lead]) => `<tr><td${lead ? ' class="amber"' : ""}>${esc(l)}</td>${seasons.map((s) => { const x = bench[s].tracks?.[k]; return `<td class="num${lead ? " amber" : ""}">${pc1(x?.acc)}</td><td class="num${lead ? " amber" : ""}">${b3(x?.brier)}</td>`; }).join("")}</tr>`).join("");
   const sentence = backtestSentence(bench);
-  return `<section class="blk" aria-labelledby="test"><span class="kick">BEFORE IT SHIPPED · A REPLAY, NOT THE LIVE RECORD</span><h2 id="test">The two-season test</h2>
+  return `<section class="blk" aria-labelledby="test"><span class="kick">Before it shipped · A replay, not the live record</span><h2 id="test">The two-season test</h2>
 <p>${esc(sentence)} Nobody publishing an NBA model reliably beats the market, and Clutch doesn't claim to.</p>
-<div class="scroll gap"><table class="tbl"><caption class="vh">The walk-forward test: share of winners right and accuracy score, by season</caption><thead><tr><th scope="col">NUMBER</th>${head}</tr></thead><tbody>${body}</tbody></table></div>
-<p class="note">${seasons.map((s) => `${s}: ${bench[s].n.toLocaleString("en-US")} games`).join(" · ")}. RIGHT is the share of games where the side given over 50% won; SCORE is the accuracy score (lower is better). Every game was predicted by a model fit only on earlier games, then graded on the same games as ESPN BPI and the market's final price before tip. This test chose the model; it is not its record. <a href="/how-it-works/">The full test and the model's limits →</a></p>
+<div class="scroll gap"><table class="tbl"><caption class="vh">The walk-forward test: share of winners right and accuracy score, by season</caption><thead><tr><th scope="col">Number</th>${head}</tr></thead><tbody>${body}</tbody></table></div>
+<p class="note">${seasons.map((s) => `${s}: ${bench[s].n.toLocaleString("en-US")} games`).join(" · ")}. Right is the share of games where the side given over 50% won; Score is the accuracy score (lower is better). Every game was predicted by a model fit only on earlier games, then graded on the same games as ESPN BPI and the market's final price before tip. This test chose the model; it is not its record. <a href="/how-it-works/">The full test and the model's limits →</a></p>
 ${backtestBandsBlock(m)}</section>`;
 }
 
@@ -173,7 +173,7 @@ export function accuracyPage(m) {
   const deck = r && r.n < RATE_FLOOR
     ? `Only ${callWord(r.n)} graded so far this season — too early to judge, and this page says so. It rebuilds every morning from the Ledger: the record, how often each number came true, and the same games for ESPN, the market and the home team.`
     : "Rebuilt every morning from the Ledger: the season's graded calls, how often each number came true, and the same games for ESPN BPI, the market and picking the home team every night.";
-  const body = `<div class="wrap r"><div class="rhead"><span class="kick">ACCURACY · ${esc(m.current)}${updated ? ` · UPDATED ${esc(mediumDate(updated).toUpperCase())}` : ""}</span><h1 class="rh1">How accurate is Clutch?</h1><p class="rdeck">${esc(deck)}</p></div>
+  const body = `<div class="wrap r"><div class="rhead"><span class="kick">Accuracy · ${esc(m.current)}${updated ? ` · Updated ${esc(mediumDate(updated))}` : ""}</span><h1 class="rh1">How accurate is Clutch?</h1><p class="rdeck">${esc(deck)}</p></div>
 <div class="body">
 ${liveSection(m)}
 ${calibrationSection(m)}

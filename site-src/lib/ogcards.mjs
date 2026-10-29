@@ -55,7 +55,7 @@ export function cardFor(g) {
   }[st]].filter(Boolean).join(" ");
   const card = {
     a: team(g.away, g.awayScore), h: team(g.home, g.homeScore), p: String(p), st,
-    top: final ? `${finalLabel(g.period).replace("FINAL", "Final")} · ${dayLabel(g.date)}` : `${g.preseason ? "Preseason" : "Clutch's call"} · ${dayLabel(g.date)}`,
+    top: final ? `${finalLabel(g.period)} · ${dayLabel(g.date)}` : `${g.preseason ? "Preseason" : "Clutch's call"} · ${dayLabel(g.date)}`,
     tip: g.tipUtc ? `Tip ${timeET(g.tipUtc)}` : "",
     cap: final ? `Clutch's call: ${s.team.nickname}` : `${s.team.nickname} to win`,
     lede, sub,

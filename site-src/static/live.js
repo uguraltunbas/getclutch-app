@@ -23,10 +23,10 @@
   }
   function label(g) {
     var s = st(g.status);
-    if (s === "final") return g.period > 4 ? "FINAL/" + (g.period === 5 ? "OT" : (g.period - 4) + "OT") : "FINAL";
-    if (s === "halftime") return "HALF";
-    if (s === "live") return g.period ? per(g.period) + (g.clock && !zero(g.clock) ? " " + String(g.clock).replace(/^0(?=\d:)/, "") : "") : "LIVE";
-    if (s === "postponed") return "POSTPONED";
+    if (s === "final") return g.period > 4 ? "Final/" + (g.period === 5 ? "OT" : (g.period - 4) + "OT") : "Final";
+    if (s === "halftime") return "Half";
+    if (s === "live") return g.period ? per(g.period) + (g.clock && !zero(g.clock) ? " " + String(g.clock).replace(/^0(?=\d:)/, "") : "") : "Live";
+    if (s === "postponed") return "Postponed";
     return null;
   }
   var SOON = 3 * 3600e3, MIN = 60e3, MAX = 30 * 60e3;

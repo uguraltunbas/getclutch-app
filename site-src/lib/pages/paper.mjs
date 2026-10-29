@@ -13,10 +13,10 @@ function recordBlock(r, heading) {
   const v = verdictOf(r);
   const rate = r.n >= RATE_FLOOR && r.hitRate != null;
   let html = `<section class="panel" aria-labelledby="${heading.id}"><span class="kick">${esc(heading.kick)}</span><h2 id="${heading.id}">${esc(heading.title)}</h2>
-<div class="stat"><div><span class="d">${rec(r.hits, r.n)}</span><span class="mono">RIGHT–WRONG · ${r.n} GRADED CALLS</span></div>${rate ? `<div><span class="d amber dec">${r.hitRate.toFixed(1)}%</span><span class="mono">${r.ci ? `LIKELY RANGE ${Number(r.ci[0]).toFixed(1)}–${Number(r.ci[1]).toFixed(1)}%` : "RIGHT"}</span></div>` : ""}<div><span class="mono ${v.tone === "win" ? "" : "ink3"}">${esc(v.line)}</span></div></div>`;
+<div class="stat"><div><span class="d">${rec(r.hits, r.n)}</span><span class="mono">Right–wrong · ${r.n} graded calls</span></div>${rate ? `<div><span class="d amber dec">${r.hitRate.toFixed(1)}%</span><span class="mono">${r.ci ? `Likely range ${Number(r.ci[0]).toFixed(1)}–${Number(r.ci[1]).toFixed(1)}%` : "Right"}</span></div>` : ""}<div><span class="mono ${v.tone === "win" ? "" : "ink3"}">${esc(v.line)}</span></div></div>`;
   for (const c of comparisons(r)) {
     const val = (x, recd) => (c.small ? recd : `${x.toFixed(1)}%`);
-    html += `<div class="cmp gap"><div class="cmp-h"><span class="t">${esc(c.title)}</span><span class="mono">THE SAME ${c.n} GAMES</span></div>
+    html += `<div class="cmp gap"><div class="cmp-h"><span class="t">${esc(c.title)}</span><span class="mono">The same ${c.n} games</span></div>
 <div class="crow"><span>Clutch</span>${c.small ? "<span></span>" : bar(c.us, "amber")}<span class="d v amber">${val(c.us, c.usRec)}</span></div>
 <div class="crow"><span class="ink3">${esc(c.themLabel)}</span>${c.small ? "<span></span>" : bar(c.them, "cream")}<span class="d v">${val(c.them, c.themRec)}</span></div></div>`;
   }
@@ -35,7 +35,7 @@ function callRows(calls, m) {
   return `<div class="rlist">${calls.map((c) => {
     const g = m.pageGames.find((x) => x.id === c.game_id);
     const name = esc(c.matchup.replace(" @ ", " at "));
-    return `<div class="callrow"><span class="mono">${esc(shortDate(c.game_date).toUpperCase())}</span><span>${g ? `<a href="${g.path}">${name}</a>` : name} <span class="mono hide-xs">· ${esc(c.final.replace("-", "–"))}${c.season_type === "Playoffs" ? " · PLAYOFFS" : ""}</span></span><span class="d">${esc(c.pick)} ${Math.round(c.claimed_pct)}</span><span>${c.correct ? '<span class="chip win">RIGHT</span>' : '<span class="chip loss">MISSED</span>'}</span></div>`;
+    return `<div class="callrow"><span class="mono">${esc(shortDate(c.game_date))}</span><span>${g ? `<a href="${g.path}">${name}</a>` : name} <span class="mono hide-xs">· ${esc(c.final.replace("-", "–"))}${c.season_type === "Playoffs" ? " · playoffs" : ""}</span></span><span class="d">${esc(c.pick)} ${Math.round(c.claimed_pct)}</span><span>${c.correct ? '<span class="chip win">✓ Right</span>' : '<span class="chip loss">✗ Missed</span>'}</span></div>`;
   }).join("")}</div>`;
 }
 
@@ -46,7 +46,7 @@ export function ledgerPage(m) {
   const lastSeason = m.last ? m.calls.filter((c) => (c.season || seasonOf(c.game_date)) === m.last.season) : [];
   let main = "";
   if (m.record) {
-    main += recordBlock(m.record, { id: "season", kick: `${current} · THE SEASON SO FAR`, title: `Clutch's ${current} record` });
+    main += recordBlock(m.record, { id: "season", kick: `${current} · The season so far`, title: `Clutch's ${current} record` });
     const weeks = weeksOf(m);
     if (weeks.length) main += `<section aria-labelledby="weeks"><h2 class="sh s" id="weeks">Week by week</h2><p class="sub">${weeks.map((w) => { const r = w.calls.filter((c) => c.correct).length; return `<a href="${weekPath(w.monday)}">Week of ${esc(shortDate(w.monday))}: ${rec(r, w.calls.length)}</a>`; }).join(" · ")}</p></section>`;
     main += `<section aria-labelledby="calls"><h2 class="sh" id="calls">Every call, ${esc(current)}</h2>${callRows(thisSeason.slice(0, 120), m)}${thisSeason.length > 120 ? `<p class="note gap">The newest 120 of ${thisSeason.length}. Every one is in the app's Ledger.</p>` : ""}</section>`;
@@ -54,13 +54,13 @@ export function ledgerPage(m) {
     main += `<section class="panel" aria-labelledby="open"><span class="kick">${esc(o.kicker)}</span><h2 id="open">${esc(o.title)}</h2><p class="sub">${esc(o.body)}</p>${o.sealedLine ? `<p class="mono amber gap">${esc(o.sealedLine)} ✓</p>` : ""}${o.sealedNote ? `<p class="note gap">${esc(o.sealedNote)}</p>` : ""}<p class="note gap">Preseason calls count for points in the app from ${esc(shortDate(PRESEASON_START))}; leagues and Clutch's record start on ${esc(shortDate(REGULAR_SEASON_START))}.</p></section>`;
   }
   if (m.last) {
-    main += recordBlock(m.last, { id: "last", kick: `LAST SEASON · ${m.last.season}${m.last.retired ? " · THE RETIRED MODEL" : ""}`, title: m.last.retired ? "Last season, made by the model we retired" : `Last season, ${m.last.season}` });
+    main += recordBlock(m.last, { id: "last", kick: `Last season · ${m.last.season}${m.last.retired ? " · The retired model" : ""}`, title: m.last.retired ? "Last season, made by the model we retired" : `Last season, ${m.last.season}` });
     if (lastSeason.length) main += `<section aria-labelledby="lcalls"><h2 class="sh s" id="lcalls">Every graded call, ${esc(m.last.season)}</h2>${callRows(lastSeason, m)}</section>`;
   }
   main += `<section class="blk" aria-labelledby="rules"><h2 id="rules">How the Ledger keeps score</h2>
 <p>Every number is written to Clutch's database and sealed in the public record before tip-off, and never edited afterwards. The market, ESPN and the simple rules are graded on the same games, not quoted from a backtest. Preseason is never graded. Right and wrong calls sit in the same list, in date order.</p>
 <p>A rate is never quoted on fewer than ${RATE_FLOOR} graded calls — the record is written as right–wrong until then — and never without the baseline of picking the home team every night. <a href="/accuracy/">How accurate Clutch is, band by band →</a> · <a href="/how-it-works/">How Clutch works →</a></p></section>`;
-  const body = `<div class="wrap r"><div class="rhead"><span class="kick">THE LEDGER · ${esc(current)}${m.ledgerAt ? ` · UPDATED ${esc(mediumDate(m.ledgerAt.slice(0, 10)).toUpperCase())}` : ""}</span><h1 class="rh1">Every call, graded in public.</h1><p class="rdeck">Clutch writes down its number for every game before tip and grades it after the final — beside the market, ESPN and picking the home team every night. The misses stay on the record.</p></div><div class="body">${main}</div></div>`;
+  const body = `<div class="wrap r"><div class="rhead"><span class="kick">The Ledger · ${esc(current)}${m.ledgerAt ? ` · Updated ${esc(mediumDate(m.ledgerAt.slice(0, 10)))}` : ""}</span><h1 class="rh1">Every call, graded in public.</h1><p class="rdeck">Clutch writes down its number for every game before tip and grades it after the final — beside the market, ESPN and picking the home team every night. The misses stay on the record.</p></div><div class="body">${main}</div></div>`;
   const desc = m.record
     ? `Clutch's ${current} NBA prediction track record: ${rec(m.record.hits, m.record.n)} on ${m.record.n} graded calls, beside the market, ESPN and always picking the home team. Every call sealed before tip.`
     : `Clutch's ${current} record starts Oct 20. Every NBA call is sealed before tip and graded after the final, beside the market, ESPN and the home team.`;
@@ -145,8 +145,8 @@ function fullNight(d, files, m) {
     html += `<div class="rfile"><p><b class="cream">Opened ${esc(timeET(f.committed_at))}, after the ${f.n_games === 1 ? "final" : "finals"}</b>${f.n_games ? ` · ${gameCount(f.n_games)}` : ""}</p>${games.length ? `<ul class="spots">${games.map(openedGame).join("")}</ul>` : ""}${details(f)}</div>`;
   }
   if (!files.some((f) => f.kind === "reveal")) html += `<p class="note gap">Not opened yet: the check against the results comes overnight, after the finals.</p>`;
-  const night = m.nights[d] ? `<a class="more" href="/games/${d}/">THE NIGHT'S GAMES →</a>` : "";
-  return `<div class="rnight"><div><span class="d">${esc(shortDate(d).toUpperCase())}</span><br>${night}</div><div>${html}</div></div>`;
+  const night = m.nights[d] ? `<a class="more" href="/games/${d}/">The night's games →</a>` : "";
+  return `<div class="rnight"><div><span class="d">${esc(shortDate(d))}</span><br>${night}</div><div>${html}</div></div>`;
 }
 
 function shortNight(d, files, m) {
@@ -155,7 +155,7 @@ function shortNight(d, files, m) {
   const line = seals.length
     ? `${sealText(seals[0], [], m)}${seals.length > 1 ? ` · sealed ${seals.length} times` : ""} · ${opened ? "opened after the finals" : "not opened yet"}`
     : opened ? '<b class="cream">Opened after the finals</b>' : "";
-  return `<div class="rnight"><div><span class="d">${esc(shortDate(d).toUpperCase())}</span></div><div class="rfile"><p>${line}</p><a class="more" href="${esc(folderUrl(files[0]))}">THE NIGHT'S FILES →</a></div></div>`;
+  return `<div class="rnight"><div><span class="d">${esc(shortDate(d))}</span></div><div class="rfile"><p>${line}</p><a class="more" href="${esc(folderUrl(files[0]))}">The night's files →</a></div></div>`;
 }
 
 /** A month of older nights in one line: how many, how many games sealed (a night's largest seal), how many opened. */
@@ -167,8 +167,8 @@ function monthRow(ym, dates, filesOf) {
     if (files.some((f) => f.kind === "reveal")) opened++;
   }
   const n = dates.length;
-  const label = new Date(`${ym}-15T12:00:00Z`).toLocaleDateString("en-US", { month: "short", year: "numeric", timeZone: "UTC" }).toUpperCase();
-  return `<div class="rnight"><div><span class="d">${esc(label)}</span></div><div class="rfile"><p>${n} ${n === 1 ? "night" : "nights"} · ${games} ${games === 1 ? "game" : "games"} sealed before tip · ${opened === n ? "all opened after the finals" : `${opened} of ${n} opened after the finals`}</p><a class="more" href="${esc(folderUrl(filesOf(dates[0])[0], 1))}">THE SEASON'S FILES →</a></div></div>`;
+  const label = new Date(`${ym}-15T12:00:00Z`).toLocaleDateString("en-US", { month: "short", year: "numeric", timeZone: "UTC" });
+  return `<div class="rnight"><div><span class="d">${esc(label)}</span></div><div class="rfile"><p>${n} ${n === 1 ? "night" : "nights"} · ${games} ${games === 1 ? "game" : "games"} sealed before tip · ${opened === n ? "all opened after the finals" : `${opened} of ${n} opened after the finals`}</p><a class="more" href="${esc(folderUrl(filesOf(dates[0])[0], 1))}">The season's files →</a></div></div>`;
 }
 
 export function receiptsPage(m) {
@@ -183,8 +183,8 @@ export function receiptsPage(m) {
   const nights = dates.length
     ? `<section aria-labelledby="nights"><h2 class="sh" id="nights">Night by night</h2><div class="rlist">${dates.slice(0, FULL_NIGHTS).map((d) => fullNight(d, filesOf(d), m)).join("")}</div>${older.length ? `
 <h3 class="side-h mt" id="earlier">Earlier nights</h3><p class="note">One line a night${months.size ? ", then one a month" : ""}. Every file, fingerprint and commit is in the repository.</p><div class="rlist">${older}</div>` : ""}</section>`
-    : `<section class="panel" aria-labelledby="first"><span class="kick">${esc(m.current)} · THE FIRST SEAL</span><h2 id="first">The first seal lands on ${esc(shortDate(PRESEASON_START))}.</h2><p class="sub">Seals begin with the 2026-27 preseason: on ${esc(longDate(PRESEASON_START))}, before the first tip, the night's numbers go into the public repository. From then on every night lands here, newest first.</p></section>`;
-  const body = `<div class="wrap r"><div class="rhead"><span class="kick">PROOF · SEALED BEFORE TIP</span><h1 class="rh1">Every number is on the record before tip-off.</h1><p class="rdeck">Anyone can say they called it once the game is over. Clutch puts its number for every game in a public file before the game starts, where it can't be changed or backdated without it showing — misses included.</p></div>
+    : `<section class="panel" aria-labelledby="first"><span class="kick">${esc(m.current)} · The first seal</span><h2 id="first">The first seal lands on ${esc(shortDate(PRESEASON_START))}.</h2><p class="sub">Seals begin with the 2026-27 preseason: on ${esc(longDate(PRESEASON_START))}, before the first tip, the night's numbers go into the public repository. From then on every night lands here, newest first.</p></section>`;
+  const body = `<div class="wrap r"><div class="rhead"><span class="kick">Proof · Sealed before tip</span><h1 class="rh1">Every number is on the record before tip-off.</h1><p class="rdeck">Anyone can say they called it once the game is over. Clutch puts its number for every game in a public file before the game starts, where it can't be changed or backdated without it showing — misses included.</p></div>
 <div class="body">
 <section class="blk" aria-labelledby="how"><h2 id="how">How it works, in three steps</h2>
 <div class="g3 steps gap">

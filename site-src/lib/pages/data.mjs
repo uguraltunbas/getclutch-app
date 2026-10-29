@@ -133,7 +133,7 @@ export function dataFiles(m) {
 
 const FIELDS = [
   ["game_id", "Clutch's id for the game (the same in the seal files)."],
-  ["date", "The game's date in New York (US Eastern), YYYY-MM-DD."],
+  ["date", "The game's date in New York (US Eastern), yyyy-mm-dd."],
   ["tip_utc", "Scheduled tip-off, UTC."],
   ["season, season_type", "\"2026-27\"; \"Regular Season\" or \"Playoffs\"."],
   ["home, away", "Team codes (BKN, CHA, PHX…); home_name and away_name spell them out."],
@@ -164,10 +164,10 @@ export function dataPage(m) {
   const py = `import pandas as pd\n\ngames = pd.read_csv("${ORIGIN}${FILES.gamesCsv}")\ngraded = games[games.graded]\nprint(graded.called_right.mean())`;
   const r = `games <- read.csv("${ORIGIN}${FILES.gamesCsv}")\ntable(games$called_right)`;
   const js = `const res = await fetch("${ORIGIN}${FILES.tonight}");\nconst { games } = await res.json();`;
-  const body = `<div class="wrap r"><div class="rhead"><span class="kick">OPEN DATA</span><h1 class="rh1">Clutch's NBA win probabilities, free to download.</h1><p class="rdeck">Every number Clutch has put on an NBA game this season, as JSON and CSV. No key, no sign-up: rebuilt with the site four times a day, free to reuse with credit. The files are served over HTTPS with CORS open to every site, so a web page can read them straight from the browser.</p></div>
+  const body = `<div class="wrap r"><div class="rhead"><span class="kick">Open data</span><h1 class="rh1">Clutch's NBA win probabilities, free to download.</h1><p class="rdeck">Every number Clutch has put on an NBA game this season, as JSON and CSV. No key, no sign-up: rebuilt with the site four times a day, free to reuse with credit. The files are served over HTTPS with CORS open to every site, so a web page can read them straight from the browser.</p></div>
 <div class="body">
 <section aria-labelledby="files"><h2 class="sh" id="files">The files</h2>
-<div class="scroll"><table class="tbl"><caption class="vh">The data files and what each holds</caption><thead><tr><th scope="col">FILE</th><th scope="col">WHAT IT HOLDS</th><th scope="col" class="num">GAMES</th></tr></thead><tbody>${files.map(([p, what, n]) => `<tr><td><a href="${p}">${esc(p.replace(DATA, ""))}</a></td><td>${what}</td><td class="num">${esc(n)}</td></tr>`).join("")}</tbody></table></div>
+<div class="scroll"><table class="tbl"><caption class="vh">The data files and what each holds</caption><thead><tr><th scope="col">File</th><th scope="col">What it holds</th><th scope="col" class="num">Games</th></tr></thead><tbody>${files.map(([p, what, n]) => `<tr><td><a href="${p}">${esc(p.replace(DATA, ""))}</a></td><td>${what}</td><td class="num">${esc(n)}</td></tr>`).join("")}</tbody></table></div>
 <p class="note">${first ? `From ${esc(mediumDate(first))} to tonight. ` : ""}${graded.length ? `${graded.length.toLocaleString("en-US")} of those games are graded so far: ${rec(right, graded.length)}. ` : ""}A game's row appears once Clutch has a number for it, usually the morning of the game.</p></section>
 
 <section class="blk" aria-labelledby="fields"><h2 id="fields">The fields</h2><dl>${FIELDS.map(([k, d]) => `<dt><code>${esc(k)}</code></dt><dd>${esc(d)}</dd>`).join("")}</dl></section>

@@ -93,29 +93,29 @@ function prevText(s, x) {
 
 function prevRow(g, m) {
   const c = m.callBy[g.id];
-  const label = `${g.away.abbreviation} at ${g.home.abbreviation} · ${g.awayScore}–${g.homeScore}${g.period > 4 ? ` ${finalLabel(g.period).replace("FINAL/", "")}` : ""}${g.playIn ? " · play-in" : g.seasonType === "Playoffs" ? " · playoffs" : ""}`;
-  const grade = c ? `<span class="d">${esc(c.pick)} ${Math.round(c.claimed_pct)}</span><span>${c.correct ? '<span class="chip win">RIGHT</span>' : '<span class="chip loss">MISSED</span>'}</span>` : '<span class="d dim">--</span><span><span class="note">Not graded</span></span>';
-  return `<div class="callrow"><span class="mono">${esc(shortDate(g.date).toUpperCase())}</span><span>${esc(label)}</span>${grade}</div>`;
+  const label = `${g.away.abbreviation} at ${g.home.abbreviation} · ${g.awayScore}–${g.homeScore}${g.period > 4 ? ` ${finalLabel(g.period).replace("Final/", "")}` : ""}${g.playIn ? " · play-in" : g.seasonType === "Playoffs" ? " · playoffs" : ""}`;
+  const grade = c ? `<span class="d">${esc(c.pick)} ${Math.round(c.claimed_pct)}</span><span>${c.correct ? '<span class="chip win">✓ Right</span>' : '<span class="chip loss">✗ Missed</span>'}</span>` : '<span class="d dim">--</span><span><span class="note">Not graded</span></span>';
+  return `<div class="callrow"><span class="mono">${esc(shortDate(g.date))}</span><span>${esc(label)}</span>${grade}</div>`;
 }
 
 function row(g) {
   const final = g.status === "final" && g.homeScore != null;
-  const label = `${g.away.abbreviation} at ${g.home.abbreviation}${final ? ` · ${g.awayScore}–${g.homeScore}${g.period > 4 ? ` ${finalLabel(g.period).replace("FINAL/", "")}` : ""}` : ""}${g.preseason ? " · preseason" : g.seasonType === "Playoffs" ? " · playoffs" : ""}`;
+  const label = `${g.away.abbreviation} at ${g.home.abbreviation}${final ? ` · ${g.awayScore}–${g.homeScore}${g.period > 4 ? ` ${finalLabel(g.period).replace("Final/", "")}` : ""}` : ""}${g.preseason ? " · preseason" : g.seasonType === "Playoffs" ? " · playoffs" : ""}`;
   const name = g.page ? `<a href="${g.path}">${esc(label)}</a>` : esc(label);
   const when = final || g.status === "postponed" ? shortDate(g.date) : dayLabel(g.date);
   const tip = !final && g.status === "scheduled" && g.tipUtc ? ` <span class="mono hide-xs">· ${esc(timeET(g.tipUtc))}</span>` : "";
   const num = g.hasCall ? `${esc(g.side.team.abbreviation)} ${pct(g.side.prob)}` : "--";
   let chip;
-  if (g.status === "postponed") chip = '<span class="chip">POSTPONED</span>';
-  else if (final) chip = g.grade === "right" ? '<span class="chip win">RIGHT</span>' : g.grade === "missed" ? '<span class="chip loss">MISSED</span>' : `<span class="note">${g.preseason ? "Preseason" : g.grade === "pending" ? "Graded overnight" : "Not graded"}</span>`;
-  else if (g.status === "live" || g.status === "halftime") chip = '<span class="chip hot">LIVE</span>';
-  else chip = g.hasCall ? '<span class="chip">THE CALL</span>' : '<span class="note">That morning</span>';
-  return `<div class="callrow"><span class="mono">${esc(when.toUpperCase())}</span><span>${name}${tip}</span><span class="d${g.hasCall ? "" : " dim"}">${num}</span><span>${chip}</span></div>`;
+  if (g.status === "postponed") chip = '<span class="chip">Postponed</span>';
+  else if (final) chip = g.grade === "right" ? '<span class="chip win">✓ Right</span>' : g.grade === "missed" ? '<span class="chip loss">✗ Missed</span>' : `<span class="note">${g.preseason ? "Preseason" : g.grade === "pending" ? "Graded overnight" : "Not graded"}</span>`;
+  else if (g.status === "live" || g.status === "halftime") chip = '<span class="chip hot">Live</span>';
+  else chip = g.hasCall ? '<span class="chip">The call</span>' : '<span class="note">That morning</span>';
+  return `<div class="callrow"><span class="mono">${esc(when)}</span><span>${name}${tip}</span><span class="d${g.hasCall ? "" : " dim"}">${num}</span><span>${chip}</span></div>`;
 }
 
 function lastRow(c) {
   const label = `${c.matchup.replace(" @ ", " at ")} · ${c.final.replace("-", "–")}${c.season_type === "Playoffs" ? " · playoffs" : ""}`;
-  return `<div class="callrow"><span class="mono">${esc(shortDate(c.game_date).toUpperCase())}</span><span>${esc(label)}</span><span class="d">${esc(c.pick)} ${Math.round(c.claimed_pct)}</span><span>${c.correct ? '<span class="chip win">RIGHT</span>' : '<span class="chip loss">MISSED</span>'}</span></div>`;
+  return `<div class="callrow"><span class="mono">${esc(shortDate(c.game_date))}</span><span>${esc(label)}</span><span class="d">${esc(c.pick)} ${Math.round(c.claimed_pct)}</span><span>${c.correct ? '<span class="chip win">✓ Right</span>' : '<span class="chip loss">✗ Missed</span>'}</span></div>`;
 }
 
 function matchupPage(s, m) {
@@ -133,14 +133,14 @@ function matchupPage(s, m) {
   const next = ahead[0] ?? null;
   const stats = [
     played.length ? `<div><span class="d">${now.a}–${now.b}</span><span class="mono">${esc(`${a.abbreviation}–${b.abbreviation}`)} · ${esc(m.current)}</span></div>` : "",
-    graded.length ? `<div><span class="d">${rec(right, graded.length)}</span><span class="mono">CLUTCH'S GRADED CALLS</span></div>` : "",
+    graded.length ? `<div><span class="d">${rec(right, graded.length)}</span><span class="mono">Clutch's graded calls</span></div>` : "",
     prev.reg.a || prev.reg.b ? `<div><span class="d">${prev.reg.a}–${prev.reg.b}</span><span class="mono">${esc(`${a.abbreviation}–${b.abbreviation}`)} · ${esc(m.prevSeason)}</span></div>` : "",
-    s.last.length ? `<div><span class="d">${rec(lastRight, s.last.length)}</span><span class="mono">CLUTCH'S CALLS · EARLIER SEASONS</span></div>` : "",
+    s.last.length ? `<div><span class="d">${rec(lastRight, s.last.length)}</span><span class="mono">Clutch's calls · Earlier seasons</span></div>` : "",
   ].join("");
   const st = seriesText(s, now);
   const deck = `Every ${a.name}–${b.name} game this season: Clutch's number for each before tip, the final, and whether the call held. ${st ? `${st} this season.` : "Their first meeting of the season is on the schedule below."}${pt ? ` Last season: ${pt}.` : ""}`;
   const thisSeason = s.games.filter((g) => g.status === "final" || g.status === "postponed" || g.status === "live" || g.status === "halftime");
-  const body = `<div class="wrap r"><div class="rhead"><span class="kick">HEAD TO HEAD · ${esc(m.current)}</span><h1 class="rh1">${esc(a.nickname)} vs ${esc(b.nickname)}</h1><p class="rdeck">${esc(deck)}</p>${stats ? `<div class="stat gap">${stats}</div>` : ""}</div>
+  const body = `<div class="wrap r"><div class="rhead"><span class="kick">Head to head · ${esc(m.current)}</span><h1 class="rh1">${esc(a.nickname)} vs ${esc(b.nickname)}</h1><p class="rdeck">${esc(deck)}</p>${stats ? `<div class="stat gap">${stats}</div>` : ""}</div>
 <div class="body">
 <section aria-labelledby="season"><h2 class="sh" id="season">This season</h2>${thisSeason.length ? thisSeason.map(row).join("") : '<p class="sub">No finals yet between these two this season.</p>'}</section>
 ${ahead.length ? `<section aria-labelledby="ahead"><h2 class="sh s" id="ahead">Still to come</h2>${ahead.map(row).join("")}<p class="note gap">Clutch's number for each game lands the morning of the game and is sealed before tip.</p></section>` : ""}

@@ -56,9 +56,9 @@ const capital = (s) => s[0].toUpperCase() + s.slice(1);
 function sealLine(g, m) {
   const r = g.receipt;
   const parts = [`<span>${esc(receiptLine(r, g.date))}</span>`];
-  if (r?.seal) parts.push(`<span>RECEIPT <a href="${sealFileUrl(r.seal)}">${esc(shortHash(r.seal.sha256))}</a></span>`);
-  if (g.status !== "final" && g.status !== "postponed") parts.push(`<span>${g.preseason ? "PRESEASON: NOT GRADED" : "GRADED AFTER THE FINAL"}</span>`);
-  if (g.hasCall && m.retired(g)) parts.push("<span>MADE BY THE RETIRED 2025-26 MODEL</span>");
+  if (r?.seal) parts.push(`<span>Receipt <a href="${sealFileUrl(r.seal)}">${esc(shortHash(r.seal.sha256))}</a></span>`);
+  if (g.status !== "final" && g.status !== "postponed") parts.push(`<span>${g.preseason ? "Preseason: not graded" : "Graded after the final"}</span>`);
+  if (g.hasCall && m.retired(g)) parts.push("<span>Made by the retired 2025-26 model</span>");
   return `<div class="seal">${parts.join("")}</div>`;
 }
 
@@ -88,7 +88,7 @@ function outSection(g) {
   const body = rows.map((a) => `<tr><td class="m">${esc(a.team)}</td><td><b>${esc(title(a.name))}</b></td><td class="st">${esc(a.status)}</td><td>${esc(a.note)}</td></tr>`).join("")
     + [g.away, g.home].filter((t) => !listed.has(t.abbreviation)).map((t) => `<tr><td class="m">${esc(t.abbreviation)}</td><td class="ink3">Nobody listed</td><td></td><td></td></tr>`).join("");
   return `<section aria-labelledby="out"><h2 class="sh s" id="out">Who's out</h2>
-<div class="scroll"><table class="tbl"><thead><tr><th scope="col">TEAM</th><th scope="col">PLAYER</th><th scope="col">STATUS</th><th scope="col">${g.explain ? "MINUTES" : "NOTE"}</th></tr></thead><tbody>${body}</tbody></table></div>
+<div class="scroll"><table class="tbl"><thead><tr><th scope="col">Team</th><th scope="col">Player</th><th scope="col">Status</th><th scope="col">${g.explain ? "Minutes" : "Note"}</th></tr></thead><tbody>${body}</tbody></table></div>
 <p class="note">From the league's official injury report (ESPN's list when the report isn't out). If a status changes before tip, this page and the number update.</p></section>`;
 }
 
@@ -135,7 +135,7 @@ function aside(g, m, night) {
   const vs = `<section aria-labelledby="vs"><h2 class="side-h" id="vs">Clutch and the market</h2>
 <div class="kv"><span>Clutch's call</span><span class="d amber">${s ? `${esc(s.team.abbreviation)} ${pct(s.prob)}` : "--"}</span></div>
 <div class="kv"><span>The market's number</span>${s ? mk : '<span class="ink3">--</span>'}</div>
-<div class="kv"><span>Projected final</span><a class="pro-tag" href="/pricing/">PRO</a></div></section>`;
+<div class="kv"><span>Projected final</span><a class="pro-tag" href="/pricing/">Pro</a></div></section>`;
   const r = m.record;
   const ledger = r
     ? `<span class="d rec">${rec(r.hits, r.n)}</span><p>${r.season}, every call graded after the final${r.n >= RATE_FLOOR ? ` — ${r.hitRate.toFixed(1)}% right.` : "."}</p>`
@@ -145,18 +145,18 @@ function aside(g, m, night) {
     ? `<section class="also" aria-labelledby="also"><h2 class="side-h" id="also">${g.date === m.today ? "Also tonight" : `Also on ${esc(shortDate(g.date))}`}</h2>${also.map((x) => `<a class="h-${x.home.abbreviation}" href="${x.path}" data-gid="${x.id}" data-a="${x.away.abbreviation}" data-h="${x.home.abbreviation}"><span class="sw"></span><span><b>${esc(x.away.abbreviation)} at ${esc(x.home.abbreviation)}</b><span class="mono" data-live="st">${esc(statusText(x))}</span></span><span class="d">${x.status === "final" && x.homeScore != null ? `<span class="cream">${x.awayScore}–${x.homeScore}</span>` : x.hasCall ? `${esc(x.side.team.abbreviation)} ${pct(x.side.prob)}` : "--"}</span></a>`).join("")}</section>`
     : "";
   const mu = matchupFor(m, g.home, g.away);
-  const h2h = `<section class="mini" aria-labelledby="h2h"><h2 class="side-h" id="h2h">The teams</h2><p><a href="${m.teamPath(g.away)}">${esc(g.away.name)}</a> · <a href="${m.teamPath(g.home)}">${esc(g.home.name)}</a></p>${mu ? `<a class="more" href="${mu.path}">EVERY ${esc(g.away.abbreviation)}–${esc(g.home.abbreviation)} GAME →</a>` : ""}</section>`;
-  return `<aside class="aside" aria-label="Make your call, the market and the Ledger">${call}${vs}<section class="mini" aria-labelledby="led"><h2 class="side-h" id="led">The Ledger</h2>${ledger}<a class="more" href="/ledger/">SEE EVERY CALL →</a></section>${h2h}${alsoHtml}</aside>`;
+  const h2h = `<section class="mini" aria-labelledby="h2h"><h2 class="side-h" id="h2h">The teams</h2><p><a href="${m.teamPath(g.away)}">${esc(g.away.name)}</a> · <a href="${m.teamPath(g.home)}">${esc(g.home.name)}</a></p>${mu ? `<a class="more" href="${mu.path}">Every ${esc(g.away.abbreviation)}–${esc(g.home.abbreviation)} game →</a>` : ""}</section>`;
+  return `<aside class="aside" aria-label="Make your call, the market and the Ledger">${call}${vs}<section class="mini" aria-labelledby="led"><h2 class="side-h" id="led">The Ledger</h2>${ledger}<a class="more" href="/ledger/">See every call →</a></section>${h2h}${alsoHtml}</aside>`;
 }
 
 export function gamePage(g, m) {
   const night = m.nights[g.date] ?? [g];
   const h1 = headline(g), dk = deck(g);
-  const crumbDate = `${longDate(g.date)} · ${g.home.city}${g.tipUtc && g.status === "scheduled" ? ` · TIP ${timeET(g.tipUtc)}` : ""}`;
-  const kicker = g.preseason ? "PRESEASON" : g.seasonType === "Playoffs" ? "PLAYOFFS" : "THE CALL";
+  const crumbDate = `${longDate(g.date)} · ${g.home.city}${g.tipUtc && g.status === "scheduled" ? ` · Tip ${timeET(g.tipUtc)}` : ""}`;
+  const kicker = g.preseason ? "Preseason" : g.seasonType === "Playoffs" ? "Playoffs" : "The call";
   const body = `<div class="wrap n">
 <div class="ghead">
-<div class="crumb"><span><a href="/games/${g.date}/">${g.date === m.today ? "TONIGHT" : esc(shortDate(g.date).toUpperCase())}</a> › ${esc(g.away.abbreviation)} AT ${esc(g.home.abbreviation)}</span><span class="hide-s">${esc(crumbDate.toUpperCase())}</span></div>
+<div class="crumb"><span><a href="/games/${g.date}/">${g.date === m.today ? "Tonight" : esc(shortDate(g.date))}</a> › ${esc(g.away.abbreviation)} at ${esc(g.home.abbreviation)}</span><span class="hide-s">${esc(crumbDate)}</span></div>
 <h1 class="gh1${h1.length > 30 ? " long" : ""}">${esc(h1)}</h1>
 <p class="deck">${esc(dk)}</p>
 ${sealLine(g, m)}
@@ -241,8 +241,8 @@ export function nightPage(date, m) {
     graded.length ? `Clutch's calls held in ${held} of ${graded.length} graded ${graded.length === 1 ? "game" : "games"}.` : finals.length && pre ? "Preseason numbers are sealed, never graded." : "Every number is sealed before its tip.",
   ];
   const body = `<div class="wrap">
-<div class="rhead"><span class="kick">${esc(longDate(date).toUpperCase())}</span><h1 class="rh1">${esc(h1)}</h1><p class="rdeck">${esc(lines.join(" "))}</p>
-<nav class="nights" aria-label="Nights">${dates.map((d) => `<a href="/games/${d}/"${d === date ? ' aria-current="page"' : ""}>${esc(shortDate(d).toUpperCase())}</a>`).join("")}</nav></div>
+<div class="rhead"><span class="kick">${esc(longDate(date))}</span><h1 class="rh1">${esc(h1)}</h1><p class="rdeck">${esc(lines.join(" "))}</p>
+<nav class="nights" aria-label="Nights">${dates.map((d) => `<a href="/games/${d}/"${d === date ? ' aria-current="page"' : ""}>${esc(shortDate(d))}</a>`).join("")}</nav></div>
 <div class="body"><div class="cards">${games.map(gameCard).join("")}</div>
 <p class="note">Amber is Clutch's number for the side it favours; the cream segment is the market's number for that side. <a href="/how-it-works/">How it works →</a></p></div>
 </div>`;

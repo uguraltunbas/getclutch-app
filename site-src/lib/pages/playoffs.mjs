@@ -26,7 +26,7 @@ export function playoffsPage(m) {
   const played = Math.max(...rows.map((r) => (r.wins ?? 0) + (r.losses ?? 0)));
   const early = board.phase === "preseason" || played < 10;
   const conf = (c) => rows.filter((r) => r.conference === c).sort((x, y) => y.playoff_pct - x.playoff_pct || x.team.name.localeCompare(y.team.name));
-  const table = (c, id) => `<section aria-labelledby="${id}"><h2 class="sh" id="${id}">${c}</h2><div class="scroll"><table class="tbl"><caption class="vh">Playoff chances, ${c}ern Conference</caption><thead><tr><th scope="col">TEAM</th><th scope="col" class="num">W–L</th><th scope="col" class="num">PLAYOFF CHANCE</th></tr></thead><tbody>${conf(c).map((r) => `<tr><td><a href="${m.teamPath(r.team)}">${esc(r.team.name)}</a></td><td class="num">${r.wins ?? 0}–${r.losses ?? 0}</td><td class="num amber">${chanceText(r.playoff_pct)}</td></tr>`).join("")}</tbody></table></div></section>`;
+  const table = (c, id) => `<section aria-labelledby="${id}"><h2 class="sh" id="${id}">${c}</h2><div class="scroll"><table class="tbl"><caption class="vh">Playoff chances, ${c}ern Conference</caption><thead><tr><th scope="col">Team</th><th scope="col" class="num">W–L</th><th scope="col" class="num">Playoff chance</th></tr></thead><tbody>${conf(c).map((r) => `<tr><td><a href="${m.teamPath(r.team)}">${esc(r.team.name)}</a></td><td class="num">${r.wins ?? 0}–${r.losses ?? 0}</td><td class="num amber">${chanceText(r.playoff_pct)}</td></tr>`).join("")}</tbody></table></div></section>`;
   // The board's own test, from its numbers: its accuracy score, and last season's record's when the note gives it.
   const bt = board.backtest ?? {};
   const recordBrier = String(bt.note ?? "").match(/against ([0-9.]+) for last season's record/)?.[1];
@@ -35,7 +35,7 @@ export function playoffsPage(m) {
     : "";
   const top = rows.slice().sort((x, y) => y.playoff_pct - x.playoff_pct)[0];
   const deck = `Every NBA team's chance to make the playoffs, from ${(board.runs ?? 10000).toLocaleString("en-US")} simulated seasons, rebuilt every night with the latest results.${early ? " With only a few games played, these still lean on each team's rating coming into the season." : ""}`;
-  const body = `<div class="wrap r"><div class="rhead"><span class="kick">PLAYOFF CHANCES · ${esc(board.season ?? m.current)}${board.as_of ? ` · RATINGS AS OF ${esc(mediumDate(board.as_of).toUpperCase())}` : ""}</span><h1 class="rh1">NBA playoff chances</h1><p class="rdeck">${esc(deck)}</p></div>
+  const body = `<div class="wrap r"><div class="rhead"><span class="kick">Playoff chances · ${esc(board.season ?? m.current)}${board.as_of ? ` · Ratings as of ${esc(mediumDate(board.as_of))}` : ""}</span><h1 class="rh1">NBA playoff chances</h1><p class="rdeck">${esc(deck)}</p></div>
 <div class="body">
 ${table("East", "east")}
 ${table("West", "west")}

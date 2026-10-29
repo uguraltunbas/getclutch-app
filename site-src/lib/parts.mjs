@@ -7,11 +7,11 @@ import { timeET, tipShort } from "./time.mjs";
 
 /** "TIP 7:00 PM ET", "Q3 4:22", "FINAL", "POSTPONED". */
 export function statusText(g, short = false) {
-  if (g.status === "postponed") return "POSTPONED";
+  if (g.status === "postponed") return "Postponed";
   if (g.status === "final") return finalLabel(g.period);
   if (g.status === "live" || g.status === "halftime") return liveLabel(g.status, g.period, g.clock);
   const t = short ? tipShort(g.tipUtc) : timeET(g.tipUtc);
-  return t ? (short ? t : `TIP ${t}`).toUpperCase() : "TIP TBD";
+  return t ? (short ? t : `Tip ${t}`) : "Tip TBD";
 }
 
 /** "MIA 99 · TOR 104" (away first), or "". */
@@ -26,12 +26,12 @@ export const tonightOpen = (m) => m.tonight === m.today && (m.nights[m.tonight] 
 /** What one grade reads like, as a chip. */
 export function gradeChip(g) {
   switch (g.grade) {
-    case "right": return '<span class="chip win">RIGHT</span>';
-    case "missed": return '<span class="chip loss">MISSED</span>';
-    case "preseason": return '<span class="chip">PRESEASON · NOT GRADED</span>';
-    case "pending": return '<span class="chip">GRADED OVERNIGHT</span>';
-    case "ungraded": return '<span class="chip">NOT GRADED</span>';
-    case "postponed": return '<span class="chip">POSTPONED</span>';
+    case "right": return '<span class="chip win">✓ Right</span>';
+    case "missed": return '<span class="chip loss">✗ Missed</span>';
+    case "preseason": return '<span class="chip">Preseason · Not graded</span>';
+    case "pending": return '<span class="chip">Graded overnight</span>';
+    case "ungraded": return '<span class="chip">Not graded</span>';
+    case "postponed": return '<span class="chip">Postponed</span>';
     default: return "";
   }
 }
@@ -44,23 +44,23 @@ export function gradeChip(g) {
  * a plain wrapper round the head, numbers and rail (layout-neutral: .board>*
  * only sets position) and on the call buttons, only where they are there.
  */
-export function board(g, { kicker = "THE CALL", link = null, headingLevel = 0, tour = false } = {}) {
+export function board(g, { kicker = "The call", link = null, headingLevel = 0, tour = false } = {}) {
   const s = g.side;
   const favHome = s ? s.isHome : true;
   const awayPct = s ? pct(1 - g.homeProb) : null, homePct = s ? pct(g.homeProb) : null;
   const num = (p, big) => (p == null ? '<span class="pc lo">--</span>' : big ? `<span class="pc hi">${p}<small>%</small></span>` : `<span class="pc lo">${p}</span>`);
-  const nm = (t, where) => `<span class="nm">${esc(t.nickname.toUpperCase())} · ${where}</span>`;
+  const nm = (t, where) => `<span class="nm">${esc(t.nickname)} · ${where}</span>`;
   const live = g.status === "live" || g.status === "halftime";
   const final = g.status === "final";
-  const sealedAt = g.receipt?.state === "sealed" ? `SEALED ${timeET(g.receipt.seal.committedAt).replace(" ET", "")} ET` : g.preseason ? "PRESEASON" : "";
+  const sealedAt = g.receipt?.state === "sealed" ? `Sealed ${timeET(g.receipt.seal.committedAt).replace(" ET", "")} ET` : g.preseason ? "Preseason" : "";
   const legend = !g.hasCall
-    ? "<span>NO NUMBER YET · IT LANDS THE MORNING OF THE GAME</span>"
-    : `<span><b class="amber">CLUTCH ${esc(s.team.abbreviation)} ${pct(s.prob)}</b> · <b class="cream">${g.marketSide == null ? (g.marketState === "none" ? "NO MARKET NUMBER" : "MARKET —") : `MARKET ${pct(g.marketSide)}`}</b></span>${sealedAt ? `<span>${sealedAt}</span>` : ""}`;
+    ? "<span>No number yet: it lands the morning of the game</span>"
+    : `<span><b class="amber">Clutch ${esc(s.team.abbreviation)} ${pct(s.prob)}</b> · <b class="cream">${g.marketSide == null ? (g.marketState === "none" ? "No market number" : "Market —") : `Market ${pct(g.marketSide)}`}</b></span>${sealedAt ? `<span>${sealedAt}</span>` : ""}`;
   let foot;
   if (final || live) {
-    foot = `<div class="bfinal"><span class="d" data-live="sc">${esc(scoreLine(g))}</span>${final ? gradeChip(g) : '<span class="chip hot">LIVE</span>'}</div>`;
+    foot = `<div class="bfinal"><span class="d" data-live="sc">${esc(scoreLine(g))}</span>${final ? gradeChip(g) : '<span class="chip hot">Live</span>'}</div>`;
   } else if (g.status === "postponed") {
-    foot = `<div class="bfinal"><span class="d">POSTPONED</span><span class="chip">NOTHING TO GRADE</span></div>`;
+    foot = `<div class="bfinal"><span class="d">Postponed</span><span class="chip">Nothing to grade</span></div>`;
   } else if (g.hasCall) {
     // One look for both sides (UI/UX study, 2026-10-28): a fill means only "Your call" (the
     // app's), so Clutch's side is the small amber tag, not a filled button. Away left, home right.
@@ -72,10 +72,10 @@ export function board(g, { kicker = "THE CALL", link = null, headingLevel = 0, t
   }
   const head = link ? `<a class="bk" href="${link}">${kicker}</a>` : `<span class="bk">${kicker}</span>`;
   return `<div class="board gl ${teamCls(g)}${live ? " is-live" : ""}" data-gid="${g.id}" data-a="${g.away.abbreviation}" data-h="${g.home.abbreviation}"><span class="rs" aria-hidden="true"></span>
-${tour && s ? '<div data-tour="num">' : ""}<div class="bhead">${headingLevel ? `<h${headingLevel} class="bk-h">${head}</h${headingLevel}>` : head}<span class="amber" data-live="st">${esc(statusText(g))}</span></div>
+${tour && s ? '<div data-tour="num">' : ""}<div class="bhead">${headingLevel ? `<h${headingLevel} class="bk-h">${head}</h${headingLevel}>` : head}<span class="ink3" data-live="st">${esc(statusText(g))}</span></div>
 <div class="bteams">
-<div class="side"><span class="ab">${esc(g.away.abbreviation)}</span>${nm(g.away, "AWAY")}${num(awayPct, !favHome && !!s)}</div>
-<div class="side r"><span class="ab">${esc(g.home.abbreviation)}</span>${nm(g.home, "HOME")}${num(homePct, favHome && !!s)}</div>
+<div class="side"><span class="ab">${esc(g.away.abbreviation)}</span>${nm(g.away, "Away")}${num(awayPct, !favHome && !!s)}</div>
+<div class="side r"><span class="ab">${esc(g.home.abbreviation)}</span>${nm(g.home, "Home")}${num(homePct, favHome && !!s)}</div>
 </div>
 <div class="brail">${rail(s ? s.prob : null, g.marketSide)}<div class="legend">${legend}</div></div>${tour && s ? "</div>" : ""}
 ${foot}
@@ -113,7 +113,7 @@ export function gameCard(g, why = false) {
   const big = final || live
     ? `<span class="d n cream" data-live="sc" data-fmt="dash">${g.homeScore == null ? "--" : `${g.awayScore}–${g.homeScore}`}</span>`
     : `<span data-live="pre">${g.hasCall ? `<span class="d n">${pct(g.side.prob)}</span> <span class="d s">${esc(g.side.team.abbreviation)}</span>` : '<span class="d n dim">--</span>'}</span><span class="d n cream" data-live="sc" data-fmt="dash" hidden></span>`;
-  const cta = final ? "THE RESULT →" : live ? "FOLLOW IT →" : g.status === "postponed" ? "DETAILS →" : "CALL IT →";
+  const cta = final ? "The result →" : live ? "Follow it →" : g.status === "postponed" ? "Details →" : "Call it →";
   return `<a class="${cls}" href="${g.path}" data-gid="${g.id}" data-a="${g.away.abbreviation}" data-h="${g.home.abbreviation}">
 <span class="gtop"><span class="d m">${esc(g.away.abbreviation)} @ ${esc(g.home.abbreviation)}</span><span class="d t" data-live="st">${esc(statusText(g, true))}</span></span>
 <span class="gnum">${big}</span>

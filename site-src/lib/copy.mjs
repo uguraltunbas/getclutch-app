@@ -84,14 +84,14 @@ function clockIsZero(c) {
 
 /** "Q3 4:22", "HALF", "OT 1:10", "2OT" — lib/play/slateWeek liveLabel, without the dot. */
 export function liveLabel(status, period, clock) {
-  if (status === "halftime") return "HALF";
-  if (!period) return "LIVE";
+  if (status === "halftime") return "Half";
+  if (!period) return "Live";
   const p = period <= 4 ? `Q${period}` : period === 5 ? "OT" : `${period - 4}OT`;
   const c = clock && !clockIsZero(clock) ? ` ${String(clock).replace(/^0(?=\d:)/, "")}` : "";
   return `${p}${c}`;
 }
 
-export const finalLabel = (period) => (period && period > 4 ? (period === 5 ? "FINAL/OT" : `FINAL/${period - 4}OT`) : "FINAL");
+export const finalLabel = (period) => (period && period > 4 ? (period === 5 ? "Final/OT" : `Final/${period - 4}OT`) : "Final");
 
 export function normalizeStatus(s) {
   if (s === "in_progress") return "live";
@@ -207,12 +207,12 @@ export function lastSeasonOf(l, current) {
 }
 
 export function verdictOf(r) {
-  if (r.n < RATE_FLOOR) return { line: "TOO EARLY TO TELL", tone: "ink" };
+  if (r.n < RATE_FLOOR) return { line: "Too early to tell", tone: "ink" };
   const lift = r.lift ?? 0;
-  if (r.liftReadable) return { line: "AHEAD OF ALWAYS-HOME", tone: "win" };
-  if (lift > 0) return { line: "AHEAD, NOT YET PROVEN", tone: "amber" };
-  if (lift === 0) return { line: "LEVEL WITH ALWAYS-HOME", tone: "ink" };
-  return { line: "BEHIND ALWAYS-HOME", tone: "loss" };
+  if (r.liftReadable) return { line: "Ahead of always-home", tone: "win" };
+  if (lift > 0) return { line: "Ahead, not yet proven", tone: "amber" };
+  if (lift === 0) return { line: "Level with always-home", tone: "ink" };
+  return { line: "Behind always-home", tone: "loss" };
 }
 
 const hitsOf = (s, n) => (s?.hit_rate != null ? Math.round((s.hit_rate * n) / 100) : 0);
@@ -245,10 +245,10 @@ export function comparisons(r) {
 export function opener(current, today, sealed, hasLastSeason) {
   const started = today >= REGULAR_SEASON_START;
   return {
-    kicker: `${current} · THE NEW SEASON`,
+    kicker: `${current} · The new season`,
     title: started ? "The first graded calls land after tonight's finals." : `The record starts on ${shortDate(REGULAR_SEASON_START)}.`,
     body: `Every call Clutch makes this season is graded here after the final, beside the market, ESPN and picking the home team every night — misses included.${hasLastSeason ? " Last season's record, made by the model we retired, is kept below exactly as graded." : ""}`,
-    sealedLine: sealed > 0 ? `${sealed.toLocaleString("en-US")} ${sealed === 1 ? "GAME" : "GAMES"} SEALED BEFORE TIP SO FAR` : null,
+    sealedLine: sealed > 0 ? `${sealed.toLocaleString("en-US")} ${sealed === 1 ? "Game" : "Games"} sealed before tip so far` : null,
     sealedNote: sealed > 0 ? "Preseason games are sealed too; only the regular season is graded." : today < PRESEASON_START ? `Every number is sealed before tip from ${shortDate(PRESEASON_START)}, the first preseason night.` : null,
   };
 }
