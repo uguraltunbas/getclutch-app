@@ -70,13 +70,17 @@ ${g.status === "postponed" ? "" : out(openGame(g), "Open in Clutch", "go")}
 function tonightBox(m) {
   const date = m.tonight;
   const games = date ? m.nights[date] ?? [] : [];
-  const rows = games.map((g) => {
+  // Eight games at most, so the box never scrolls inside someone else's page: on a bigger night
+  // the finished games give way first, the rest stay in tip order, and a link opens all of them.
+  const done = (g) => g.status === "final" || g.status === "postponed";
+  const shown = games.length > TONIGHT_MAX ? [...games.filter((g) => !done(g)), ...games.filter(done)].slice(0, TONIGHT_MAX).sort((a, b) => games.indexOf(a) - games.indexOf(b)) : games;
+  const rows = shown.map((g) => {
     const right = g.hasCall ? `${esc(g.side.team.abbreviation)} ${pct(g.side.prob)}%` : "--";
-    const sub = g.status === "final" ? `Final${g.hasCall ? ` · ${gradeText(g)}` : ""}` : g.status === "postponed" ? "Postponed" : g.status === "live" || g.status === "halftime" ? "Live" : g.tipUtc ? `${timeET(g.tipUtc)}` : "";
-    return `<li>${out(ref(g.path, "tonight"), `<span class="g"><span class="m">${esc(g.away.abbreviation)} @ ${esc(g.home.abbreviation)}</span><span class="n">${right}</span><span class="k">${esc(sub)}</span><span></span>${g.hasCall && g.status !== "final" ? strip(g.side.prob) : ""}</span>`)}</li>`;
+    const sub = g.status === "final" ? (g.grade === "right" || g.grade === "missed" ? gradeText(g) : "Final") : g.status === "postponed" ? "Postponed" : g.status === "live" || g.status === "halftime" ? "Live" : g.tipUtc ? `${timeET(g.tipUtc)}` : "";
+    return `<li>${out(ref(g.path, "tonight"), `<span class="g"><span class="m">${esc(g.away.abbreviation)} @ ${esc(g.home.abbreviation)}</span><span class="k">${esc(sub)}</span><span class="n">${right}</span>${g.hasCall && g.status !== "final" ? strip(g.side.prob) : ""}</span>`)}</li>`;
   }).join("");
   const inner = `<div class="hd">${out(ref("/", "tonight"), "Clutch", "b")}<span class="k">${date ? `NBA · ${esc(dayLabel(date))} · Win probability` : "NBA · Win probability"}</span></div>
-${games.length ? `<ul class="gs">${rows}</ul>` : '<p class="k">No games on the schedule yet.</p>'}
+${games.length ? `<ul class="gs">${rows}</ul>` : '<p class="k">No games on the schedule yet.</p>'}${shown.length < games.length ? `<p class="all">${out(ref("/tonight/", "tonight"), `All ${games.length} games →`)}</p>` : ""}
 <p class="ft">Every number sealed before tip, graded after the final. ${out(ref("/tonight/", "tonight"), "More at clutchledger.com")}</p>`;
   return { path: "/embed/tonight/", embed: true, title: "Clutch box: NBA win probability tonight", html: shell({ path: "/embed/tonight/", title: "Clutch box: NBA win probability tonight", description: "An embeddable box with Clutch's win probability for every NBA game of the night.", inner }) };
 }
@@ -122,7 +126,7 @@ function widgetPage(m) {
   const exName = ex ? `${ex.away.nickname} ${vs(ex)} ${ex.home.nickname}` : "";
   const gameCode = ex ? code(embedPath(ex), GAME_H, `${exName} · Clutch's number`, ex.path) : "";
   const tonightList = night.map((g) => `<li><code>${esc(embedPath(g))}</code> · ${esc(g.away.nickname)} ${vs(g)} ${esc(g.home.nickname)}</li>`).join("");
-  const tonightCode = code("/embed/tonight/", 440, "NBA win probability tonight", "/tonight/");
+  const tonightCode = code("/embed/tonight/", TONIGHT_H, "NBA win probability tonight", "/tonight/");
   const teamCode = code(`/embed/team/${teamSlug(hou)}/`, 280, `${hou.name} win probability`, m.teamPath(hou));
   const houBadge = `${ORIGIN}${badgePath(teamSlug(hou))}`;
   const badgeMd = `[![${hou.name} win probability · Clutch](${houBadge})](${ORIGIN}${m.teamPath(hou)})`;
@@ -135,8 +139,8 @@ ${ex ? `<section class="blk" aria-labelledby="game"><h2 id="game">One game</h2><
 <iframe class="gap" src="${esc(embedPath(ex))}" width="100%" height="${GAME_H}" title="Preview: ${esc(exName)}" loading="lazy"></iframe>
 <p class="gap">Copy this into your page's HTML:</p><pre class="scroll"><code>${esc(gameCode)}</code></pre>
 <p class="gap">Every game has a box: take the game's address on clutchledger.com and put <code>/embed</code> in front of <code>/games/</code>, in both addresses.</p>${tonightList ? `<details class="gap"><summary>Tonight's boxes</summary><ul class="note">${tonightList}</ul></details>` : ""}</section>` : ""}
-<section class="blk" aria-labelledby="tonight"><h2 id="tonight">Tonight's games</h2><p>Every game of the next NBA night, each with Clutch's number for the side it favours and the tip time (Eastern); after the final, whether Clutch was right.</p>
-<iframe class="gap" src="/embed/tonight/" width="100%" height="440" title="Preview: NBA win probability tonight" loading="lazy"></iframe>
+<section class="blk" aria-labelledby="tonight"><h2 id="tonight">Tonight's games</h2><p>The next NBA night, up to eight games, each with Clutch's number for the side it favours and the tip time (Eastern); after the final, whether Clutch was right. On a bigger night the box links to all of them.</p>
+<iframe class="gap" src="/embed/tonight/" width="100%" height="${TONIGHT_H}" title="Preview: NBA win probability tonight" loading="lazy"></iframe>
 <p class="gap">Copy this into your page's HTML:</p><pre class="scroll"><code>${esc(tonightCode)}</code></pre></section>
 <section class="blk" aria-labelledby="team"><h2 id="team">Your team's next game</h2><p>One team: its next game with Clutch's win probability, its last graded call and its playoff chance.</p>
 <iframe class="gap" src="/embed/team/${esc(teamSlug(hou))}/" width="100%" height="280" title="Preview: ${esc(hou.name)} next game" loading="lazy"></iframe>
@@ -147,7 +151,7 @@ ${ex ? `<section class="blk" aria-labelledby="game"><h2 id="game">One game</h2><
 <p class="gap">Markdown (GitHub, Discourse forums, many blogs), with your team's name in both addresses in place of <code>${esc(teamSlug(hou))}</code>:</p><pre class="scroll"><code>${esc(badgeMd)}</code></pre>
 <p class="gap">HTML, for any page or newsletter that takes it:</p><pre class="scroll"><code>${esc(badgeHtml)}</code></pre>
 <p class="gap">The season's record:</p><pre class="scroll"><code>${esc(recordMd)}</code></pre></section>
-<section class="blk" aria-labelledby="rules"><h2 id="rules">The small print</h2><p>Use the boxes and badges on any site, free, as long as the box and the line under it stay as they are. Not for sites that take money on game results, or that send readers to one. The boxes set no cookies, run no scripts and count nothing about your readers; links open clutchledger.com or the Clutch app in a new tab, tagged so we can tell a box sent the visit. Clutch is analytics for fans, with no affiliate links.</p>
+<section class="blk" aria-labelledby="rules"><h2 id="rules">The small print</h2><p>Use the boxes and badges on any site, free, as long as the box and the line under it stay as they are. Not for sites that take money on game results, or that send readers to one. The boxes set no cookies, run no scripts and count nothing about your readers: a box counts only the name of the site it is on and which box it is, so we know where Clutch is read. Links open clutchledger.com or the Clutch app in a new tab, tagged so we can tell a box sent the visit. Clutch is analytics for fans, with no affiliate links.</p>
 <p>Using a box, or want one that isn't here? Tell us where through <a href="/support/">Support</a>: it's how we know who to tell before a box changes.</p></section>
 </div></div>`;
   const title = "Free NBA win probability widget for your site · Clutch";
@@ -156,6 +160,9 @@ ${ex ? `<section class="blk" aria-labelledby="game"><h2 id="game">One game</h2><
 
 /** The one-game box's height in the code: its lines fit from 280 px wide (measured: 275 px at 320, 300 at 280). */
 const GAME_H = 300;
+/** The tonight box: at most eight games; its height in the code fits them and the "All N games" link from 280 px wide (measured: 499 px at 320, 525 at 280; a final night's longer lines get the rest). */
+const TONIGHT_MAX = 8;
+const TONIGHT_H = 560;
 
 export function embedPages(m) {
   return [...m.pageGames.map(gameBox), tonightBox(m), ...m.raw.teams.map((t) => teamBox(t, m)), widgetPage(m)];

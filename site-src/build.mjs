@@ -40,6 +40,7 @@ import { fileURLToPath } from "node:url";
 
 import { supabase, loadAll } from "./lib/data.mjs";
 import { buildModel } from "./lib/model.mjs";
+import worker, { EMBED_HEADERS, EMBED_DROPS } from "./worker.js";
 import { etDate, seasonOf } from "./lib/time.mjs";
 import { FONTS, ORIGIN, APP, APP_STORE, INDEXNOW_KEY, WEB_APP_LIVE, WIN_TOTALS_RULES_URL, DESCRIPTION_MAX, LAUNCH_INPUT, LAUNCH_VALID, LAUNCH_UNTIL, LAUNCH_ON, LAUNCH_WORDS } from "./lib/html.mjs";
 import { ttfToWoff2 } from "./lib/woff2.mjs";
@@ -414,6 +415,42 @@ for (const c of [ed.night.paper, ed.day.paper]) {
 }
 if (!pages.filter((p) => !p.redirect && !p.embed).every((p) => p.html.includes(themeTag))) fail.push("a page without the theme script");
 if (!readFileSync(join(OUT, "_headers"), "utf8").includes(`script-src 'self' ${themeHash} `)) fail.push("_headers: the CSP doesn't admit the theme script's hash");
+// The boxes' Worker (worker.js) sets their headers itself, since Cloudflare applies _headers only
+// to responses served without code: what it sets must be what _headers gives /embed/* (the /*
+// rules, then /embed/*'s, with "! Name" taking one off). Then a dry run of the Worker on a fake
+// box: it counts the framing site's host and the box, nothing for the site's own previews or
+// other pages, and a missing or failing counter never stops the box.
+{
+  const rules = [];
+  for (const line of readFileSync(join(OUT, "_headers"), "utf8").split("\n")) {
+    if (/^\S/.test(line) && !line.startsWith("#")) rules.push({ path: line.trim(), set: [], drop: [] });
+    else if (/^\s+!\s*\S/.test(line) && rules.length) rules.at(-1).drop.push(line.replace(/^\s+!\s*/, "").trim().toLowerCase());
+    else if (/^\s+\S+:/.test(line) && rules.length) { const i = line.indexOf(":"); rules.at(-1).set.push([line.slice(0, i).trim().toLowerCase(), line.slice(i + 1).trim()]); }
+  }
+  const want = new Map();
+  for (const r of rules.filter((r) => r.path === "/*" || r.path === "/embed/*")) {
+    for (const d of r.drop) want.delete(d);
+    for (const [k, v] of r.set) want.set(k, v);
+  }
+  const got = new Map(Object.entries(EMBED_HEADERS).map(([k, v]) => [k.toLowerCase(), v]));
+  for (const [k, v] of want) if (got.get(k) !== v) fail.push(`worker.js EMBED_HEADERS: ${k} differs from _headers' /embed/* ("${v}")`);
+  for (const k of got.keys()) if (!want.has(k)) fail.push(`worker.js EMBED_HEADERS: ${k} is not in _headers' /embed/*`);
+  for (const d of ["x-frame-options", "cross-origin-opener-policy"]) if (want.has(d) || !EMBED_DROPS.map((x) => x.toLowerCase()).includes(d)) fail.push(`worker.js / _headers: a box must not carry ${d}`);
+  const points = [];
+  const assets = { fetch: async () => new Response("<p>box</p>", { headers: { "Content-Type": "text/html", "X-Frame-Options": "DENY" } }) };
+  const run = (path, referer, env = { ASSETS: assets, EMBEDS: { writeDataPoint: (p) => points.push(p) } }) => worker.fetch(new Request(`https://clutchledger.com${path}`, { headers: referer ? { Referer: referer } : {} }), env);
+  const box = await run("/embed/tonight/", "https://blog.example.com/");
+  await run("/embed/games/2026-10-29/cle-at-atl/", "https://www.fansite.example/nba/post?x=1");
+  await run("/embed/tonight/", "https://clutchledger.com/widget/");
+  await run("/embed/tonight/", null);
+  await run("/ledger/", "https://blog.example.com/");
+  const quiet = await run("/embed/team/houston-rockets/", "https://a.example/", { ASSETS: assets });
+  const broken = await run("/embed/team/houston-rockets/", "https://a.example/", { ASSETS: assets, EMBEDS: { writeDataPoint: () => { throw new Error("down"); } } });
+  const seen = JSON.stringify(points);
+  if (seen !== JSON.stringify([{ blobs: ["blog.example.com", "tonight"], indexes: ["blog.example.com"] }, { blobs: ["www.fansite.example", "game"], indexes: ["www.fansite.example"] }])) fail.push(`worker.js counts the wrong things: ${seen}`);
+  if (box.headers.get("X-Frame-Options") || !box.headers.get("Content-Security-Policy")?.endsWith("frame-ancestors *") || (await box.text()) !== "<p>box</p>") fail.push("worker.js: a box comes back without its headers or its page");
+  if (quiet.status !== 200 || broken.status !== 200) fail.push("worker.js: a missing or failing counter stops the box");
+}
 if (!pages[0].html.includes(`<script src="${tourName}" defer></script>`) || !pages[0].html.includes('<template id="tour">')) fail.push("the front page without its guide (tour.js and its template)");
 // The Launch Pass input: said out loud when it is set but not shown.
 if (LAUNCH_INPUT) {

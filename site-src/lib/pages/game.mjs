@@ -147,7 +147,7 @@ function aside(g, m, night) {
     : "";
   const mu = matchupFor(m, g.home, g.away);
   const h2h = `<section class="mini" aria-labelledby="h2h"><h2 class="side-h" id="h2h">The teams</h2><p><a href="${m.teamPath(g.away)}">${esc(g.away.name)}</a> · <a href="${m.teamPath(g.home)}">${esc(g.home.name)}</a></p>${mu ? `<a class="more" href="${mu.path}">Every ${esc(g.away.abbreviation)}–${esc(g.home.abbreviation)} game →</a>` : ""}</section>`;
-  return `<aside class="aside" aria-label="Make your call, the market and the Ledger">${call}${vs}<section class="mini" aria-labelledby="led"><h2 class="side-h" id="led">The Ledger</h2>${ledger}<a class="more" href="/ledger/">See every call →</a></section>${h2h}${alsoHtml}</aside>`;
+  return `<aside class="aside" aria-label="Make your call, the market and the Ledger">${call}${vs}<section class="mini" aria-labelledby="led"><h2 class="side-h" id="led">The Ledger</h2>${ledger}<a class="more" href="/ledger/">See every call →</a></section>${h2h}<p class="gap"><a class="more" href="/widget/#game">Put this game on your site →</a></p>${alsoHtml}</aside>`;
 }
 
 export function gamePage(g, m) {
