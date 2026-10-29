@@ -219,6 +219,18 @@ a.bk:hover{color:var(--ink)}
 .gcard .cta{color:var(--ink);font-weight:700}
 .is-live .cta{color:var(--hotText)}
 .ahead{margin-top:28px;border-top:1px solid var(--ruleBold);padding-top:12px}.arow{display:grid;grid-template-columns:130px minmax(0,1fr) auto;gap:16px;min-height:44px;padding:6px 0;border-bottom:1px solid var(--rule);font-size:15px;align-items:center;color:var(--ink)}.arow .d{font-family:var(--body);font-size:15px;font-weight:600}.arow .go{color:var(--ink3);font-size:20px;line-height:1}.arow:hover .go{color:var(--ink)}
+/* Tonight's games as rows (the design system's MiniScoreRow, lib/parts.mjs slateRow): no box, a
+   hairline between rows; team codes in the LED face (28 px, the app's ledCode) with the team's
+   colour on the outer edge, Clutch's side lit; Clutch's number (32 px) between them. */
+.slate{list-style:none;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:48px}
+.srow{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;min-height:68px;padding:12px 0;border-bottom:1px solid var(--rule);color:var(--ink);text-decoration:none}
+.code{justify-self:start;font:900 28px/1 var(--num);color:var(--ink4);padding-left:10px;border-left:4px solid var(--ca)}
+.code.home{justify-self:end;padding:0 10px 0 0;border:0;border-right:4px solid var(--ch)}
+.code.lit,.smid .d{color:var(--amberText)}
+.smid{display:grid;justify-items:center;gap:4px;text-align:center}
+.smid .d{font:900 32px/1 var(--num)}.smid .dim{color:var(--ink4)}
+.smid small{font-size:13px;color:var(--ink3)}.srow:hover small{color:var(--ink)}
+.smid [data-live=sc]:not([hidden])::before{content:" · "}
 .g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:40px}
 .move{display:flex;flex-flow:column;gap:14px;border-top:1px solid var(--ruleBold);padding-top:18px}
 .move .no{font-family:var(--num);font-weight:900;font-size:72px;line-height:.9;color:var(--ink)}
@@ -453,6 +465,7 @@ a.bk:hover{color:var(--ink)}
 .hide-s{display:none!important}.show-s{display:inline}
 .cards{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:8px;gap:12px}
 .cards .gcard{flex:0 0 78%;scroll-snap-align:start}
+.slate{grid-template-columns:minmax(0,1fr)}
 .bhead,.bteams,.brail{padding-left:20px;padding-right:20px}.bcall,.bfinal{padding:16px 20px 18px}
 .ab{font-size:34px}.pc.lo{font-size:44px}.pc.hi{font-size:88px}.art .pc.hi{font-size:96px}.art .pc.lo{font-size:52px}
 .rail{gap:3px}.rail i{height:11px}

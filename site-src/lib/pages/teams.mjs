@@ -38,7 +38,7 @@ export function teamPages(m) {
       const res = us > them ? "W" : "L";
       const v = pageOf[g.id];
       const label = `${res} ${us}–${them} ${at(g)} ${o.nickname}${g.season_type === "Playoffs" ? " · playoffs" : g.season_type === "Preseason" ? " · preseason" : ""}${normalizeStatus(g.status) === "final" && g.period > 4 ? ` · ${finalLabel(g.period).replace("Final/", "")}` : ""}`;
-      const grade = c ? `<span class="pk">${esc(c.pick)} ${Math.round(c.claimed_pct)}</span><span class="g">${c.correct ? '<span aria-hidden="true">✓</span><span class="vh">right</span>' : '<span aria-hidden="true">✗</span><span class="vh">missed</span>'}</span>` : '<span class="pk ink3">--</span><span class="g"><span class="vh">not graded</span></span>';
+      const grade = c ? `<span class="pk">${esc(c.pick)} ${Math.round(c.claimed_pct)}</span><span class="g">${c.correct ? '<span aria-hidden="true">✓</span><span class="vh">right</span>' : '<span aria-hidden="true">✗</span><span class="vh">wrong</span>'}</span>` : '<span class="pk ink3">--</span><span class="g"><span class="vh">not graded</span></span>';
       const inner = `<span class="dt">${esc(shortDate(g.game_date))}</span><span class="mu">${esc(label)}</span>${grade}`;
       return v ? `<a class="lrow" href="${v.path}">${inner}</a>` : `<div class="lrow">${inner}</div>`;
     }).join("");

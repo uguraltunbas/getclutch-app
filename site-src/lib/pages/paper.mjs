@@ -39,7 +39,7 @@ function callRows(calls, m) {
   return `<div class="rlist">${calls.map((c) => {
     const g = m.pageGames.find((x) => x.id === c.game_id);
     const [a, h] = c.matchup.split(" @ ");
-    const inner = `<span class="dt">${esc(shortDate(c.game_date))}</span><span class="mu">${esc(a)} at ${esc(h)}<span class="hide-xs"> · ${esc(c.final.replace("-", "–"))}${c.season_type === "Playoffs" ? " · playoffs" : ""}</span></span><span class="pk">${esc(c.pick)} ${Math.round(c.claimed_pct)}</span><span class="g">${c.correct ? '<span aria-hidden="true">✓</span><span class="vh">right</span>' : '<span aria-hidden="true">✗</span><span class="vh">missed</span>'}</span>`;
+    const inner = `<span class="dt">${esc(shortDate(c.game_date))}</span><span class="mu">${esc(a)} at ${esc(h)}<span class="hide-xs"> · ${esc(c.final.replace("-", "–"))}${c.season_type === "Playoffs" ? " · playoffs" : ""}</span></span><span class="pk">${esc(c.pick)} ${Math.round(c.claimed_pct)}</span><span class="g">${c.correct ? '<span aria-hidden="true">✓</span><span class="vh">right</span>' : '<span aria-hidden="true">✗</span><span class="vh">wrong</span>'}</span>`;
     const attrs = `class="lrow" data-r="${c.correct ? 1 : 0}" data-t="${esc(a)} ${esc(h)}" data-w="${mondayOf(c.game_date)}"`;
     return g ? `<a ${attrs} href="${g.path}">${inner}</a>` : `<div ${attrs}>${inner}</div>`;
   }).join("")}</div>`;
@@ -63,7 +63,7 @@ function callFilter(calls, m) {
   const teams = [...new Set(calls.flatMap((c) => c.matchup.split(" @ ")))].sort();
   const weeks = [...new Set(calls.map((c) => mondayOf(c.game_date)))].sort().reverse();
   const name = (ab) => m.byAbbr[ab]?.name ?? ab;
-  return `<form id="lf" class="lfilter" hidden aria-label="Filter the calls"><fieldset class="seg"><legend class="vh">Result</legend>${[["", "All"], ["1", "✓ Right"], ["0", "✗ Missed"]].map(([v, t]) => `<label><input type="radio" name="r" value="${v}"${v ? "" : " checked"}><span>${t}</span></label>`).join("")}</fieldset>
+  return `<form id="lf" class="lfilter" hidden aria-label="Filter the calls"><fieldset class="seg"><legend class="vh">Result</legend>${[["", "All"], ["1", "✓ Right"], ["0", "✗ Wrong"]].map(([v, t]) => `<label><input type="radio" name="r" value="${v}"${v ? "" : " checked"}><span>${t}</span></label>`).join("")}</fieldset>
 <label><span class="vh">Team</span><select name="t"><option value="">Every team</option>${teams.map((t) => `<option value="${esc(t)}">${esc(name(t))}</option>`).join("")}</select></label>
 <label><span class="vh">Week</span><select name="w"><option value="">Every week</option>${weeks.map((w) => `<option value="${w}">Week of ${esc(shortDate(w))}</option>`).join("")}</select></label>
 <output id="lf-n" class="ink3" aria-live="polite"></output></form>`;
@@ -144,7 +144,7 @@ function openedGame(g) {
   const parts = [`<a href="${g.path}">${esc(g.status === "final" && g.homeScore != null ? `${g.away.abbreviation} ${g.awayScore}, ${g.home.abbreviation} ${g.homeScore}` : `${g.away.abbreviation} at ${g.home.abbreviation}`)}</a>`];
   if (g.hasCall) parts.push(`Clutch: ${esc(g.side.team.abbreviation)} ${pct(g.side.prob)}%`);
   if (g.grade === "right") parts.push("✓ right");
-  else if (g.grade === "missed") parts.push("✗ missed");
+  else if (g.grade === "missed") parts.push("✗ wrong");
   else if (g.grade === "preseason") parts.push("preseason, not graded");
   if (g.receipt?.state === "sealed") parts.push("matches the seal ✓");
   else if (g.receipt?.state === "late") parts.push("changed after its last seal");

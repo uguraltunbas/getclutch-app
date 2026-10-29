@@ -438,8 +438,9 @@ if (LAUNCH_INPUT) {
 const cssKB = Buffer.byteLength(css) / 1024, liveKB = Buffer.byteLength(live) / 1024, themeB = Buffer.byteLength(themeJs);
 const tourB = Buffer.byteLength(tourJs), tourGz = gzipSync(tourJs, { level: 9 }).length;
 // 34 KB since the Theme button moved to the masthead's corner at every width (it had
-// 149 bytes left at 32); still one render-blocking file, content-hashed, cached a year.
-if (cssKB > 34) fail.push(`CSS ${cssKB.toFixed(1)} KB (budget 34 KB, 34,816 bytes)`);
+// 149 bytes left at 32); 35 KB since Tonight's games became rows (the design system's
+// MiniScoreRow, about 1 KB). Still one render-blocking file, content-hashed, cached a year.
+if (cssKB > 35) fail.push(`CSS ${cssKB.toFixed(1)} KB (budget 35 KB, 35,840 bytes)`);
 if (liveKB > 5) fail.push(`live script ${liveKB.toFixed(1)} KB (budget 5)`);
 if (themeB > 700) fail.push(`theme script ${themeB} bytes (budget 700: it is in every page's head)`);
 if (tourGz > 3072) fail.push(`guide script ${tourGz} bytes gzipped (budget 3 KB)`);

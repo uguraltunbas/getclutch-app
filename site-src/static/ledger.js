@@ -1,6 +1,6 @@
 /*
  * The Ledger's filters (lib/pages/paper.mjs callFilter): result, team and week over this
- * season's rows, on each row's data-r (1 right, 0 missed), data-t (both team codes) and
+ * season's rows, on each row's data-r (1 right, 0 wrong), data-t (both team codes) and
  * data-w (the week's Monday). Rows are hidden with the hidden attribute, never a style (the
  * CSP admits no inline style). Without this script the form stays hidden and every row shows.
  */

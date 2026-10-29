@@ -208,6 +208,10 @@ ${liveOne ? `<a class="livechip gl d" href="${liveOne.path}" data-gid="${liveOne
       ? `${countWord(n)} ${n === 1 ? "game" : "games"}. ${tonightState(games, firstSeal)}`
       : `No games tonight. The next night is ${weekday(tonight)}, ${shortDate(tonight)}: ${countWord(n, false)} ${games.some((g) => g.preseason) ? "preseason " : ""}${n === 1 ? "game" : "games"}. Every number is sealed before its tip.`;
 
+  // Six cards at most (the front page's word budget); the rest are a link away. The game of the
+  // night is always one of them (the guide points at its line).
+  const shown = games.length > 6 ? [...games.slice(0, 6).filter((g) => g.id !== lead?.id).slice(0, lead ? 5 : 6), ...(lead ? [lead] : [])].sort((a, b) => games.indexOf(a) - games.indexOf(b)) : games;
+
   const latestSeal = m.receipts.find((r) => r.kind === "seal");
   // Move 02's pair, away left and home right: Clutch's side tagged, the other shown as a reader's
   // call in the one selected look the app uses (fill, ✓, "Your call"), the upset scoring more.
@@ -241,7 +245,8 @@ ${ticker}</section>
 
 <section class="sec t" id="tonight" aria-labelledby="tonight-h"><div class="wrap">
 <div class="shead"><div><h2 class="h2" id="tonight-h">${isToday ? "Tonight, in numbers" : "Next up, in numbers"}</h2><p class="sub">${esc(tonightSub)}</p></div>${tonight ? `<a class="more" href="/tonight/">All of ${isToday ? "Tonight" : esc(dayLabel(tonight))} →</a>` : ""}</div>
-<div class="cards">${games.map((g) => gameCard(g, g.id === lead?.id && lineIsWhy(g))).join("")}</div>
+<div class="cards">${shown.map((g) => gameCard(g, g.id === lead?.id && lineIsWhy(g))).join("")}</div>
+${shown.length < n ? `<p class="gap"><a class="more" href="/tonight/">All ${n} games →</a></p>` : ""}
 ${comingUp(m, tonight, games.length)}
 </div></section>
 
@@ -251,7 +256,7 @@ ${comingUp(m, tonight, games.length)}
 <div class="g3 mt">
 <div class="move"><span class="no" aria-hidden="true">01</span><h3>Clutch makes its call</h3><p>Every morning, a win probability for every game, from form, rest, travel, the injury report and the market. Sealed before the first tip.</p><span class="hash">${latestSeal ? `sha256 ${esc(shortHash(latestSeal.sha256))}` : "sha256 · the first seal lands Oct 3"}</span></div>
 <div class="move"><span class="no" aria-hidden="true">02</span><h3>You make yours</h3><p>Pick a side before tip. Upsets you call score more.</p>${pts ? `<span class="pills">${pts.map(([t, p, clutch]) => (clutch ? `<span class="pill">${esc(t.nickname)} +${p} pts · <span class="amber">Clutch's call</span></span>` : `<span class="pill you">✓ Your call · ${esc(t.nickname)} +${p} pts</span>`)).join("")}</span>` : ""}</div>
-<div class="move"><span class="no" aria-hidden="true">03</span><h3>The morning grades you both</h3><p>Every call goes in the Ledger. Beat Clutch and the night goes in your Scrapbook.</p><span class="pills"><span class="chip win">✓ Right</span><span class="chip loss">✗ Missed</span></span></div>
+<div class="move"><span class="no" aria-hidden="true">03</span><h3>The morning grades you both</h3><p>Every call goes in the Ledger. Beat Clutch and the night goes in your Scrapbook.</p><span class="pills"><span class="chip win">✓ Right</span><span class="chip loss">✗ Wrong</span></span></div>
 </div></div></section>
 
 <section class="sec" id="ledger" aria-label="The Ledger"><div class="wrap">

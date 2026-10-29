@@ -12,7 +12,7 @@ export const FEATURES = [
   { label: "Sealed before tip ✓: every number in a public record anyone can check", free: true, pro: true },
   { label: "Our worst miss: last night's biggest miss, and what fooled Clutch", free: true, pro: true },
   { label: "Who's out: tonight's injury report, by minutes", free: true, pro: true },
-  { label: "What-If: who plays, Flip It, and Flip It duels with friends", free: true, pro: true },
+  { label: "What-If: who plays, Flip it, and Flip it duels with friends", free: true, pro: true },
   { label: "Ask Clutch: questions answered from Clutch's own numbers, no daily limit", free: true, pro: true },
   { label: "Every team's playoff chances, updated nightly", free: true, pro: true },
   { label: "The Time Capsule: seal your season before opening night, scored at the All-Star break against Clutch and the market", free: true, pro: true },

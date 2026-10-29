@@ -1,11 +1,11 @@
-// /tonight/ — one address that is always the next night of games: the cards
-// first, then each game in a sentence (who Clutch favours and by how much, when
+// /tonight/ — one address that is always the next night of games: one row a
+// game first (lib/parts.mjs slateRow), then each game in a sentence (who Clutch favours and by how much, when
 // it tips), and how last night's calls came out. The dated page (/games/<date>/) stays
 // the night's permanent record; this one carries the "today" searches and
 // keeps the links it earns from day to day.
 
 import { page, esc, ORIGIN } from "../html.mjs";
-import { gameCard } from "../parts.mjs";
+import { slateRow } from "../parts.mjs";
 import { pct } from "../copy.mjs";
 import { longDate, mediumDate, shortDate, weekday, timeET } from "../time.mjs";
 import { lastGradedNight } from "../model.mjs";
@@ -42,8 +42,8 @@ export function tonightPage(m) {
     const deck = `${games.length} ${games.length === 1 ? "game" : "games"} ${isToday ? "tonight" : `on ${longDate(date)}`}, each sealed before tip and graded after the final.`;
     body = `<div class="wrap"><div class="rhead"><span class="kick">${isToday ? "Tonight" : "Next up"} · ${esc(longDate(date))}</span><h1 class="rh1">${esc(h1)}</h1><p class="rdeck">${esc(deck)}</p></div>
 <div class="body">
-<div class="cards">${games.map((g) => gameCard(g)).join("")}</div>
-<p class="note">Amber is Clutch's number, cream the market's. Times are Eastern. <a href="/games/${date}/">This night's page →</a> · <a href="${PLAYOFFS_PATH}">Playoff chances →</a></p>
+<ul class="slate">${games.map(slateRow).join("")}</ul>
+<p class="note gap">Clutch's side is lit; open a game for the why and the market. <a href="/games/${date}/">This night's page →</a> · <a href="${PLAYOFFS_PATH}">Playoff chances →</a></p>
 <section class="blk" aria-labelledby="glance"><h2 id="glance">At a glance</h2><ul class="spots">${games.map(glance).join("")}</ul></section>
 ${lastBlock}
 </div></div>`;

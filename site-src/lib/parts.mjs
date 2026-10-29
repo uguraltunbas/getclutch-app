@@ -27,7 +27,7 @@ export const tonightOpen = (m) => m.tonight === m.today && (m.nights[m.tonight] 
 export function gradeChip(g) {
   switch (g.grade) {
     case "right": return '<span class="chip win">✓ Right</span>';
-    case "missed": return '<span class="chip loss">✗ Missed</span>';
+    case "missed": return '<span class="chip loss">✗ Wrong</span>';
     case "preseason": return '<span class="chip">Preseason · Not graded</span>';
     case "pending": return '<span class="chip">Graded overnight</span>';
     case "ungraded": return '<span class="chip">Not graded</span>';
@@ -121,6 +121,29 @@ ${rail(g.side ? g.side.prob : null, g.marketSide, true)}
 <span class="gline"${why === true ? ' data-tour="why"' : ""}>${esc(cardLine(g))}</span>
 <span class="mono cta">${cta}</span>
 </a>`;
+}
+
+/**
+ * A game as one row, the design system's MiniScoreRow (no box): the two codes,
+ * each with its team's colour on the outer edge and Clutch's side lit; Clutch's
+ * number between them and, under it, its side and the tip — or the clock and
+ * score (static/live.js), or the final score and the grade. A link to the game page.
+ */
+export function slateRow(g) {
+  const live = g.status === "live" || g.status === "halftime";
+  const final = g.status === "final";
+  const lit = (t) => (g.hasCall && g.side.team.id === t.id ? " lit" : "");
+  const num = g.hasCall ? `<b class="d">${pct(g.side.prob)}%</b>` : '<b class="d dim">--</b>';
+  const scored = (live || final) && g.homeScore != null;
+  const sc = `<span data-live="sc" data-fmt="dash"${scored ? "" : " hidden"}>${scored ? `${g.awayScore}–${g.homeScore}` : ""}</span>`;
+  const grade = final && (g.grade === "right" || g.grade === "missed") ? ` · ${g.grade === "right" ? "✓ Right" : "✗ Wrong"}` : "";
+  const st = g.status === "scheduled" ? (g.tipUtc ? timeET(g.tipUtc) : "Tip TBD") : statusText(g);
+  const lead = g.hasCall && !live && !final ? `${esc(g.side.team.nickname)} · ` : "";
+  return `<li><a class="srow ${teamCls(g)}" href="${g.path}" data-gid="${g.id}" data-a="${g.away.abbreviation}" data-h="${g.home.abbreviation}">
+<span class="code${lit(g.away)}">${esc(g.away.abbreviation)}</span>
+<span class="smid">${num}<small>${lead}<span data-live="st">${esc(st)}</span>${sc}${grade}</small></span>
+<span class="code home${lit(g.home)}">${esc(g.home.abbreviation)}</span>
+</a></li>`;
 }
 
 export { plainDriverLabel };

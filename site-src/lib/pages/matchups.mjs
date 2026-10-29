@@ -94,7 +94,7 @@ function prevText(s, x) {
 function prevRow(g, m) {
   const c = m.callBy[g.id];
   const label = `${g.away.abbreviation} at ${g.home.abbreviation} · ${g.awayScore}–${g.homeScore}${g.period > 4 ? ` ${finalLabel(g.period).replace("Final/", "")}` : ""}${g.playIn ? " · play-in" : g.seasonType === "Playoffs" ? " · playoffs" : ""}`;
-  const grade = c ? `<span class="d">${esc(c.pick)} ${Math.round(c.claimed_pct)}</span><span>${c.correct ? '<span class="chip win">✓ Right</span>' : '<span class="chip loss">✗ Missed</span>'}</span>` : '<span class="d dim">--</span><span><span class="note">Not graded</span></span>';
+  const grade = c ? `<span class="d">${esc(c.pick)} ${Math.round(c.claimed_pct)}</span><span>${c.correct ? '<span class="chip win">✓ Right</span>' : '<span class="chip loss">✗ Wrong</span>'}</span>` : '<span class="d dim">--</span><span><span class="note">Not graded</span></span>';
   return `<div class="callrow"><span class="mono">${esc(shortDate(g.date))}</span><span>${esc(label)}</span>${grade}</div>`;
 }
 
@@ -107,7 +107,7 @@ function row(g) {
   const num = g.hasCall ? `${esc(g.side.team.abbreviation)} ${pct(g.side.prob)}` : "--";
   let chip;
   if (g.status === "postponed") chip = '<span class="chip">Postponed</span>';
-  else if (final) chip = g.grade === "right" ? '<span class="chip win">✓ Right</span>' : g.grade === "missed" ? '<span class="chip loss">✗ Missed</span>' : `<span class="note">${g.preseason ? "Preseason" : g.grade === "pending" ? "Graded overnight" : "Not graded"}</span>`;
+  else if (final) chip = g.grade === "right" ? '<span class="chip win">✓ Right</span>' : g.grade === "missed" ? '<span class="chip loss">✗ Wrong</span>' : `<span class="note">${g.preseason ? "Preseason" : g.grade === "pending" ? "Graded overnight" : "Not graded"}</span>`;
   else if (g.status === "live" || g.status === "halftime") chip = '<span class="chip hot">Live</span>';
   else chip = g.hasCall ? '<span class="chip">The call</span>' : '<span class="note">That morning</span>';
   return `<div class="callrow"><span class="mono">${esc(when)}</span><span>${name}${tip}</span><span class="d${g.hasCall ? "" : " dim"}">${num}</span><span>${chip}</span></div>`;
@@ -115,7 +115,7 @@ function row(g) {
 
 function lastRow(c) {
   const label = `${c.matchup.replace(" @ ", " at ")} · ${c.final.replace("-", "–")}${c.season_type === "Playoffs" ? " · playoffs" : ""}`;
-  return `<div class="callrow"><span class="mono">${esc(shortDate(c.game_date))}</span><span>${esc(label)}</span><span class="d">${esc(c.pick)} ${Math.round(c.claimed_pct)}</span><span>${c.correct ? '<span class="chip win">✓ Right</span>' : '<span class="chip loss">✗ Missed</span>'}</span></div>`;
+  return `<div class="callrow"><span class="mono">${esc(shortDate(c.game_date))}</span><span>${esc(label)}</span><span class="d">${esc(c.pick)} ${Math.round(c.claimed_pct)}</span><span>${c.correct ? '<span class="chip win">✓ Right</span>' : '<span class="chip loss">✗ Wrong</span>'}</span></div>`;
 }
 
 function matchupPage(s, m) {

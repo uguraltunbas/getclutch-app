@@ -37,8 +37,8 @@ function shell({ path, title, description, inner }) {
 `;
 }
 
-/** A graded call in a box: "✓ Right", "✗ Missed", or why there is no grade yet. */
-const gradeText = (g) => ({ right: "✓ Right", missed: "✗ Missed", preseason: "Preseason, not graded", pending: "Graded overnight", ungraded: "Not graded" })[g.grade] ?? "";
+/** A graded call in a box: "✓ Right", "✗ Wrong", or why there is no grade yet. */
+const gradeText = (g) => ({ right: "✓ Right", missed: "✗ Wrong", preseason: "Preseason, not graded", pending: "Graded overnight", ungraded: "Not graded" })[g.grade] ?? "";
 
 /** "Open in Clutch": the game in the web app (its analytics reads the utm), or the App Store with the embed's campaign. */
 const openGame = (g) => (WEB_APP_LIVE ? `${playGame(g.id)}?utm_source=embed&amp;utm_medium=widget&amp;utm_campaign=game` : esc(appStoreLink("/embed/")));
@@ -102,7 +102,7 @@ function teamBox(t, m) {
     ? `<div>${out(ref(target, "team"), `<span class="k">Next · ${esc(dayLabel(nextRaw.game_date))}${nextRaw.game_time_utc ? ` · ${esc(timeET(nextRaw.game_time_utc))}` : ""}</span><br><span class="m">${nextRaw.home_team_id === t.id ? "vs" : "at"} ${esc(opp.name)}</span>`)}</div>
 <div><span class="big">${mine == null ? "--" : `${pct(mine)}%`}</span> <span class="k">${mine == null ? "Clutch's number lands the morning of the game" : `${esc(t.nickname)} win probability`}</span>${mine == null ? "" : strip(mine)}</div>`
     : '<p class="k">No games on the schedule yet.</p>';
-  const last = lastCall ? `<p class="k">Last call · ${esc(shortDate(lastCall.game_date))} · ${esc(lastCall.matchup)} · ${esc(lastCall.pick)} ${Math.round(lastCall.claimed_pct)}% · <span class="m">${lastCall.correct ? "✓ Right" : "✗ Missed"}</span></p>` : "";
+  const last = lastCall ? `<p class="k">Last call · ${esc(shortDate(lastCall.game_date))} · ${esc(lastCall.matchup)} · ${esc(lastCall.pick)} ${Math.round(lastCall.claimed_pct)}% · <span class="m">${lastCall.correct ? "✓ Right" : "✗ Wrong"}</span></p>` : "";
   const inner = `<div class="hd">${out(ref(m.teamPath(t), "team"), "Clutch", "b")}<span class="k">${esc(t.name)}</span></div>
 ${next}
 ${last}${chance != null ? `<p class="k">Playoff chance · ${esc(chanceText(chance))}</p>` : ""}
