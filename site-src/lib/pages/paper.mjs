@@ -7,7 +7,7 @@ import { page, esc, bar } from "../html.mjs";
 import { comparisons, opener, verdictOf, rec, pct, shortHash, leadText, sealFileUrl, RATE_FLOOR, RECEIPTS_REPO, RECEIPTS_VERIFY_URL, RECEIPTS_ACTIVITY_URL, PRESEASON_START, REGULAR_SEASON_START } from "../copy.mjs";
 import { mediumDate, shortDate, timeET, longDate } from "../time.mjs";
 import { seasonOf } from "../time.mjs";
-import { weeksOf, weekPath } from "./weeks.mjs";
+import { weeksOf, weekPath, mondayOf } from "./weeks.mjs";
 
 function recordBlock(r, heading) {
   const v = verdictOf(r);
@@ -30,13 +30,43 @@ function recordBlock(r, heading) {
   return html + "</section>";
 }
 
+/**
+ * One graded call, one row: "Oct 26 · GSW at DEN · DEN 71 · ✓" (the final score from 761 px up).
+ * The whole row opens the game. data-r / data-t / data-w are what static/ledger.js filters on.
+ */
 function callRows(calls, m) {
   if (!calls.length) return "";
   return `<div class="rlist">${calls.map((c) => {
     const g = m.pageGames.find((x) => x.id === c.game_id);
-    const name = esc(c.matchup.replace(" @ ", " at "));
-    return `<div class="callrow"><span class="mono">${esc(shortDate(c.game_date))}</span><span>${g ? `<a href="${g.path}">${name}</a>` : name} <span class="mono hide-xs">· ${esc(c.final.replace("-", "–"))}${c.season_type === "Playoffs" ? " · playoffs" : ""}</span></span><span class="d">${esc(c.pick)} ${Math.round(c.claimed_pct)}</span><span>${c.correct ? '<span class="chip win">✓ Right</span>' : '<span class="chip loss">✗ Missed</span>'}</span></div>`;
+    const [a, h] = c.matchup.split(" @ ");
+    const inner = `<span class="dt">${esc(shortDate(c.game_date))}</span><span class="mu">${esc(a)} at ${esc(h)}<span class="hide-xs"> · ${esc(c.final.replace("-", "–"))}${c.season_type === "Playoffs" ? " · playoffs" : ""}</span></span><span class="pk">${esc(c.pick)} ${Math.round(c.claimed_pct)}</span><span class="g">${c.correct ? '<span aria-hidden="true">✓</span><span class="vh">right</span>' : '<span aria-hidden="true">✗</span><span class="vh">missed</span>'}</span>`;
+    const attrs = `class="lrow" data-r="${c.correct ? 1 : 0}" data-t="${esc(a)} ${esc(h)}" data-w="${mondayOf(c.game_date)}"`;
+    return g ? `<a ${attrs} href="${g.path}">${inner}</a>` : `<div ${attrs}>${inner}</div>`;
   }).join("")}</div>`;
+}
+
+/** The last 14 graded nights, oldest first: each night's right–wrong and a bar of its share right. */
+function lastNights(calls, m) {
+  const by = new Map();
+  for (const c of calls) { if (!by.has(c.game_date)) by.set(c.game_date, []); by.get(c.game_date).push(c); }
+  const nights = [...by].sort(([x], [y]) => (x < y ? 1 : -1)).slice(0, 14).reverse();
+  if (nights.length < 2) return "";
+  return `<section aria-labelledby="n14"><h2 class="sh s" id="n14">The last ${nights.length} nights</h2><div class="n14">${nights.map(([d, cs]) => {
+    const r = cs.filter((c) => c.correct).length;
+    const inner = `<span class="d">${r}–${cs.length - r}</span>${bar((100 * r) / cs.length, "cream")}<span class="dt">${esc(shortDate(d))}</span>`;
+    return m.nights[d] ? `<a href="/games/${d}/">${inner}</a>` : `<span>${inner}</span>`;
+  }).join("")}</div></section>`;
+}
+
+/** Result, team and week over this season's rows; hidden until static/ledger.js runs. */
+function callFilter(calls, m) {
+  const teams = [...new Set(calls.flatMap((c) => c.matchup.split(" @ ")))].sort();
+  const weeks = [...new Set(calls.map((c) => mondayOf(c.game_date)))].sort().reverse();
+  const name = (ab) => m.byAbbr[ab]?.name ?? ab;
+  return `<form id="lf" class="lfilter" hidden aria-label="Filter the calls"><fieldset class="seg"><legend class="vh">Result</legend>${[["", "All"], ["1", "✓ Right"], ["0", "✗ Missed"]].map(([v, t]) => `<label><input type="radio" name="r" value="${v}"${v ? "" : " checked"}><span>${t}</span></label>`).join("")}</fieldset>
+<label><span class="vh">Team</span><select name="t"><option value="">Every team</option>${teams.map((t) => `<option value="${esc(t)}">${esc(name(t))}</option>`).join("")}</select></label>
+<label><span class="vh">Week</span><select name="w"><option value="">Every week</option>${weeks.map((w) => `<option value="${w}">Week of ${esc(shortDate(w))}</option>`).join("")}</select></label>
+<output id="lf-n" class="ink3" aria-live="polite"></output></form>`;
 }
 
 export function ledgerPage(m) {
@@ -49,13 +79,14 @@ export function ledgerPage(m) {
     main += recordBlock(m.record, { id: "season", kick: `${current} · The season so far`, title: `Clutch's ${current} record` });
     const weeks = weeksOf(m);
     if (weeks.length) main += `<section aria-labelledby="weeks"><h2 class="sh s" id="weeks">Week by week</h2><p class="sub">${weeks.map((w) => { const r = w.calls.filter((c) => c.correct).length; return `<a href="${weekPath(w.monday)}">Week of ${esc(shortDate(w.monday))}: ${rec(r, w.calls.length)}</a>`; }).join(" · ")}</p></section>`;
-    main += `<section aria-labelledby="calls"><h2 class="sh" id="calls">Every call, ${esc(current)}</h2>${callRows(thisSeason.slice(0, 120), m)}${thisSeason.length > 120 ? `<p class="note gap">The newest 120 of ${thisSeason.length}. Every one is in the app's Ledger.</p>` : ""}</section>`;
+    main += lastNights(thisSeason, m);
+    main += `<section aria-labelledby="calls"><h2 class="sh" id="calls">Every call, ${esc(current)}</h2>${callFilter(thisSeason.slice(0, 120), m)}${callRows(thisSeason.slice(0, 120), m)}${thisSeason.length > 120 ? `<p class="note gap">The newest 120 of ${thisSeason.length}. Every one is in the app's Ledger.</p>` : ""}</section>`;
   } else {
     main += `<section class="panel" aria-labelledby="open"><span class="kick">${esc(o.kicker)}</span><h2 id="open">${esc(o.title)}</h2><p class="sub">${esc(o.body)}</p>${o.sealedLine ? `<p class="mono amber gap">${esc(o.sealedLine)} ✓</p>` : ""}${o.sealedNote ? `<p class="note gap">${esc(o.sealedNote)}</p>` : ""}<p class="note gap">Preseason calls count for points in the app from ${esc(shortDate(PRESEASON_START))}; leagues and Clutch's record start on ${esc(shortDate(REGULAR_SEASON_START))}.</p></section>`;
   }
   if (m.last) {
     main += recordBlock(m.last, { id: "last", kick: `Last season · ${m.last.season}${m.last.retired ? " · The retired model" : ""}`, title: m.last.retired ? "Last season, made by the model we retired" : `Last season, ${m.last.season}` });
-    if (lastSeason.length) main += `<section aria-labelledby="lcalls"><h2 class="sh s" id="lcalls">Every graded call, ${esc(m.last.season)}</h2>${callRows(lastSeason, m)}</section>`;
+    if (lastSeason.length) main += `<section aria-labelledby="lcalls"><details class="fold"><summary><h2 class="sh s" id="lcalls">Every graded call, ${esc(m.last.season)} <span class="ink3">· ${lastSeason.length}</span></h2></summary>${callRows(lastSeason, m)}</details></section>`;
   }
   main += `<section class="blk" aria-labelledby="rules"><h2 id="rules">How the Ledger keeps score</h2>
 <p>Every number is written to Clutch's database and sealed in the public record before tip-off, and never edited afterwards. The market, ESPN and the simple rules are graded on the same games, not quoted from a backtest. Preseason is never graded. Right and wrong calls sit in the same list, in date order.</p>
@@ -65,7 +96,7 @@ export function ledgerPage(m) {
     ? `Clutch's ${current} NBA prediction track record: ${rec(m.record.hits, m.record.n)} on ${m.record.n} graded calls, beside the market, ESPN and always picking the home team. Every call sealed before tip.`
     : `Clutch's ${current} record starts Oct 20. Every NBA call is sealed before tip and graded after the final, beside the market, ESPN and the home team.`;
   const title = "NBA prediction track record: every Clutch call, graded · Clutch";
-  return { path: "/ledger/", title, html: page({ path: "/ledger/", title, description: desc, body, current: "ledger", og: "ledger" }) };
+  return { path: "/ledger/", title, html: page({ path: "/ledger/", title, description: desc, body, current: "ledger", og: "ledger", filter: !!m.record }) };
 }
 
 // ── Proof (/receipts/) ─────────────────────────────────────────────────

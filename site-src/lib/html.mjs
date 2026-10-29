@@ -181,9 +181,10 @@ ${path === "/" ? `<div class="flisted"><span class="mono">Listed on</span>${LIST
  * A whole page. `path` is the URL path ("/", "/ledger/"); `og` the image
  * name under /og/ ("game", or a game's own card "g/<slug>-<hash>") and
  * `ogAlt` its alt text; `jsonld` one object or a list; `live` adds the small
- * live-score script; `tour` the front page's guide (static/tour.js).
+ * live-score script; `tour` the front page's guide (static/tour.js); `filter`
+ * the Ledger's filters (static/ledger.js).
  */
-export function page({ path, title, description, body, current = "", og = "default", ogAlt = "Clutch — call every game, beat Clutch.", ogType = "website", jsonld = null, live = false, tour = false, noindex = false, cssHref = "/site.css", lang = "en" }) {
+export function page({ path, title, description, body, current = "", og = "default", ogAlt = "Clutch — call every game, beat Clutch.", ogType = "website", jsonld = null, live = false, tour = false, filter = false, noindex = false, cssHref = "/site.css", lang = "en" }) {
   const url = ORIGIN + path;
   description = clipDescription(description);
   const ld = (Array.isArray(jsonld) ? jsonld : jsonld ? [jsonld] : []).map((o) => `<script type="application/ld+json">${JSON.stringify(o).replace(/</g, "\\u003c")}</script>`).join("\n");
@@ -230,7 +231,7 @@ ${masthead(current)}
 ${body}
 </main>
 ${footer(path)}
-${live ? '<script src="/live.js" defer></script>' : ""}${tour ? '<script src="/tour.js" defer></script>' : ""}
+${live ? '<script src="/live.js" defer></script>' : ""}${tour ? '<script src="/tour.js" defer></script>' : ""}${filter ? '<script src="/ledger.js" defer></script>' : ""}
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;:&quot;${CF_BEACON_TOKEN}&quot;}"></script>
 </body>
 </html>

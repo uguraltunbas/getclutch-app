@@ -198,6 +198,13 @@ try { new Function(tourJs); } catch (e) { console.error(`tour.js: trimmed into s
 const tourName = `/assets/tour.${hash(tourJs)}.js`;
 writeFileSync(join(OUT, tourName), tourJs);
 
+// The Ledger's filters (result, team, week): deferred, on /ledger/ only, trimmed like the guide.
+const ledgerJs = readFileSync(join(HERE, "static", "ledger.js"), "utf8").replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s+/gm, "").replace(/\n+/g, "\n").trim() + "\n";
+try { new Function(ledgerJs); } catch (e) { console.error(`ledger.js: trimmed into something that does not parse (${e.message})`); process.exit(1); }
+const ledgerName = `/assets/ledger.${hash(ledgerJs)}.js`;
+writeFileSync(join(OUT, ledgerName), ledgerJs);
+if (Buffer.byteLength(ledgerJs) > 1536) fail.push(`ledger.js ${Buffer.byteLength(ledgerJs)} bytes (budget 1.5 KB)`);
+
 // The embeddable boxes' own small stylesheet (lib/pages/embed.mjs): comments and spaces out, content-hashed.
 const embedCss = readFileSync(join(HERE, "static", "embed.css"), "utf8").replace(/\/\*[\s\S]*?\*\//g, "").replace(/\s*([{};:,>])\s*/g, "$1").replace(/\n+/g, "").trim() + "\n";
 const embedCssName = `/assets/embed.${hash(embedCss)}.css`;
@@ -206,7 +213,7 @@ if (Buffer.byteLength(embedCss) > 3072) fail.push(`embed.css ${Buffer.byteLength
 
 // Wire the hashed names into every page.
 for (const p of pages) {
-  p.html = p.html.replaceAll('href="/embed.css"', `href="${embedCssName}"`).replaceAll('href="/site.css"', `href="${cssName}"`).replaceAll('src="/live.js"', `src="${liveName}"`).replaceAll('<script src="/theme.js"></script>', () => themeTag).replaceAll('src="/tour.js"', `src="${tourName}"`);
+  p.html = p.html.replaceAll('href="/embed.css"', `href="${embedCssName}"`).replaceAll('href="/site.css"', `href="${cssName}"`).replaceAll('src="/live.js"', `src="${liveName}"`).replaceAll('<script src="/theme.js"></script>', () => themeTag).replaceAll('src="/tour.js"', `src="${tourName}"`).replaceAll('src="/ledger.js"', `src="${ledgerName}"`);
   for (const [plain, hashed] of Object.entries(fontFiles)) p.html = p.html.replaceAll(`/fonts/${plain}`, hashed);
 }
 
