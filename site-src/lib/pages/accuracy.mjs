@@ -51,11 +51,11 @@ export function backtestSentence(bench) {
 function liveSection(m) {
   const r = m.record;
   if (!r) {
-    return `<section class="panel" aria-labelledby="live"><span class="kick">${esc(m.current)} · Graded live</span><h2 id="live">No graded calls yet this season.</h2><p class="sub">The regular season's first finals are graded the morning after. Until then this report has nothing live to say — and it won't borrow a number from the test below.</p></section>`;
+    return `<section class="panel" aria-labelledby="live"><h2 id="live">No graded calls yet this season.</h2><p class="sub">The regular season's first finals are graded the morning after. Until then this report has nothing live to say — and it won't borrow a number from the test below.</p></section>`;
   }
   const v = verdictOf(r);
   const rate = r.n >= RATE_FLOOR && r.hitRate != null;
-  let html = `<section class="panel" aria-labelledby="live"><span class="kick">${esc(r.season)} · Graded live · Sealed before tip</span><h2 id="live">This season, call by call</h2>
+  let html = `<section class="panel" aria-labelledby="live"><h2 id="live">This season, call by call, sealed before tip</h2>
 <div class="stat"><div><span class="d">${r.n}</span><span class="mono">Graded calls</span></div><div><span class="d">${rec(r.hits, r.n)}</span><span class="mono">Right–wrong</span></div>${rate ? `<div><span class="d amber dec">${r.hitRate.toFixed(1)}%</span><span class="mono">${r.ci ? `Likely range ${Number(r.ci[0]).toFixed(1)}–${Number(r.ci[1]).toFixed(1)}%` : "Right"}</span></div>` : ""}<div><span class="mono ${v.tone === "win" ? "" : "ink3"}">${esc(v.line)}</span></div></div>`;
   if (!rate) html += `<p class="note gap">${esc(callWord(r.n))} is too few to say how good Clutch is: a rate needs ${RATE_FLOOR} at least, so until then every number on this page is printed as right–wrong. The page rebuilds every morning; the rates fill in as the season does.</p>`;
   for (const c of comparisons(r)) {

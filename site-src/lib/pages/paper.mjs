@@ -12,7 +12,7 @@ import { weeksOf, weekPath, mondayOf } from "./weeks.mjs";
 function recordBlock(r, heading) {
   const v = verdictOf(r);
   const rate = r.n >= RATE_FLOOR && r.hitRate != null;
-  let html = `<section class="panel" aria-labelledby="${heading.id}"><span class="kick">${esc(heading.kick)}</span><h2 id="${heading.id}">${esc(heading.title)}</h2>
+  let html = `<section class="panel" aria-labelledby="${heading.id}"><h2 id="${heading.id}">${esc(heading.title)}</h2>
 <div class="stat"><div><span class="d">${rec(r.hits, r.n)}</span><span class="mono">Right–wrong · ${r.n} graded calls</span></div>${rate ? `<div><span class="d amber dec">${r.hitRate.toFixed(1)}%</span><span class="mono">${r.ci ? `Likely range ${Number(r.ci[0]).toFixed(1)}–${Number(r.ci[1]).toFixed(1)}%` : "Right"}</span></div>` : ""}<div><span class="mono ${v.tone === "win" ? "" : "ink3"}">${esc(v.line)}</span></div></div>`;
   for (const c of comparisons(r)) {
     const val = (x, recd) => (c.small ? recd : `${x.toFixed(1)}%`);
@@ -76,7 +76,7 @@ export function ledgerPage(m) {
   const lastSeason = m.last ? m.calls.filter((c) => (c.season || seasonOf(c.game_date)) === m.last.season) : [];
   let main = "";
   if (m.record) {
-    main += recordBlock(m.record, { id: "season", kick: `${current} · The season so far`, title: `Clutch's ${current} record` });
+    main += recordBlock(m.record, { id: "season", title: `Clutch's ${current} record` });
     const weeks = weeksOf(m);
     if (weeks.length) main += `<section aria-labelledby="weeks"><h2 class="sh s" id="weeks">Week by week</h2><p class="sub">${weeks.map((w) => { const r = w.calls.filter((c) => c.correct).length; return `<a href="${weekPath(w.monday)}">Week of ${esc(shortDate(w.monday))}: ${rec(r, w.calls.length)}</a>`; }).join(" · ")}</p></section>`;
     main += lastNights(thisSeason, m);
@@ -85,7 +85,7 @@ export function ledgerPage(m) {
     main += `<section class="panel" aria-labelledby="open"><span class="kick">${esc(o.kicker)}</span><h2 id="open">${esc(o.title)}</h2><p class="sub">${esc(o.body)}</p>${o.sealedLine ? `<p class="mono amber gap">${esc(o.sealedLine)} ✓</p>` : ""}${o.sealedNote ? `<p class="note gap">${esc(o.sealedNote)}</p>` : ""}<p class="note gap">Preseason calls count for points in the app from ${esc(shortDate(PRESEASON_START))}; leagues and Clutch's record start on ${esc(shortDate(REGULAR_SEASON_START))}.</p></section>`;
   }
   if (m.last) {
-    main += recordBlock(m.last, { id: "last", kick: `Last season · ${m.last.season}${m.last.retired ? " · The retired model" : ""}`, title: m.last.retired ? "Last season, made by the model we retired" : `Last season, ${m.last.season}` });
+    main += recordBlock(m.last, { id: "last", title: m.last.retired ? "Last season, made by the model we retired" : `Last season, ${m.last.season}` });
     if (lastSeason.length) main += `<section aria-labelledby="lcalls"><details class="fold"><summary><h2 class="sh s" id="lcalls">Every graded call, ${esc(m.last.season)} <span class="ink3">· ${lastSeason.length}</span></h2></summary>${callRows(lastSeason, m)}</details></section>`;
   }
   main += `<section class="blk" aria-labelledby="rules"><h2 id="rules">How the Ledger keeps score</h2>

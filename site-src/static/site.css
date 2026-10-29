@@ -249,7 +249,7 @@ a.bk:hover{color:var(--ink)}
 .split{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:center;border-top:1px solid var(--ruleBold);padding-top:14px}
 .split .d{font-size:44px;line-height:1}
 .split p{font-size:15px;line-height:1.5;color:var(--ink2)}
-.boxlink{background:var(--panel);border:1px solid var(--ruleBold);padding:16px 18px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center}
+.boxlink{border-top:1px solid var(--rule);padding:14px 0;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center}
 .boxlink b{display:block;font-weight:700;font-size:15px}
 .boxlink span{font-size:13.5px;line-height:1.5;color:var(--ink2)}
 .boxlink a{font-weight:700;font-size:14px;border:1px solid var(--ruleControl);padding:10px 12px;white-space:nowrap}
@@ -431,7 +431,7 @@ a.bk:hover{color:var(--ink)}
 .tcard .tsk{min-width:44px;min-height:44px;margin-right:auto;padding:0;background:none;border:0;font:500 15px var(--body);color:var(--ink3);cursor:pointer}
 .tend .note{flex-basis:100%}
 /* corners: the design system's soft radius — a card 14, a control 8, a tag 4 (round things stay round) */
-.board,.gcard,.plan,.panel,.callcard,.boxlink,.gradebox,.tcard,.menu nav{border-radius:var(--radius-card)}
+.board,.gcard,.plan,.panel,.callcard,.gradebox,.tcard,.menu nav{border-radius:var(--radius-card)}
 .btn,.cbtn,.chip,.pill,.nights a,.boxlink a,.hash,.probox,.tchip,.livechip,.menu summary,.tg,.teamgrid a,.tring{border-radius:var(--radius-control)}
 .teamgrid a{overflow:hidden}
 .cbtn .cl,.plan .tag,.pro-tag,.also .sw{border-radius:var(--radius-tag)}
