@@ -19,6 +19,12 @@
 // the card and billing details, a web plan is cancelled from its Manage button,
 // and in the web app usage includes the landing page, the referrer and an
 // opened alert (notification_log.opened_at, migration 079).
+// Since Clutch AI (October 29, 2026, shipped with it): Privacy › Clutch AI in the
+// consent card's own words (mobile app/ask.tsx, approved by the owner), with what is
+// kept as the ask-clutch function's contract says (supabase/functions/ask-clutch/
+// CONTRACT.md, migration 084: the conversation while the question is open, the last
+// answer a day after it, token counts, the consent dates). Anthropic is named as the
+// processor; its own retention is left to its privacy policy, linked.
 //
 // A body is plain text: "\n" separates paragraphs, a line starting "• " is
 // a list item. The support e-mail and https links become links when rendered.
@@ -81,9 +87,11 @@ export const TERMS = {
   ],
 };
 
+export const ANTHROPIC_PRIVACY = "https://www.anthropic.com/legal/privacy";
+
 export const PRIVACY = {
   title: "Privacy",
-  updated: "October 28, 2026",
+  updated: "October 29, 2026",
   intro: "Clutch is an NBA analytics app. You can read every page without an account. This policy says what we collect when you do sign in or use a feature that needs one, why, and who else touches it.",
   sections: [
     {
@@ -108,6 +116,7 @@ export const PRIVACY = {
         "• RevenueCat — subscription status.\n" +
         "• Apple and Google — sign-in; Apple — payments in the iPhone app.\n" +
         "• Paddle — sells Clutch Pro on the web as our reseller and merchant of record: it takes the payment and keeps your card and billing details.\n" +
+        "• Anthropic — writes Clutch AI's answers, as our processor, when you have switched Clutch AI on (see Clutch AI, below).\n" +
         "• Expo — delivers push notifications.\n" +
         "• Resend — sends our e-mails.\n" +
         "• PostHog — product analytics. In the web app it uses no cookies and stores nothing on your device.\n" +
@@ -122,16 +131,27 @@ export const PRIVACY = {
         "• What we keep: a sheet you saved before it closed — your Over or Under on each team, your three stars and your tie-break — and when you saved it. It is used for nothing else and shown to no one.\n" +
         "• Deleting your account deletes your sheet with it.",
     },
+    {
+      title: "Clutch AI",
+      body:
+        "• Clutch AI writes its answers with Claude, a model made by Anthropic.\n" +
+        "• To answer, your question and the numbers Clutch looks up for it (the games, players and chances it asks the app for) are sent to Anthropic. Every number still comes from Clutch's own engines.\n" +
+        "• It is for readers 18 or older, and it is off until you switch it on: you confirm your age and agree to send your questions to Anthropic first. You can turn it off any time in Ask; typed questions then get Ask's own answers again, and nothing more is sent to Anthropic.\n" +
+        "• What Clutch keeps: a question's conversation only while the question is open, and its last answer for one day after that, so asking again gives the same answer. Then both are deleted. We also keep how many questions you asked each day, how long each question and answer was (for cost), and when you agreed or turned Clutch AI off.\n" +
+        "• Clutch doesn't log your questions or the answers.\n" +
+        "• Anthropic handles your question as our processor, only to write the answer. How Anthropic keeps what it receives is set out in its privacy policy.",
+      link: { href: ANTHROPIC_PRIVACY, label: "Anthropic's privacy policy →" },
+    },
     { title: "Made on your phone", body: "Game video, your yearbook (PDF) and the Front page (a share image) are made on your iPhone; nothing is sent to us to make them. A video or a yearbook leaves your phone only if you share or save it. Saving a video asks for permission to add to your Photos, and nothing is read from them." },
     { title: "This website", body: "clutchledger.com sets no cookies and runs no advertising. Cloudflare Web Analytics counts its visits — which page, the site you came from, your browser type and your country — without cookies or local storage, and without fingerprinting you or following you to other sites. To show tonight's live scores your browser asks our database (Supabase) for them directly; Cloudflare, which serves the pages, keeps standard request logs." },
-    { title: "Your choices", body: "Alerts can be switched off in the app, in iOS Settings or in your browser's settings. To stop e-mails from Clutch, reply STOP to any of them. You can delete your account from the You tab; that removes your profile, team, alert settings, calls, capsule, Win Totals sheet and points, and — if you signed in with Apple — revokes Clutch's access to your Apple ID. Deleting the account doesn't cancel a subscription: one bought on the web is cancelled in the web app (You › Your plan › Manage) or from the link in Paddle's receipt e-mail (or write to us and we cancel it for you); one bought in the iPhone app is cancelled in the iPhone's Settings." },
+    { title: "Your choices", body: "Alerts can be switched off in the app, in iOS Settings or in your browser's settings. To stop e-mails from Clutch, reply STOP to any of them. Clutch AI can be turned off any time in Ask. You can delete your account from the You tab; that removes your profile, team, alert settings, calls, capsule, Win Totals sheet, Clutch AI questions and points, and — if you signed in with Apple — revokes Clutch's access to your Apple ID. Deleting the account doesn't cancel a subscription: one bought on the web is cancelled in the web app (You › Your plan › Manage) or from the link in Paddle's receipt e-mail (or write to us and we cancel it for you); one bought in the iPhone app is cancelled in the iPhone's Settings." },
     {
       title: "Your rights",
       body: `You can see, correct or delete what Clutch holds about you. Most of it is on the You tab, and deleting your account there removes it. To ask for a copy of your data, a correction, or anything the app can't do for you, write to ${SUPPORT_EMAIL}; we answer within 48 hours. Depending on where you live (for example the EU, the UK or California) these are your rights by law, and you can also complain to your data protection authority.`,
     },
     {
       title: "How long we keep it",
-      body: "Your account and everything on it are kept while you have an account, and deleted when you delete it. Reports are kept for 180 days (see What we collect). Crash reports and usage events are kept by Sentry and PostHog under their own retention limits. Records of purchases are kept by Apple, Paddle and RevenueCat as the law requires them to.",
+      body: "Your account and everything on it are kept while you have an account, and deleted when you delete it. Reports are kept for 180 days (see What we collect). A Clutch AI question's conversation is kept only while the question is open and its last answer for one day after (see Clutch AI). Crash reports and usage events are kept by Sentry and PostHog under their own retention limits. Records of purchases are kept by Apple, Paddle and RevenueCat as the law requires them to.",
     },
     { title: "Children", body: "Clutch is not directed to anyone under 13, and we don't knowingly collect their information." },
     { title: "Changes", body: "If this policy changes, the new version is posted here with a new date." },
