@@ -143,12 +143,12 @@ const cssSource = readFileSync(join(HERE, "static", "site.css"), "utf8");
 const ed = editions(cssSource);
 // Team colours are marks, never text: 3:1 on every ground they are drawn on, lifted toward the
 // ink in tenths when too dark (night) or too light (day) to see (lib/swatch.mjs, the app's rule).
-// Night: the paper and the cards (the glass is the card's colour at night). Day: the night shade
+// Night: the paper, the cards and the glass (cool, the same in both editions). Day: the night shade
 // holds on the day paper, card and glass for almost every team (it was lifted to a mid tone);
 // a team whose night shade is too light for day paper gets a Day shade, drawn on the glass too:
 // its class reads var(--d<TEAM>, <night shade>) and the Day block sets --d<TEAM>.
 const swatches = raw.teams.map((t) => {
-  const night = swatchOn(t.primary_color || "#555555", [ed.night.paper, ed.night.panel], ed.night.ink);
+  const night = swatchOn(t.primary_color || "#555555", [ed.night.paper, ed.night.panel, ed.nightGlass.panel], ed.night.ink);
   const holds = swatchOn(night, [ed.day.paper, ed.day.panel], ed.day.ink) === night;
   return { team: t.abbreviation, night, day: holds ? night : swatchOn(t.primary_color || "#555555", [ed.day.paper, ed.day.panel], ed.day.ink) };
 });
@@ -166,7 +166,7 @@ if (!dayRules || !css.includes("/*@day-pinned*/")) { console.error("site.css: th
 css = css.replace("/*@day-pinned*/", dayRules.replaceAll(":root:not([data-theme=dark])", ":root[data-theme=light]"));
 css = css.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\n+/g, "\n").replace(/\s*([{};:,>])\s*/g, "$1").replace(/;}/g, "}").trim() + "\n";
 // Short names for the tokens (the source keeps the readable ones).
-const VARS = { amberHi: "ah", amberText: "at", linkHi: "lh", onAmber: "oa", display: "fd", paper: "p", panel: "q", rule2: "r2", rule3: "r3", rule: "r", ink2: "i2", ink3: "i3", ink: "i", amber: "a", body: "fb", mono: "fm", num: "fn", glow: "g", led: "l", dim: "dm", hot: "h", win: "w", shadow: "sh" };
+const VARS = { amberHi: "ah", amberText: "at", onAmber: "oa", display: "fd", paper: "p", panelHi: "qh", panel: "q", ruleBold: "rb", ruleControl: "rc", rule: "r", ink2: "i2", ink3: "i3", ink4: "i4", ink: "i", amber: "a", body: "fb", mono: "fm", num: "fn", ledBloom: "lb", ledOff: "lo", hotText: "ht", hot: "h", glassLift: "gl", glassHi: "gh", glassRule: "gr", glassDots: "gd", glassAmber: "ga", glassLive: "gv", glass: "g", onGlassMuted: "om", onGlass: "og" };
 for (const [k, v] of Object.entries(VARS)) css = css.replace(new RegExp(`--${k}(?![\\w-])`, "g"), `--${v}`);
 // Shorter colour spellings, same colours: rgba() as #rrggbbaa, transparent as #0000.
 const hex2 = (n) => Math.round(n).toString(16).padStart(2, "0").toUpperCase();

@@ -112,10 +112,10 @@ function sealText(f, earlier, m) {
 function openedGame(g) {
   const parts = [`<a href="${g.path}">${esc(g.status === "final" && g.homeScore != null ? `${g.away.abbreviation} ${g.awayScore}, ${g.home.abbreviation} ${g.homeScore}` : `${g.away.abbreviation} at ${g.home.abbreviation}`)}</a>`];
   if (g.hasCall) parts.push(`Clutch: ${esc(g.side.team.abbreviation)} ${pct(g.side.prob)}%`);
-  if (g.grade === "right") parts.push('<span class="win">right</span>');
-  else if (g.grade === "missed") parts.push('<span class="hot">missed</span>');
+  if (g.grade === "right") parts.push("✓ right");
+  else if (g.grade === "missed") parts.push("✗ missed");
   else if (g.grade === "preseason") parts.push("preseason, not graded");
-  if (g.receipt?.state === "sealed") parts.push('<span class="amber">matches the seal ✓</span>');
+  if (g.receipt?.state === "sealed") parts.push("matches the seal ✓");
   else if (g.receipt?.state === "late") parts.push("changed after its last seal");
   return `<li>${parts.join(" · ")}</li>`;
 }

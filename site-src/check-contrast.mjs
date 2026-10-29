@@ -4,9 +4,10 @@
 //   node site-src/check-contrast.mjs [--verbose]
 //
 // Reads the Night tokens (the first :root block), the Day tokens (the
-// /*@day*/ block: :root:not([data-theme=dark]) and its .gl glass rule) and
+// /*@day*/ block: :root:not([data-theme=dark])) and the glass rule (.gl, the
+// same in both editions; its var(--…) values resolve against each edition) and
 // asserts the pairs below in both editions: text 4.5:1 (WCAG AA), the small
-// mono labels (--ink3, on paper and on glass) 7:1, marks and outlines 3:1.
+// labels (--ink3, on paper and on glass) 7:1, marks and control edges 3:1.
 // rgba values are composited onto their ground before measuring. The build
 // imports checkContrast() and fails on any pair under its floor; team
 // swatches (build.mjs) are checked here too, 3:1 on every ground they sit on.
@@ -56,38 +57,46 @@ function block(css, selector) {
   return out;
 }
 
-/** The token sets: Night (page and glass are the same tones), Day page, Day glass. */
+/** `tokens` with each var(--name) value read from `from` (the edition it sits in). */
+const resolve = (tokens, from) => Object.fromEntries(Object.entries(tokens).map(([k, v]) => {
+  const m = v.match(/^var\(--([\w-]+)\)$/);
+  return [k, m ? from[m[1]] : v];
+}));
+
+/** The token sets: Night page, Night glass, Day page, Day glass (the glass is one rule, .gl). */
 export function editions(css) {
   css = css.replace(/\/\*(?!@)[\s\S]*?\*\//g, "");
   const night = block(css, ":root");
   const day = { ...night, ...block(css, ":root:not([data-theme=dark])") };
-  const dayGlass = { ...day, ...block(css, ":root:not([data-theme=dark]) .gl") };
-  return { night, nightGlass: night, day, dayGlass };
+  const gl = block(css, ".gl");
+  return { night, nightGlass: { ...night, ...resolve(gl, night) }, day, dayGlass: { ...day, ...resolve(gl, day) } };
 }
 
 const PAGE = ["paper", "panel"];
-const TEXT = ["ink", "ink2", "amberText", "linkHi", "hot", "win"]; // --ink3 has its own, higher floor
+const TEXT = ["ink", "ink2", "amberText", "hotText"]; // --ink3 has its own, higher floor
 const PAIRS = {
   // On the paper and its cards.
   page: [
     ...TEXT.flatMap((fg) => PAGE.map((bg) => ({ fg, bg, min: 4.5 }))),
-    ...PAGE.map((bg) => ({ fg: "ink3", bg, min: 7, note: "small mono labels: AAA" })),
-    ...PAGE.map((bg) => ({ fg: "dim", bg, min: 3, note: "big dim digits and dashes only" })),
-    ...PAGE.map((bg) => ({ fg: "rule3", bg, min: 3, note: "ghost button outline" })),
-    ...PAGE.map((bg) => ({ fg: "led", bg, min: 1.1, note: "unlit segment: a shape, not gone" })),
+    ...PAGE.map((bg) => ({ fg: "ink3", bg, min: 7, note: "small labels: AAA" })),
+    ...PAGE.map((bg) => ({ fg: "ink4", bg, min: 3, note: "big dim digits and dashes only" })),
+    ...PAGE.map((bg) => ({ fg: "ruleControl", bg, min: 3, note: "a control's edge (ghost button, chips)" })),
+    ...PAGE.map((bg) => ({ fg: "rule", bg, min: 1.1, note: "unlit segment on paper: a shape, not gone" })),
+    ...PAGE.map((bg) => ({ fg: "hot", bg, min: 3, note: "the live mark (dot, edge)" })),
     ...PAGE.map((bg) => ({ fg: "amber", bg, min: 3, note: "amber marks on night paper", only: "night" })),
     { fg: "onAmber", bg: "amber", min: 4.5, note: "label on amber (buttons, tags)" },
     { fg: "onAmber", bg: "amberHi", min: 4.5, note: "label on amber, hovered" },
   ],
-  // On the glass (.gl): the scoreboard, STOP PRESS, the LIVE chip — dark in both editions.
+  // On the glass (.gl): the scoreboard, STOP PRESS, the LIVE chip — the same cool glass in both editions.
   glass: [
-    ...["ink", "ink2", "amberText", "hot", "win"].map((fg) => ({ fg, bg: "panel", min: 4.5 })),
-    { fg: "ink3", bg: "panel", min: 7, note: "small mono labels on glass: AAA" },
-    { fg: "dim", bg: "panel", min: 3, note: "the big dim number" },
+    ...["ink", "ink2", "amberText", "hotText"].map((fg) => ({ fg, bg: "panel", min: 4.5 })),
+    ...["ink", "ink3"].map((fg) => ({ fg, bg: "panelHi", min: 4.5, note: "a call button's fill" })),
+    { fg: "ink3", bg: "panel", min: 7, note: "small labels on glass: AAA" },
+    { fg: "ink4", bg: "panel", min: 3, note: "the other side's number" },
     { fg: "amber", bg: "panel", min: 3, note: "lit segment" },
     { fg: "ink", bg: "panel", min: 3, note: "the market's segment" },
-    { fg: "led", bg: "panel", min: 1.1, note: "unlit segment" },
-    { fg: "rule3", bg: "panel", min: 3, note: "ghost call button outline" },
+    { fg: "ledOff", bg: "panel", min: 1.1, note: "unlit segment" },
+    { fg: "ruleControl", bg: "panel", min: 3, note: "call button edge" },
     { fg: "onAmber", bg: "amber", min: 4.5, note: "call button / STOP PRESS label" },
   ],
 };
@@ -113,7 +122,7 @@ export function checkContrast(css, { swatches = [] } = {}) {
     }
   }
   const grounds = [
-    ["night paper", "night", ed.night.paper], ["night card", "night", ed.night.panel],
+    ["night paper", "night", ed.night.paper], ["night card", "night", ed.night.panel], ["night glass", "night", ed.nightGlass.panel],
     ["day paper", "day", ed.day.paper], ["day card", "day", ed.day.panel], ["day glass", "day", ed.dayGlass.panel],
   ];
   for (const s of swatches) {
