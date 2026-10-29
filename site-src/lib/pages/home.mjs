@@ -46,7 +46,7 @@ function tickerItems(m, games, tonightIsToday) {
   if (games.length) {
     const n = games.length;
     const when = tonightIsToday ? "tonight" : dayLabel(games[0].date);
-    it.push(`${n} ${n === 1 ? "game" : "games"} ${when}${first ? ` · First tip ${timeET(first)}` : ""}`);
+    it.push(`${n} ${n === 1 ? "game" : "games"} ${when}${first ? ` · first tip ${timeET(first)}` : ""}`);
   } else it.push("No games on the schedule yet");
   if (games.some((g) => g.preseason)) it.push("Preseason · Your calls count for points");
   const sealed = games.filter((g) => g.receipt?.state === "sealed");
@@ -81,7 +81,7 @@ function proof(m) {
     const v = verdictOf(r);
     left = `<span class="kick">The Ledger · ${esc(r.season)}${r.retired ? " · The retired model" : ""}</span><span class="big">${rec(r.hits, r.n)}</span>
 <h3>${r.n >= RATE_FLOOR ? `${r.hitRate.toFixed(1)}% right, in public.` : "Too early for a rate."}</h3>
-<p>Every call is written down before tip and graded after the final. We publish the misses too — that's the point. Against picking the home team every night: ${esc(v.line.toLowerCase())}.</p>`;
+<p>Written down before tip, graded after the final, misses included. Against always picking the home team: ${esc(v.line.toLowerCase())}.</p>`;
   } else {
     const o = opener(m.current, m.today, m.sealed, !!m.last);
     left = `<span class="kick">The Ledger · ${esc(m.current)}</span><span class="big">0–0</span><h3>${esc(o.title)}</h3><p>${esc(o.body)}</p>${o.sealedLine ? `<span class="mono amber">${esc(o.sealedLine)} ✓</span>` : o.sealedNote ? `<span class="note">${esc(o.sealedNote)}</span>` : ""}`;
@@ -99,10 +99,10 @@ function proof(m) {
     }
     // (Model only against the market — the games the two disagree on — is on the Ledger page.)
   }
-  right += `<div class="boxlink"><span><b>Every morning has a receipt</b>The night's calls are hashed and published to a public repository before the first tip. Nobody can change them after — not even us.</span><a href="/receipts/">Check it →</a></div>`;
+  right += `<div class="boxlink"><span><b>Every morning has a receipt</b>The night's calls are hashed and made public before the first tip. Nobody can change them after, not even us.</span><a href="/receipts/">Check it →</a></div>`;
   // The open data on the front page itself, not only in the footer (owner,
   // 2026-10-27: a public-APIs list's reviewer looked here and couldn't find it).
-  right += `<div class="boxlink"><span><b>Every number is open data</b>Every game's win probability this season as JSON and CSV files any app can fetch — free, no key, no sign-up, CC BY 4.0.</span><a href="/data/">Get the data →</a></div>`;
+  right += `<div class="boxlink"><span><b>Every number is open data</b>This season's win probabilities as JSON and CSV: free, no key, CC BY 4.0.</span><a href="/data/">Get the data →</a></div>`;
   return `<div class="proof"><div class="proof-l" data-tour="ledger">${left}</div><div class="proof-r">${right}</div></div>`;
 }
 
@@ -249,9 +249,9 @@ ${comingUp(m, tonight, games.length)}
 <h2 class="h2" id="how-h">Three moves a night. <em>That's the whole game.</em></h2>
 <button class="tl" type="button" data-tour-go>1-minute tour</button>
 <div class="g3 mt">
-<div class="move"><span class="no" aria-hidden="true">01</span><h3>Clutch makes its call</h3><p>Every morning, a win probability for every game — built from form, rest, travel, the official injury report and the market. Sealed and published before the first tip.</p><span class="hash">${latestSeal ? `sha256 ${esc(shortHash(latestSeal.sha256))}` : "sha256 · the first seal lands Oct 3"}</span></div>
-<div class="move"><span class="no" aria-hidden="true">02</span><h3>You make yours</h3><p>Pick a side before tip. Upsets you call score more, and every level earns a new title.</p>${pts ? `<span class="pills">${pts.map(([t, p, clutch]) => (clutch ? `<span class="pill">${esc(t.nickname)} +${p} pts · <span class="amber">Clutch's call</span></span>` : `<span class="pill you">✓ Your call · ${esc(t.nickname)} +${p} pts</span>`)).join("")}</span>` : ""}</div>
-<div class="move"><span class="no" aria-hidden="true">03</span><h3>The morning grades you both</h3><p>Every call goes in the Ledger, misses included. Beat Clutch on a night and it goes in your Scrapbook.</p><span class="pills"><span class="chip win">✓ Right</span><span class="chip loss">✗ Missed</span></span></div>
+<div class="move"><span class="no" aria-hidden="true">01</span><h3>Clutch makes its call</h3><p>Every morning, a win probability for every game, from form, rest, travel, the injury report and the market. Sealed before the first tip.</p><span class="hash">${latestSeal ? `sha256 ${esc(shortHash(latestSeal.sha256))}` : "sha256 · the first seal lands Oct 3"}</span></div>
+<div class="move"><span class="no" aria-hidden="true">02</span><h3>You make yours</h3><p>Pick a side before tip. Upsets you call score more.</p>${pts ? `<span class="pills">${pts.map(([t, p, clutch]) => (clutch ? `<span class="pill">${esc(t.nickname)} +${p} pts · <span class="amber">Clutch's call</span></span>` : `<span class="pill you">✓ Your call · ${esc(t.nickname)} +${p} pts</span>`)).join("")}</span>` : ""}</div>
+<div class="move"><span class="no" aria-hidden="true">03</span><h3>The morning grades you both</h3><p>Every call goes in the Ledger. Beat Clutch and the night goes in your Scrapbook.</p><span class="pills"><span class="chip win">✓ Right</span><span class="chip loss">✗ Missed</span></span></div>
 </div></div></section>
 
 <section class="sec" id="ledger" aria-label="The Ledger"><div class="wrap">

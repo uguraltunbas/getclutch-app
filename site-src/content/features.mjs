@@ -46,9 +46,9 @@ export const PLAN = {
   trialDays: 7,
 };
 
-/** The front page's short lists: rows of FEATURES, quoted exactly. */
-export const FRONT_FREE = [0, 1, 2, 5, 6, 8].map((i) => FEATURES[i].label);
-export const FRONT_PRO = [16, 17, 18, 19, 23, 24].map((i) => FEATURES[i].label);
+/** The plan cards' short lists, the same on the front page and /pricing/ (the table under the cards there has every row). */
+export const FRONT_FREE = ["Every game's number, the market's beside it, and the top three reasons", "Call any game for points and level titles, plus one Free Pro day a month", "The Ledger and the receipts, for everyone"];
+export const FRONT_PRO = ["Model only, the projected final and every factor", "Late-news alerts and every close game", "The simulation, and the season simulated nightly"];
 
 /**
  * The questions page (/faq/). The front page used to carry these, the free
