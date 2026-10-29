@@ -20,7 +20,7 @@
    pair in both editions; the build runs it.
    No inline styles anywhere (CSP): team colours are the classes at the end. */
 /*@fonts*/
-:root{--paper:#15130F;--panel:#1C1914;--panelHi:#241F19;--ink:#F1E9D8;--ink2:#CFC4AE;--ink3:#B4AA97;--ink4:#7A7062;--amber:#FFB020;--amberHi:#FFC64D;--amberText:#FFB020;--onAmber:#15130F;--hot:#FF4D4D;--hotText:#FF4D4D;--rule:rgba(241,233,216,.14);--ruleBold:rgba(241,233,216,.28);--ruleControl:rgba(241,233,216,.5);--glass:#0F1114;--glassHi:#171A1F;--glassRule:#2A2E35;--glassDots:rgba(244,245,247,.06);--onGlass:#F4F5F7;--onGlassMuted:#A0A6B0;--glassAmber:#FFB020;--glassLive:#FF4D4D;--ledOff:#2A2E35;--glassLift:rgba(0,0,0,.5);--ledBloom:0 0 7px rgba(255,176,32,.55);--ed:"NIGHT";
+:root{--paper:#15130F;--panel:#1C1914;--panelHi:#241F19;--ink:#F1E9D8;--ink2:#CFC4AE;--ink3:#B4AA97;--ink4:#7A7062;--amber:#FFB020;--amberHi:#FFC64D;--amberText:#FFB020;--onAmber:#15130F;--hot:#FF4D4D;--hotText:#FF4D4D;--rule:rgba(241,233,216,.14);--ruleBold:rgba(241,233,216,.28);--ruleControl:rgba(241,233,216,.5);--glass:#0F1114;--glassHi:#171A1F;--glassRule:#2A2E35;--glassDots:rgba(244,245,247,.06);--onGlass:#F4F5F7;--onGlassMuted:#A0A6B0;--glassAmber:#FFB020;--glassLive:#FF4D4D;--ledOff:#2A2E35;--glassLift:rgba(0,0,0,.5);--ledBloom:0 0 7px rgba(255,176,32,.55);--radius-card:14px;--radius-control:8px;--radius-tag:4px;--ed:"NIGHT";
 --display:"Fraunces",Georgia,"Times New Roman",serif;--body:"Libre Franklin",-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;--mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;--num:"Doto","IBM Plex Mono",ui-monospace,monospace;color-scheme:dark}
 /* Day Edition (palette.ts LIGHT): cool newsprint paper, pure black ink; the
    glass is the same as at night. Written once, here, for Auto readers on a light
@@ -90,7 +90,7 @@ a.logo:hover{color:var(--ink)}
    tall too, so the row lines up (under 360 px the bar tightens to keep one
    line); the Menu's panel hangs from the row's right edge, under both.
    Shown only when theme.js ran (it always sets data-theme). */
-.tg{background:none;border-radius:0;min-width:44px;white-space:nowrap}
+.tg{background:none;min-width:44px;white-space:nowrap}
 .tg::before{content:"";display:inline-block;padding:4.5px;border:1px solid;border-radius:50%;background:linear-gradient(90deg,currentColor 50%,#0000 0);margin-right:8px;vertical-align:-1px}
 [data-theme=light] .tg::before{background:none}[data-theme=dark] .tg::before{background:currentColor}
 .tg b{display:none}
@@ -401,10 +401,10 @@ a.bk:hover{color:var(--ink)}
    static/tour.js): the hero's chip (only where theme.js ran, and only until
    the guide has been taken: html[data-toured]), the quiet replay link, and
    the overlay: four dim panes around the hole (clicks inside it reach the
-   page), the amber ring, the glass card with its amber edge. Square corners;
-   every button 44 px or more. */
+   page), the amber ring, the glass card with its amber edge. Every button
+   44 px or more. */
 .offer{font-size:15px;line-height:1.55;color:var(--ink)}
-.tchip{display:none;align-self:flex-start;align-items:center;gap:8px;min-height:44px;padding:9px 14px;background:var(--panel);border:1px solid var(--ruleBold);border-left:3px solid var(--amber);border-radius:0;color:var(--ink2);font:15px/1.3 var(--body);cursor:pointer}
+.tchip{display:none;align-self:flex-start;align-items:center;gap:8px;min-height:44px;padding:9px 14px;background:var(--panel);border:1px solid var(--ruleBold);border-left:3px solid var(--amber);color:var(--ink2);font:15px/1.3 var(--body);cursor:pointer}
 .tchip strong{color:var(--ink)}
 [data-theme]:not([data-toured]) .tchip{display:inline-flex}
 .tl{display:none;margin-top:6px;padding:0;background:none;border:0;font:500 12px/44px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);cursor:pointer}
@@ -421,10 +421,15 @@ a.bk:hover{color:var(--ink)}
 .tcard h2{font:900 26px/1.1 var(--display)}
 .tcard h2+p{font-size:16px;line-height:1.5;color:var(--ink2)}
 .tb,.tend{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:4px}
-.tcard .btn{display:inline-flex;align-items:center;min-height:44px;border:0;border-radius:0;font-family:inherit;cursor:pointer}
+.tcard .btn{display:inline-flex;align-items:center;min-height:44px;border:0;font-family:inherit;cursor:pointer}
 .tcard .btn.ghost{border:1px solid var(--ruleControl)}
 .tcard .tsk{min-width:44px;min-height:44px;margin-right:auto;padding:0;background:none;border:0;font:500 12px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);cursor:pointer}
 .tend .note{flex-basis:100%}
+/* corners: the design system's soft radius — a card 14, a control 8, a tag 4 (round things stay round) */
+.board,.gcard,.plan,.panel,.callcard,.boxlink,.gradebox,.tcard,.menu nav{border-radius:var(--radius-card)}
+.btn,.cbtn,.chip,.pill,.nights a,.boxlink a,.hash,.probox,.tchip,.livechip,.menu summary,.tg,.teamgrid a,.tring{border-radius:var(--radius-control)}
+.teamgrid a{overflow:hidden}
+.cbtn .cl,.plan .tag,.pro-tag,.ticker .lbl,.also .sw{border-radius:var(--radius-tag)}
 @media (prefers-reduced-motion:reduce){.tick,.pulse{animation:none}.tick{flex-wrap:wrap;width:auto}.tick span[aria-hidden]{display:none}}
 @media (max-width:1100px){.nav{gap:18px;font-size:14px}.live .nav{gap:12px}}
 @media (min-width:981px) and (max-width:1179px){.live .tg b{font-size:0}.live .tg::before{margin:0;padding:6px}}
