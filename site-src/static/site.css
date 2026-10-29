@@ -261,8 +261,8 @@ a.bk:hover{color:var(--ink)}
 .miss .go{font-weight:700;font-size:14px;white-space:nowrap}
 .plans{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
 .plan{border:1px solid var(--ruleBold);padding:28px;display:flex;flex-flow:column;gap:16px;position:relative}
-.plan.pro{border:2px solid var(--amber);background:var(--panel);padding:27px}
-.plan .tag{position:absolute;top:-12px;left:24px;background:var(--amber);color:var(--onAmber);font-weight:700;font-size:13px;padding:4px 8px}
+.plan.pro{border:1.5px solid var(--ink);background:var(--panel);padding:27.5px}
+.plan .tag{position:absolute;top:-12px;left:24px;background:var(--ink);color:var(--paper);font-weight:700;font-size:13px;padding:4px 8px}
 .plan h3{font-family:var(--display);font-weight:700;font-size:26px}
 .price{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
 .price .d{font-size:56px;line-height:1}.dp{margin:0 -.16em}
@@ -270,7 +270,7 @@ a.bk:hover{color:var(--ink)}
 .plan ul{list-style:none;padding:0;display:flex;flex-flow:column;gap:10px}
 .plan li{display:grid;grid-template-columns:18px minmax(0,1fr);gap:10px;font-size:15px;line-height:1.5;color:var(--ink2)}
 .plan li::before{content:"—";color:var(--ink)}
-.plan.pro li::before{content:"+";color:var(--amberText)}
+.plan.pro li::before{content:"+";color:var(--ink)}
 .plan .btn{margin-top:auto;align-self:flex-start}
 .faq{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:48px}
 .faq>div{border-top:1px solid var(--ruleBold);padding:18px 0 22px;display:flex;flex-flow:column;gap:8px}
@@ -333,7 +333,7 @@ a.bk:hover{color:var(--ink)}
 .gradebox h2{font-family:var(--display);font-weight:700;font-size:19px}
 .gradebox p{font-size:14.5px;line-height:1.5;color:var(--ink2);margin-top:4px}
 .aside{border-left:1px solid var(--ruleBold);padding-left:32px;display:flex;flex-flow:column;gap:26px;min-width:0}
-.callcard{background:var(--panel);border:1px solid var(--ruleBold);border-top:3px solid var(--amber);padding:18px 18px 16px;display:flex;flex-flow:column;gap:12px}
+.callcard{background:var(--panel);border:1px solid var(--ruleBold);padding:18px 18px 16px;display:flex;flex-flow:column;gap:12px}
 .callcard h2{font-family:var(--display);font-weight:900;font-size:28px;line-height:1}
 .callcard p{font-size:14.5px;line-height:1.5;color:var(--ink2)}
 .callcard .btn{text-align:center}
