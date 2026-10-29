@@ -56,19 +56,19 @@ function liveSection(m) {
   const v = verdictOf(r);
   const rate = r.n >= RATE_FLOOR && r.hitRate != null;
   let html = `<section class="panel" aria-labelledby="live"><h2 id="live">This season, call by call, sealed before tip</h2>
-<div class="stat"><div><span class="d">${r.n}</span><span class="mono">Graded calls</span></div><div><span class="d">${rec(r.hits, r.n)}</span><span class="mono">Right–wrong</span></div>${rate ? `<div><span class="d amber dec">${r.hitRate.toFixed(1)}%</span><span class="mono">${r.ci ? `Likely range ${Number(r.ci[0]).toFixed(1)}–${Number(r.ci[1]).toFixed(1)}%` : "Right"}</span></div>` : ""}<div><span class="mono ${v.tone === "win" ? "" : "ink3"}">${esc(v.line)}</span></div></div>`;
+<div class="stat"><div><span class="d">${r.n}</span><span class="mono">Graded calls</span></div><div><span class="d">${rec(r.hits, r.n)}</span><span class="mono">Right–wrong</span></div>${rate ? `<div><span class="d dec">${r.hitRate.toFixed(1)}%</span><span class="mono">${r.ci ? `Likely range ${Number(r.ci[0]).toFixed(1)}–${Number(r.ci[1]).toFixed(1)}%` : "Right"}</span></div>` : ""}<div><span class="mono ${v.tone === "win" ? "" : "ink3"}">${esc(v.line)}</span></div></div>`;
   if (!rate) html += `<p class="note gap">${esc(callWord(r.n))} is too few to say how good Clutch is: a rate needs ${RATE_FLOOR} at least, so until then every number on this page is printed as right–wrong. The page rebuilds every morning; the rates fill in as the season does.</p>`;
   for (const c of comparisons(r)) {
     const val = (x, recd) => (c.small ? recd : `${x.toFixed(1)}%`);
     html += `<div class="cmp gap"><div class="cmp-h"><span class="t">${esc(c.title)}</span><span class="mono">The same ${c.n} games</span></div>
-<div class="crow"><span>Clutch</span>${c.small ? "<span></span>" : bar(c.us, "amber")}<span class="d v amber">${val(c.us, c.usRec)}</span></div>
-<div class="crow"><span class="ink3">${esc(c.themLabel)}</span>${c.small ? "<span></span>" : bar(c.them, "cream")}<span class="d v">${val(c.them, c.themRec)}</span></div></div>`;
+<div class="crow"><span>Clutch</span>${c.small ? "<span></span>" : bar(c.us, "ink")}<span class="d v">${val(c.us, c.usRec)}</span></div>
+<div class="crow"><span class="ink3">${esc(c.themLabel)}</span>${c.small ? "<span></span>" : bar(c.them, "dim")}<span class="d v">${val(c.them, c.themRec)}</span></div></div>`;
   }
   // The accuracy score (Brier) on the same games, once there are enough of them to read.
   const t = r.tracks;
   const scores = [["Clutch's call", t?.all_games?.clutch, true], ["ESPN BPI", t?.vs_espn?.espn_bpi], ["The market · final price", t?.with_line?.market]].filter(([, x]) => x?.brier != null && x.n >= RATE_FLOOR);
   if (scores.length > 1) {
-    html += `<div class="scroll gap"><table class="tbl"><caption class="vh">Accuracy score this season, lower is better</caption><thead><tr><th scope="col">Number</th><th scope="col" class="num">Accuracy score</th><th scope="col" class="num">Games</th></tr></thead><tbody>${scores.map(([l, x, lead]) => `<tr><td${lead ? ' class="amber"' : ""}>${esc(l)}</td><td class="num${lead ? " amber" : ""}">${b3(x.brier)}</td><td class="num">${x.n}</td></tr>`).join("")}</tbody></table></div><p class="note">The accuracy score (the Brier score) grades the probability itself, not just the side: lower is better, 0.250 is a coin flip.</p>`;
+    html += `<div class="scroll gap"><table class="tbl"><caption class="vh">Accuracy score this season, lower is better</caption><thead><tr><th scope="col">Number</th><th scope="col" class="num">Accuracy score</th><th scope="col" class="num">Games</th></tr></thead><tbody>${scores.map(([l, x, lead]) => `<tr><td${lead ? ' class="lead"' : ""}>${esc(l)}</td><td class="num">${b3(x.brier)}</td><td class="num">${x.n}</td></tr>`).join("")}</tbody></table></div><p class="note">The accuracy score (the Brier score) grades the probability itself, not just the side: lower is better, 0.250 is a coin flip.</p>`;
   }
   const notes = [];
   if (r.excluded) notes.push(`${r.excluded} more ${r.excluded === 1 ? "call is" : "calls are"} left out because ${r.excluded === 1 ? "it" : "they"} can't be proven to predate tip; the count is printed so the record can't quietly shrink.`);
@@ -131,7 +131,7 @@ function backtestSection(m) {
   if (!seasons.length) return "";
   const rows = [["Clutch's call", "clutch", true], ["ESPN BPI", "espn_bpi"], ["The market · final price", "market"], ["Always the home team", "always_home"]];
   const head = seasons.map((s) => `<th scope="col" class="num">${esc(s)} right</th><th scope="col" class="num">Score</th>`).join("");
-  const body = rows.map(([l, k, lead]) => `<tr><td${lead ? ' class="amber"' : ""}>${esc(l)}</td>${seasons.map((s) => { const x = bench[s].tracks?.[k]; return `<td class="num${lead ? " amber" : ""}">${pc1(x?.acc)}</td><td class="num${lead ? " amber" : ""}">${b3(x?.brier)}</td>`; }).join("")}</tr>`).join("");
+  const body = rows.map(([l, k, lead]) => `<tr><td${lead ? ' class="lead"' : ""}>${esc(l)}</td>${seasons.map((s) => { const x = bench[s].tracks?.[k]; return `<td class="num">${pc1(x?.acc)}</td><td class="num">${b3(x?.brier)}</td>`; }).join("")}</tr>`).join("");
   const sentence = backtestSentence(bench);
   return `<section class="blk" aria-labelledby="test"><span class="kick">Before it shipped · A replay, not the live record</span><h2 id="test">The two-season test</h2>
 <p>${esc(sentence)} Nobody publishing an NBA model reliably beats the market, and Clutch doesn't claim to.</p>

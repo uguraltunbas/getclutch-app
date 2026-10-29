@@ -20,7 +20,7 @@ function benchmark(season, b) {
   const vsE = b.diffs_brier?.clutch_vs_espn, vsC = b.diffs_brier?.clutch_vs_market;
   return `<div class="panel"><div class="cmp-h"><span class="t">${esc(season)}</span><span class="mono">${b.n.toLocaleString("en-US")} games</span></div>
 <div class="scroll"><table class="tbl"><thead><tr><th scope="col">Number</th><th scope="col" class="num">Accuracy score</th><th scope="col" class="num">Right</th></tr></thead><tbody>
-${rows.map(([l, k, lead]) => `<tr><td${lead ? ' class="amber"' : ""}>${l}</td><td class="num${lead ? " amber" : ""}">${b3(b.tracks?.[k]?.brier)}</td><td class="num">${b.tracks?.[k]?.acc != null ? (b.tracks[k].acc * 100).toFixed(1) + "%" : "—"}</td></tr>`).join("")}
+${rows.map(([l, k, lead]) => `<tr><td${lead ? ' class="lead"' : ""}>${l}</td><td class="num">${b3(b.tracks?.[k]?.brier)}</td><td class="num">${b.tracks?.[k]?.acc != null ? (b.tracks[k].acc * 100).toFixed(1) + "%" : "—"}</td></tr>`).join("")}
 </tbody></table></div>
 ${vsE ? `<p class="note gap">Clutch vs ESPN ${signed4(vsE[0])} (likely range ${signed4(vsE[1])} to ${signed4(vsE[2])})${vsC ? ` · Clutch vs the market ${signed4(vsC[0])} (${signed4(vsC[1])} to ${signed4(vsC[2])})` : ""}. Lower is better.</p>` : ""}</div>`;
 }

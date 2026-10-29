@@ -113,7 +113,7 @@ a.logo:hover{color:var(--ink)}
 /* the edition line and headlines */
 .edition{display:flex;justify-content:space-between;gap:16px;border-bottom:3px double var(--ink);padding:22px 0 8px;font-size:13px;color:var(--ink3)}
 .h1{font-family:var(--display);font-weight:900;font-size:112px;line-height:.92;letter-spacing:-4px}
-.h1 em{font-style:italic;color:var(--amberText)}
+.h1 em{font-style:italic;color:var(--ink)}
 .h2{font-family:var(--display);font-weight:900;font-size:58px;line-height:1;letter-spacing:-1.5px}
 .h2 em{font-style:italic;font-weight:400;color:var(--ink2)}
 .sub{font-size:17px;color:var(--ink2)}
@@ -221,7 +221,7 @@ a.bk:hover{color:var(--ink)}
 .ahead{margin-top:28px;border-top:1px solid var(--ruleBold);padding-top:12px}.arow{display:grid;grid-template-columns:130px minmax(0,1fr) auto;gap:16px;min-height:44px;padding:6px 0;border-bottom:1px solid var(--rule);font-size:15px;align-items:center;color:var(--ink)}.arow .d{font-family:var(--body);font-size:15px;font-weight:600}.arow .go{color:var(--ink3);font-size:20px;line-height:1}.arow:hover .go{color:var(--ink)}
 .g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:40px}
 .move{display:flex;flex-flow:column;gap:14px;border-top:1px solid var(--ruleBold);padding-top:18px}
-.move .no{font-family:var(--num);font-weight:900;font-size:72px;line-height:.9;color:var(--amberText)}
+.move .no{font-family:var(--num);font-weight:900;font-size:72px;line-height:.9;color:var(--ink)}
 .move h3{font-family:var(--display);font-weight:700;font-size:28px;line-height:1.1}
 .move p{font-size:16px;line-height:1.6;color:var(--ink2)}
 .hash{font-family:var(--mono);font-size:13px;color:var(--ink3);border:1px solid var(--rule);padding:8px 10px;align-self:flex-start;max-width:100%;overflow-wrap:anywhere}
@@ -244,7 +244,7 @@ a.bk:hover{color:var(--ink)}
 .crow .v{font-size:18px;text-align:right}
 .hb{display:block;width:100%;height:14px}
 .hb .bg{fill:var(--rule)}
-.hb.amber .fg{fill:var(--amber)}
+.hb.ink .fg{fill:var(--ink)}.hb.dim .fg{fill:var(--ink4)}
 .hb.cream .fg{fill:var(--ink2)}
 .split{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:center;border-top:1px solid var(--ruleBold);padding-top:14px}
 .split .d{font-size:44px;line-height:1}
@@ -253,6 +253,7 @@ a.bk:hover{color:var(--ink)}
 .boxlink b{display:block;font-weight:700;font-size:15px}
 .boxlink span{font-size:13.5px;line-height:1.5;color:var(--ink2)}
 .boxlink a{font-weight:700;font-size:14px;border:1px solid var(--ruleControl);padding:10px 12px;white-space:nowrap}
+.boxlink.box{background:var(--panel);border:1px solid var(--ruleBold);padding:16px 18px}
 .note{font-size:13.5px;line-height:1.5;color:var(--ink3)}
 .miss{margin-top:40px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:18px;align-items:center;border-top:3px double var(--ruleControl);border-bottom:1px solid var(--ruleBold);padding:16px 0;color:var(--ink)}
 .miss:hover{color:var(--ink)}
@@ -272,6 +273,7 @@ a.bk:hover{color:var(--ink)}
 .plan li::before{content:"—";color:var(--ink)}
 .plan.pro li::before{content:"+";color:var(--ink)}
 .plan .btn{margin-top:auto;align-self:flex-start}
+.plan.row{border:0;border-top:1px solid var(--ruleBold);border-radius:0;padding:28px 0 0}
 .faq{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:48px}
 .faq>div{border-top:1px solid var(--ruleBold);padding:18px 0 22px;display:flex;flex-flow:column;gap:8px}
 .faq h2{font-family:var(--display);font-weight:700;font-size:21px}
@@ -316,7 +318,7 @@ a.bk:hover{color:var(--ink)}
 .why strong{color:var(--ink);font-weight:700}
 .why p.first::first-letter{float:left;font-family:var(--display);font-weight:900;font-size:64px;line-height:.8;padding:6px 8px 0 0;color:var(--ink)}
 .probox{padding:10px 12px;border:1px solid var(--ruleBold);font-size:14.5px;color:var(--ink2);break-inside:avoid}
-.probox strong{color:var(--amberText)}
+.probox strong{color:var(--ink)}
 .spots{list-style:none;padding:0;display:flex;flex-flow:column;gap:8px;font-size:14.5px;line-height:1.55;color:var(--ink2)}
 .spots li::before{content:"·";color:var(--ink3);margin-right:8px}
 .tbl{width:100%;border-collapse:collapse;font-size:15px}
@@ -324,7 +326,7 @@ a.bk:hover{color:var(--ink)}
 .tbl td{padding:11px 8px 11px 0;border-bottom:1px solid var(--rule);vertical-align:baseline}
 .tbl .m{font-family:var(--mono);font-size:13px}
 .tbl .st{font-weight:600;font-size:13px;color:var(--ink)}
-.tbl .num{text-align:right}.tbl td.num{font-family:var(--mono)}
+.tbl .num{text-align:right}.tbl td.num{font-family:var(--mono)}.tbl td.lead{font-weight:700}
 .scroll{overflow-x:auto}
 .gradebox{border:1px dashed var(--ruleBold);padding:18px 20px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:22px;align-items:center}
 .gradebox.done{border-style:solid;background:var(--panel)}.gradenote{border-top:1px solid var(--rule);padding-top:12px;font-size:14px;line-height:1.5;color:var(--ink3)}
@@ -409,7 +411,7 @@ a.bk:hover{color:var(--ink)}
    page), the amber ring, the glass card with its amber edge. Every button
    44 px or more. */
 .offer{font-size:15px;line-height:1.55;color:var(--ink)}
-.tchip{display:none;align-self:flex-start;align-items:center;gap:8px;min-height:44px;padding:9px 14px;background:var(--panel);border:1px solid var(--ruleBold);border-left:3px solid var(--amber);color:var(--ink2);font:15px/1.3 var(--body);cursor:pointer}
+.tchip{display:none;align-self:flex-start;align-items:center;gap:8px;min-height:44px;padding:9px 14px;background:var(--panel);border:1px solid var(--ruleControl);color:var(--ink2);font:15px/1.3 var(--body);cursor:pointer}
 .tchip strong{color:var(--ink)}
 [data-theme]:not([data-toured]) .tchip{display:inline-flex}
 .tl{display:none;margin-top:6px;padding:0;background:none;border:0;font:500 14px/44px var(--body);color:var(--ink3);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
@@ -431,7 +433,7 @@ a.bk:hover{color:var(--ink)}
 .tcard .tsk{min-width:44px;min-height:44px;margin-right:auto;padding:0;background:none;border:0;font:500 15px var(--body);color:var(--ink3);cursor:pointer}
 .tend .note{flex-basis:100%}
 /* corners: the design system's soft radius — a card 14, a control 8, a tag 4 (round things stay round) */
-.board,.gcard,.plan,.panel,.callcard,.gradebox,.tcard,.menu nav{border-radius:var(--radius-card)}
+.board,.gcard,.plan,.panel,.callcard,.boxlink.box,.gradebox,.tcard,.menu nav{border-radius:var(--radius-card)}
 .btn,.cbtn,.chip,.pill,.nights a,.boxlink a,.hash,.probox,.tchip,.livechip,.menu summary,.tg,.teamgrid a,.tring{border-radius:var(--radius-control)}
 .teamgrid a{overflow:hidden}
 .cbtn .cl,.plan .tag,.pro-tag,.also .sw{border-radius:var(--radius-tag)}

@@ -13,12 +13,12 @@ function recordBlock(r, heading) {
   const v = verdictOf(r);
   const rate = r.n >= RATE_FLOOR && r.hitRate != null;
   let html = `<section class="panel" aria-labelledby="${heading.id}"><h2 id="${heading.id}">${esc(heading.title)}</h2>
-<div class="stat"><div><span class="d">${rec(r.hits, r.n)}</span><span class="mono">Right–wrong · ${r.n} graded calls</span></div>${rate ? `<div><span class="d amber dec">${r.hitRate.toFixed(1)}%</span><span class="mono">${r.ci ? `Likely range ${Number(r.ci[0]).toFixed(1)}–${Number(r.ci[1]).toFixed(1)}%` : "Right"}</span></div>` : ""}<div><span class="mono ${v.tone === "win" ? "" : "ink3"}">${esc(v.line)}</span></div></div>`;
+<div class="stat"><div><span class="d">${rec(r.hits, r.n)}</span><span class="mono">Right–wrong · ${r.n} graded calls</span></div>${rate ? `<div><span class="d dec">${r.hitRate.toFixed(1)}%</span><span class="mono">${r.ci ? `Likely range ${Number(r.ci[0]).toFixed(1)}–${Number(r.ci[1]).toFixed(1)}%` : "Right"}</span></div>` : ""}<div><span class="mono ${v.tone === "win" ? "" : "ink3"}">${esc(v.line)}</span></div></div>`;
   for (const c of comparisons(r)) {
     const val = (x, recd) => (c.small ? recd : `${x.toFixed(1)}%`);
     html += `<div class="cmp gap"><div class="cmp-h"><span class="t">${esc(c.title)}</span><span class="mono">The same ${c.n} games</span></div>
-<div class="crow"><span>Clutch</span>${c.small ? "<span></span>" : bar(c.us, "amber")}<span class="d v amber">${val(c.us, c.usRec)}</span></div>
-<div class="crow"><span class="ink3">${esc(c.themLabel)}</span>${c.small ? "<span></span>" : bar(c.them, "cream")}<span class="d v">${val(c.them, c.themRec)}</span></div></div>`;
+<div class="crow"><span>Clutch</span>${c.small ? "<span></span>" : bar(c.us, "ink")}<span class="d v">${val(c.us, c.usRec)}</span></div>
+<div class="crow"><span class="ink3">${esc(c.themLabel)}</span>${c.small ? "<span></span>" : bar(c.them, "dim")}<span class="d v">${val(c.them, c.themRec)}</span></div></div>`;
   }
   const d = r.vsMarket?.disagree;
   if (d && d.n > 0) html += `<div class="split gap"><span class="d">${d.hits}<span class="dim">/${d.n}</span></span><p>When Model only — Clutch's number before the market — picked a different team from the market, it was right ${d.hits} ${d.hits === 1 ? "time" : "times"} in ${d.n}${d.readable && d.market_hit_rate != null ? ` (the market ${d.market_hit_rate}%)` : ""}. ${d.edge_is_readable ? "The bottom of its likely range clears 50%." : "Not proven yet — and the Ledger says so."}</p></div>`;

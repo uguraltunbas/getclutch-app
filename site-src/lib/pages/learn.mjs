@@ -244,7 +244,7 @@ function bpiArticle(m) {
 
   const rows = [["ESPN BPI", "espn_bpi", true], ["The market's final price", "market"], ["Clutch's call", "clutch"], ["Clutch, Model only", "model"], ["Always the home team", "always_home"]];
   const head = seasons.map((s) => `<th scope="col" class="num">${esc(s)} right</th><th scope="col" class="num">Score</th>`).join("");
-  const table = rows.map(([l, k, lead]) => `<tr><td${lead ? ' class="amber"' : ""}>${esc(l)}</td>${seasons.map((s) => `<td class="num${lead ? " amber" : ""}">${p1(T(s, k)?.acc)}</td><td class="num${lead ? " amber" : ""}">${b3(T(s, k)?.brier)}</td>`).join("")}</tr>`).join("");
+  const table = rows.map(([l, k, lead]) => `<tr><td${lead ? ' class="lead"' : ""}>${esc(l)}</td>${seasons.map((s) => `<td class="num">${p1(T(s, k)?.acc)}</td><td class="num">${b3(T(s, k)?.brier)}</td>`).join("")}</tr>`).join("");
   const diffs = seasons.map((s) => { const d = bench[s].diffs_brier ?? {}; return `${s}: Clutch's call minus BPI ${s4(d.clutch_vs_espn[0])} (likely range ${s4(d.clutch_vs_espn[1])} to ${s4(d.clutch_vs_espn[2])}); Model only minus BPI ${s4(d.model_vs_espn[0])} (${s4(d.model_vs_espn[1])} to ${s4(d.model_vs_espn[2])})`; }).join(". ");
   const trained = m.accuracy?.training_info?.trained_at?.slice(0, 10);
 

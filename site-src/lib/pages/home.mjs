@@ -94,12 +94,12 @@ function proof(m) {
     for (const c of comparisons(r)) {
       const v = (x, recd) => (c.small ? recd : x.toFixed(1));
       right += `<div class="cmp"><div class="cmp-h"><span class="t">${esc(c.title)}</span><span class="mono">The same ${c.n} games</span></div>
-<div class="crow"><span>Clutch</span>${c.small ? "<span></span>" : bar(c.us, "amber")}<span class="d v amber">${v(c.us, c.usRec)}</span></div>
-<div class="crow"><span class="ink3">${esc(c.themLabel)}</span>${c.small ? "<span></span>" : bar(c.them, "cream")}<span class="d v">${v(c.them, c.themRec)}</span></div></div>`;
+<div class="crow"><span>Clutch</span>${c.small ? "<span></span>" : bar(c.us, "ink")}<span class="d v">${v(c.us, c.usRec)}</span></div>
+<div class="crow"><span class="ink3">${esc(c.themLabel)}</span>${c.small ? "<span></span>" : bar(c.them, "dim")}<span class="d v">${v(c.them, c.themRec)}</span></div></div>`;
     }
     // (Model only against the market — the games the two disagree on — is on the Ledger page.)
   }
-  right += `<div class="boxlink"><span><b>Every morning has a receipt</b>The night's calls are hashed and made public before the first tip. Nobody can change them after, not even us.</span><a href="/receipts/">Check it →</a></div>`;
+  right += `<div class="boxlink box"><span><b>Every morning has a receipt</b>The night's calls are hashed and made public before the first tip. Nobody can change them after, not even us.</span><a href="/receipts/">Check it →</a></div>`;
   // The open data on the front page itself, not only in the footer (owner,
   // 2026-10-27: a public-APIs list's reviewer looked here and couldn't find it).
   right += `<div class="boxlink"><span><b>Every number is open data</b>This season's win probabilities as JSON and CSV: free, no key, CC BY 4.0.</span><a href="/data/">Get the data →</a></div>`;
@@ -236,7 +236,7 @@ ${liveOne ? `<a class="livechip gl d" href="${liveOne.path}" data-gid="${liveOne
 ${cta("hero")}
 ${promise}
 </div><div class="hero-r">${leadBoard}
-<button class="tchip" type="button" data-tour-go>New here? <strong>Take the 1-minute tour</strong><span class="amber" aria-hidden="true">→</span></button></div></div></div>
+<button class="tchip" type="button" data-tour-go>New here? <strong>Take the 1-minute tour</strong><span aria-hidden="true">→</span></button></div></div></div>
 ${ticker}</section>
 
 <section class="sec t" id="tonight" aria-labelledby="tonight-h"><div class="wrap">
@@ -262,7 +262,7 @@ ${missBand(m)}
 <section class="sec" id="pricing" aria-labelledby="price-h"><div class="wrap">
 <h2 class="h2 hm" id="price-h">Free for good. <em>Pro when you want the whole lab.</em></h2>
 <div class="plans">
-<div class="plan"><h3>Free</h3><div class="price"><span class="d">$0</span><span>for good</span></div><ul>${FRONT_FREE.map((x) => `<li>${esc(x)}</li>`).join("")}</ul><a class="btn ghost" href="${PLAY}">${WEB_APP_LIVE ? play : "Get the free iPhone app"}</a></div>
+<div class="plan row"><h3>Free</h3><div class="price"><span class="d">$0</span><span>for good</span></div><ul>${FRONT_FREE.map((x) => `<li>${esc(x)}</li>`).join("")}</ul><a class="btn ghost" href="${PLAY}">${WEB_APP_LIVE ? play : "Get the free iPhone app"}</a></div>
 <div class="plan pro"><span class="tag">${PLAN.trialDays} days free on annual</span><h3>Pro</h3><div class="price"><span class="d">${priceFig(PLAN.monthly)}</span><span>a month · or ${PLAN.annual} a year</span></div>${LAUNCH_ON ? '<p class="offer">Free on the web during the launch, with the Launch Pass.</p>' : ""}<ul>${FRONT_PRO.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>${LAUNCH_ON ? `<a class="btn" href="${passLink("pricing")}">Claim your Launch Pass</a>` : `<a class="btn" href="${PLAY_PRO}">Try Pro free for ${PLAN.trialDays} days${WEB_APP_LIVE ? "" : " on iPhone"}</a>`}</div>
 </div>
 <p class="note gap">Prices in US dollars. Cancel any time; Pro runs to the end of the period you paid for. <a href="/pricing/">Everything in Free and Pro →</a> · <a href="/refunds/">Refunds</a> · <a href="/terms/">Terms</a></p>
