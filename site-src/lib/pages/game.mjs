@@ -108,7 +108,8 @@ function gradeSection(g) {
   }
   if (g.status === "postponed") return "";
   const live = g.status === "live" || g.status === "halftime";
-  return `<section class="gradebox" aria-labelledby="grade"><span class="d" aria-hidden="true">--·--</span><div><h2 id="grade">This page grades itself</h2><p>${live ? "Live now. " : ""}After the final you'll see the score, whether Clutch was right, and the receipt that proves the call came first.</p></div></section>`;
+  // Before the final the grade is one quiet line, not a box (UX study 10-28: the dashed placeholder sat large and empty).
+  return `<section class="gradenote" aria-label="The grade"><p>${live ? "Live now. " : ""}After the final, this page grades itself: the score, whether Clutch was right, and the receipt.</p></section>`;
 }
 
 /**

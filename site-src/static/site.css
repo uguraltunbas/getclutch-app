@@ -327,7 +327,7 @@ a.bk:hover{color:var(--ink)}
 .tbl .num{text-align:right}.tbl td.num{font-family:var(--mono)}
 .scroll{overflow-x:auto}
 .gradebox{border:1px dashed var(--ruleBold);padding:18px 20px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:22px;align-items:center}
-.gradebox.done{border-style:solid;background:var(--panel)}
+.gradebox.done{border-style:solid;background:var(--panel)}.gradenote{border-top:1px solid var(--rule);padding-top:12px;font-size:14px;line-height:1.5;color:var(--ink3)}
 .gradebox .d{font-size:40px;letter-spacing:2px;color:var(--ink4)}
 .gradebox.done .d{color:var(--ink)}
 .gradebox h2{font-family:var(--display);font-weight:700;font-size:19px}

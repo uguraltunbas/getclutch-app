@@ -6,7 +6,7 @@
 import { page, esc, ORIGIN, PLAY, WEB_APP_LIVE, teamSlug } from "../html.mjs";
 import { pct, pickSide, normalizeStatus, finalLabel, RATE_FLOOR } from "../copy.mjs";
 import { matchupsOf, prevRecord, recordIn } from "./matchups.mjs";
-import { dayLabel, shortDate, mediumDate, timeET, seasonOf as seasonOfDate } from "../time.mjs";
+import { shortDate, mediumDate, timeET, seasonOf as seasonOfDate } from "../time.mjs";
 
 export function teamPages(m) {
   const board = m.seasonBoard;
@@ -28,8 +28,8 @@ export function teamPages(m) {
       const num = side ? `${esc(side.team.abbreviation)} ${pct(side.prob)}` : "--";
       const label = `${at(g)} ${o.nickname}${g.season_type === "Preseason" ? " · preseason" : ""}`;
       const tip = g.game_time_utc ? timeET(g.game_time_utc) : "";
-      const name = v ? `<a href="${v.path}">${esc(label)}</a>` : esc(label);
-      return `<div class="callrow"><span class="mono">${esc(dayLabel(g.game_date))}</span><span>${name} <span class="mono hide-xs">· ${esc(tip)}</span></span><span class="d">${num}</span><span>${side ? '<span class="chip">The call</span>' : '<span class="note">That morning</span>'}</span></div>`;
+      const inner = `<span class="dt">${esc(shortDate(g.game_date))}</span><span class="mu">${esc(label)}<span class="hide-xs"> · ${esc(tip)}</span></span><span class="pk">${num}</span><span class="g"></span>`;
+      return v ? `<a class="lrow" href="${v.path}">${inner}</a>` : `<div class="lrow">${inner}</div>`;
     }).join("");
 
     const lastRows = last.map((g) => {
@@ -37,10 +37,10 @@ export function teamPages(m) {
       const us = g.home_team_id === t.id ? g.home_score : g.away_score, them = g.home_team_id === t.id ? g.away_score : g.home_score;
       const res = us > them ? "W" : "L";
       const v = pageOf[g.id];
-      const label = `${res} ${us}–${them} ${at(g)} ${o.nickname}${g.season_type === "Playoffs" ? " · playoffs" : ""}${normalizeStatus(g.status) === "final" && g.period > 4 ? ` · ${finalLabel(g.period).replace("Final/", "")}` : ""}`;
-      const name = v ? `<a href="${v.path}">${esc(label)}</a>` : esc(label);
-      const grade = c ? `<span class="d">${esc(c.pick)} ${Math.round(c.claimed_pct)}</span><span>${c.correct ? '<span class="chip win">✓ Right</span>' : '<span class="chip loss">✗ Missed</span>'}</span>` : `<span class="d dim">--</span><span><span class="note">${g.season_type === "Preseason" ? "Preseason" : "Not graded"}</span></span>`;
-      return `<div class="callrow"><span class="mono">${esc(shortDate(g.game_date))}</span><span>${name}</span>${grade}</div>`;
+      const label = `${res} ${us}–${them} ${at(g)} ${o.nickname}${g.season_type === "Playoffs" ? " · playoffs" : g.season_type === "Preseason" ? " · preseason" : ""}${normalizeStatus(g.status) === "final" && g.period > 4 ? ` · ${finalLabel(g.period).replace("Final/", "")}` : ""}`;
+      const grade = c ? `<span class="pk">${esc(c.pick)} ${Math.round(c.claimed_pct)}</span><span class="g">${c.correct ? '<span aria-hidden="true">✓</span><span class="vh">right</span>' : '<span aria-hidden="true">✗</span><span class="vh">missed</span>'}</span>` : '<span class="pk ink3">--</span><span class="g"><span class="vh">not graded</span></span>';
+      const inner = `<span class="dt">${esc(shortDate(g.game_date))}</span><span class="mu">${esc(label)}</span>${grade}`;
+      return v ? `<a class="lrow" href="${v.path}">${inner}</a>` : `<div class="lrow">${inner}</div>`;
     }).join("");
 
     const pc = chance[t.id];
