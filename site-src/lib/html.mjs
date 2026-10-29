@@ -38,6 +38,8 @@ export const WEB_APP_LIVE = /^(1|true|yes)$/i.test(process.env.WEB_APP_LIVE ?? "
 export const PLAY = WEB_APP_LIVE ? `${APP}/` : APP_STORE;
 /** A game in the web app, or the iPhone app until the web app is open. */
 export const playGame = (id) => (WEB_APP_LIVE ? `${APP}/games/${id}` : APP_STORE);
+/** A night's games in the web app (its Scores page), or the iPhone app until the web app is open. */
+export const playNight = (d) => (WEB_APP_LIVE ? `${APP}/scores?date=${d}` : APP_STORE);
 /** Pro's checkout: the web app's paywall, or the iPhone app. */
 export const PLAY_PRO = WEB_APP_LIVE ? `${APP}/paywall` : APP_STORE;
 /**

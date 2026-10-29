@@ -5,7 +5,7 @@
 // night, tonight's games, three moves, the Ledger, Free and Pro, the close.
 // The questions moved to /faq/, the free paper's cards to /faq/ and /pricing/.
 
-import { page, esc, bar, APP_STORE, ORIGIN, PLAY, PLAY_PRO, WEB_APP_LIVE, LAUNCH_ON, LAUNCH_WORDS, passLink, webAppLink, playWords, priceFig } from "../html.mjs";
+import { page, esc, bar, APP_STORE, ORIGIN, PLAY, PLAY_PRO, WEB_APP_LIVE, LAUNCH_ON, LAUNCH_WORDS, passLink, webAppLink, playWords, priceFig, playNight } from "../html.mjs";
 import { board, gameCard, lineIsWhy, scoreLine, statusText, tonightOpen } from "../parts.mjs";
 import { pct, callPoints, comparisons, opener, verdictOf, rec, shortHash, RATE_FLOOR, REGULAR_SEASON_START } from "../copy.mjs";
 import { longDate, dayLabel, shortDate, weekday, timeET, countWord, shift } from "../time.mjs";
@@ -130,7 +130,7 @@ function tonightState(games, firstSeal) {
   return firstSeal ? `Every number was sealed at ${timeET(firstSeal)} and can't change.` : "Every number is sealed before its tip and can't change after.";
 }
 
-/** The nights after tonight, when tonight is light (the preseason, a quiet Monday). */
+/** The nights after tonight, when tonight is light (the preseason, a quiet Monday): one row a night, each opening that night's games in the app. */
 function comingUp(m, tonight, n) {
   if (!tonight || n >= 5) return "";
   const by = new Map();
@@ -139,8 +139,8 @@ function comingUp(m, tonight, n) {
   if (!nights.length) return "";
   return `<div class="ahead"><span class="mono ink3">Coming up</span>${nights.map(([d, gs]) => {
     const first = gs.map((g) => g.tipUtc).filter(Boolean).sort()[0];
-    return `<div class="arow"><span class="d">${esc(dayLabel(d))}</span><span>${gs.length} ${gs.length === 1 ? "game" : "games"}${gs.some((g) => g.preseason) ? ", preseason" : ""}${first ? ` · first tip ${esc(timeET(first))}` : ""}</span><span class="ink3">${gs.slice(0, 7).map((g) => `${esc(g.away.abbreviation)} @ ${esc(g.home.abbreviation)}`).join(" · ")}</span></div>`;
-  }).join("")}<p class="note gap">Each night's numbers land that morning and are sealed before tip.</p></div>`;
+    return `<a class="arow" href="${playNight(d)}"><span class="d">${esc(dayLabel(d))}</span><span>${gs.length} ${gs.length === 1 ? "game" : "games"}${gs.some((g) => g.preseason) ? ", preseason" : ""}${first ? ` · first tip ${esc(timeET(first))}` : ""}</span><span class="go" aria-hidden="true">›</span></a>`;
+  }).join("")}<p class="note gap">Each night's numbers land that morning.</p></div>`;
 }
 
 /**

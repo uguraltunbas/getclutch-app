@@ -218,7 +218,7 @@ a.bk:hover{color:var(--ink)}
 .gline{font-size:13.5px;line-height:1.4;color:var(--ink2);min-height:38px}
 .gcard .cta{color:var(--ink);font-weight:700}
 .is-live .cta{color:var(--hotText)}
-.ahead{margin-top:28px;border-top:1px solid var(--ruleBold);padding-top:12px}.arow{display:grid;grid-template-columns:130px 260px minmax(0,1fr);gap:16px;padding:10px 0;border-bottom:1px solid var(--rule);font-size:14px;align-items:baseline}.arow .d{font-size:15px}
+.ahead{margin-top:28px;border-top:1px solid var(--ruleBold);padding-top:12px}.arow{display:grid;grid-template-columns:130px minmax(0,1fr) auto;gap:16px;min-height:44px;padding:6px 0;border-bottom:1px solid var(--rule);font-size:15px;align-items:center;color:var(--ink)}.arow .d{font-family:var(--body);font-size:15px;font-weight:600}.arow .go{color:var(--ink3);font-size:20px;line-height:1}.arow:hover .go{color:var(--ink)}
 .g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:40px}
 .move{display:flex;flex-flow:column;gap:14px;border-top:1px solid var(--ruleBold);padding-top:18px}
 .move .no{font-family:var(--num);font-weight:900;font-size:72px;line-height:.9;color:var(--amberText)}
@@ -454,7 +454,7 @@ a.bk:hover{color:var(--ink)}
 .livechip{left:12px;bottom:-34px;font-size:13px}
 .inst{margin-bottom:12px}
 .sec{padding-top:72px}.sec.t{padding-top:56px}
-.miss{grid-template-columns:minmax(0,1fr);gap:8px}.arow{grid-template-columns:minmax(0,1fr);gap:2px}
+.miss{grid-template-columns:minmax(0,1fr);gap:8px}.arow{grid-template-columns:104px minmax(0,1fr) auto;gap:10px}
 .gh1,.gh1.long{font-size:44px;letter-spacing:-1px}.deck{font-size:20px}
 .why{column-count:1}.gradebox{grid-template-columns:minmax(0,1fr);gap:8px}
 .rh1{font-size:44px;letter-spacing:-1px}.rdeck{font-size:17px}
