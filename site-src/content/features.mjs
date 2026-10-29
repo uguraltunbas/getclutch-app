@@ -1,4 +1,4 @@
-import { WEB_APP_LIVE, LAUNCH_ON, LAUNCH_WORDS, passLink, webAppLink } from "../lib/html.mjs";
+import { WEB_APP_LIVE, LAUNCH_ON, LAUNCH_WORDS, passLink, webAppLink, playWords } from "../lib/html.mjs";
 
 // What Free and Pro contain — the app's ONE list, copied word for word from
 // the mobile repo's lib/constants/plans.ts (FEATURES, 1.0.6 · Faz 6 · Dalga A).
@@ -65,7 +65,7 @@ export const FAQ = [
   LAUNCH_ON
     ? { q: "Do I need an iPhone?", a: `No. Everything to follow and call runs in your browser — sign in with Apple or Google and claim your Launch Pass: ${LAUNCH_WORDS}, and the Founding fan stamp for good. ${IPHONE_EXTRAS}`, link: { href: passLink("faq"), label: "Claim your Launch Pass →" } }
     : WEB_APP_LIVE
-      ? { q: "Do I need an iPhone?", a: `No. Everything to follow and call runs in your browser. ${IPHONE_EXTRAS}`, link: { href: webAppLink("faq"), label: "Open Clutch in your browser →" } }
+      ? { q: "Do I need an iPhone?", a: `No. Everything to follow and call runs in your browser. ${IPHONE_EXTRAS}`, link: { href: webAppLink("faq"), label: playWords() } }
       : { q: "Do I need an iPhone?", a: "Today, to make calls, yes: Clutch is an iPhone app. The browser version opens this October, with the same paper and the same calls. Every number is on this site already." },
   ...(WEB_APP_LIVE ? [{ q: "Is it one account on the web and on iPhone?", a: "Yes. One account everywhere: sign in the same way on both, and Pro bought on one carries over to the other." }] : []),
   { q: "What does Pro add?", a: "Model only — Clutch's own number before the market — the projected final, every factor, late-news alerts and the simulation." },

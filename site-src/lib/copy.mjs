@@ -44,7 +44,7 @@ export function callPoints(p) {
   return Math.min(CALL_PAY.max, Math.max(CALL_PAY.min, raw));
 }
 
-export const CALL_RULE = `Right calls score more the less likely they were: ${CALL_PAY.coinFlip} for a coin flip, up to ${CALL_PAY.max} for an upset.`;
+export const CALL_RULE = `Right calls score more the less likely they were: ${CALL_PAY.coinFlip} pts for a coin flip, up to ${CALL_PAY.max} pts for an upset.`;
 
 /** A reason's label in plain words (Elo ratings read as "rated above"); the retired model's "(favors home)" tail dropped. */
 export function plainDriverLabel(key, label) {

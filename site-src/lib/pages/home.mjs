@@ -5,8 +5,8 @@
 // night, tonight's games, three moves, the Ledger, Free and Pro, the close.
 // The questions moved to /faq/, the free paper's cards to /faq/ and /pricing/.
 
-import { page, esc, bar, APP_STORE, ORIGIN, PLAY, PLAY_PRO, WEB_APP_LIVE, LAUNCH_ON, LAUNCH_WORDS, passLink, webAppLink } from "../html.mjs";
-import { board, gameCard, lineIsWhy, scoreLine, statusText } from "../parts.mjs";
+import { page, esc, bar, APP_STORE, ORIGIN, PLAY, PLAY_PRO, WEB_APP_LIVE, LAUNCH_ON, LAUNCH_WORDS, passLink, webAppLink, playWords, priceFig } from "../html.mjs";
+import { board, gameCard, lineIsWhy, scoreLine, statusText, tonightOpen } from "../parts.mjs";
 import { pct, callPoints, comparisons, opener, verdictOf, rec, shortHash, RATE_FLOOR, REGULAR_SEASON_START } from "../copy.mjs";
 import { longDate, dayLabel, shortDate, weekday, timeET, countWord, shift } from "../time.mjs";
 import { FRONT_FREE, FRONT_PRO, PLAN } from "../../content/features.mjs";
@@ -150,7 +150,7 @@ function comingUp(m, tonight, n) {
  * element the page marks with data-tour (the script leaves out any that isn't
  * on tonight's page and counts the rest), then the end card.
  */
-function guide(lead, isToday) {
+function guide(lead, isToday, play) {
   const after = lead && lead.status !== "scheduled";
   const num = after
     ? "How likely Clutch thought each team was to take the game — set that morning, before tip."
@@ -166,7 +166,7 @@ function guide(lead, isToday) {
   const [endLine, endLinks] = LAUNCH_ON
     ? [`Sign in with Apple or Google and claim your Launch Pass: ${LAUNCH_WORDS}.`, `<a class="btn" href="${passLink("tour-end")}">Claim your Launch Pass →</a><a class="btn ghost" href="${APP_STORE}">Get the iPhone app</a>`]
     : WEB_APP_LIVE
-      ? ["Call every game in your browser, or on iPhone.", `<a class="btn" href="${webAppLink("tour-end")}">Open Clutch in your browser →</a><a class="btn ghost" href="${APP_STORE}">Get the iPhone app</a>`]
+      ? ["Call every game in your browser, or on iPhone.", `<a class="btn" href="${webAppLink("tour-end")}">${play}</a><a class="btn ghost" href="${APP_STORE}">Get the iPhone app</a>`]
       : ["Call every game in the iPhone app. Every number is on this site too.", `<a class="btn" href="${APP_STORE}">Get the iPhone app →</a>`];
   return `<template id="tour"><div class="tour">
 <div class="tdim"></div><div class="tdim"></div><div class="tdim"></div><div class="tdim"></div><div class="tring"></div>
@@ -209,13 +209,16 @@ ${liveOne ? `<a class="livechip gl d" href="${liveOne.path}" data-gid="${liveOne
       : `No games tonight. The next night is ${weekday(tonight)}, ${shortDate(tonight)}: ${countWord(n, false)} ${games.some((g) => g.preseason) ? "preseason " : ""}${n === 1 ? "game" : "games"}. Every number is sealed before its tip.`;
 
   const latestSeal = m.receipts.find((r) => r.kind === "seal");
-  const pts = lead?.hasCall ? [[lead.side.team, callPoints(lead.side.prob), true], [lead.side.other, callPoints(1 - lead.side.prob), false]] : null;
+  // Move 02's pair, away left and home right: Clutch's side tagged, the other shown as a reader's
+  // call in the one selected look the app uses (fill, ✓, "Your call"), the upset scoring more.
+  const pts = lead?.hasCall ? [lead.away, lead.home].map((t) => { const home = t.id === lead.home.id; return [t, callPoints(home ? lead.homeProb : 1 - lead.homeProb), t.id === lead.side.team.id]; }) : null;
 
   const nextTip = games.filter((g) => g.status === "scheduled" && g.tipUtc).map((g) => g.tipUtc).sort()[0];
   const lastH = !tonight ? "The paper returns with the next game." : isToday && games.some((g) => g.hasCall) ? "Tonight's paper is out." : isToday ? "Tonight's paper is being set." : `The next paper is out ${weekday(tonight)}.`;
 
   // One button (owner, 2026-10-27): the web app; the iPhone app is a small link under it.
-  const play = isToday && games.some((g) => g.status !== "final" && g.status !== "postponed") ? "Play tonight in your browser →" : "Play in your browser →";
+  // Its one name (html.mjs playWords) is the masthead's, the closing's and the Free plan's too.
+  const play = playWords(tonightOpen(m));
   const cta = (where) => WEB_APP_LIVE
     ? `<div class="cta"><a class="btn lg" href="${webAppLink(where)}">${play}</a><a class="alt" href="${APP_STORE}">Get the iPhone app</a></div>`
     : `<div class="cta"><a class="btn lg" href="${APP_STORE}">Get the iPhone app →</a><a class="alt" href="/ledger/">Read the Ledger</a></div>`;
@@ -247,7 +250,7 @@ ${comingUp(m, tonight, games.length)}
 <button class="tl" type="button" data-tour-go>1-minute tour</button>
 <div class="g3 mt">
 <div class="move"><span class="no" aria-hidden="true">01</span><h3>Clutch makes its call</h3><p>Every morning, a win probability for every game — built from form, rest, travel, the official injury report and the market. Sealed and published before the first tip.</p><span class="hash">${latestSeal ? `sha256 ${esc(shortHash(latestSeal.sha256))}` : "sha256 · the first seal lands Oct 3"}</span></div>
-<div class="move"><span class="no" aria-hidden="true">02</span><h3>You make yours</h3><p>Pick a side before tip. Upsets you call score more, and every level earns a new title.</p>${pts ? `<span class="pills">${pts.map(([t, p, on]) => `<span class="pill${on ? " on" : ""}">${esc(t.abbreviation)} · ${p}</span>`).join("")}</span>` : ""}</div>
+<div class="move"><span class="no" aria-hidden="true">02</span><h3>You make yours</h3><p>Pick a side before tip. Upsets you call score more, and every level earns a new title.</p>${pts ? `<span class="pills">${pts.map(([t, p, clutch]) => (clutch ? `<span class="pill">${esc(t.nickname)} +${p} pts · <span class="amber">Clutch's call</span></span>` : `<span class="pill you">✓ Your call · ${esc(t.nickname)} +${p} pts</span>`)).join("")}</span>` : ""}</div>
 <div class="move"><span class="no" aria-hidden="true">03</span><h3>The morning grades you both</h3><p>Every call goes in the Ledger, misses included. Beat Clutch on a night and it goes in your Scrapbook.</p><span class="pills"><span class="chip win">RIGHT</span><span class="chip loss">MISSED</span></span></div>
 </div></div></section>
 
@@ -259,8 +262,8 @@ ${missBand(m)}
 <section class="sec" id="pricing" aria-labelledby="price-h"><div class="wrap">
 <h2 class="h2 hm" id="price-h">Free for good. <em>Pro when you want the whole lab.</em></h2>
 <div class="plans">
-<div class="plan"><h3>Free</h3><div class="price"><span class="d">$0</span><span>for good</span></div><ul>${FRONT_FREE.map((x) => `<li>${esc(x)}</li>`).join("")}</ul><a class="btn ghost" href="${PLAY}">${WEB_APP_LIVE ? "Play free" : "Get the free iPhone app"}</a></div>
-<div class="plan pro"><span class="tag">${PLAN.trialDays} DAYS FREE ON ANNUAL</span><h3>Pro</h3><div class="price"><span class="d amber">${PLAN.monthly}</span><span>a month · or ${PLAN.annual} a year</span></div>${LAUNCH_ON ? '<p class="offer">Free on the web during the launch, with the Launch Pass.</p>' : ""}<ul>${FRONT_PRO.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>${LAUNCH_ON ? `<a class="btn" href="${passLink("pricing")}">Claim your Launch Pass</a>` : `<a class="btn" href="${PLAY_PRO}">Try Pro free for ${PLAN.trialDays} days${WEB_APP_LIVE ? "" : " on iPhone"}</a>`}</div>
+<div class="plan"><h3>Free</h3><div class="price"><span class="d">$0</span><span>for good</span></div><ul>${FRONT_FREE.map((x) => `<li>${esc(x)}</li>`).join("")}</ul><a class="btn ghost" href="${PLAY}">${WEB_APP_LIVE ? play : "Get the free iPhone app"}</a></div>
+<div class="plan pro"><span class="tag">${PLAN.trialDays} DAYS FREE ON ANNUAL</span><h3>Pro</h3><div class="price"><span class="d amber">${priceFig(PLAN.monthly)}</span><span>a month · or ${PLAN.annual} a year</span></div>${LAUNCH_ON ? '<p class="offer">Free on the web during the launch, with the Launch Pass.</p>' : ""}<ul>${FRONT_PRO.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>${LAUNCH_ON ? `<a class="btn" href="${passLink("pricing")}">Claim your Launch Pass</a>` : `<a class="btn" href="${PLAY_PRO}">Try Pro free for ${PLAN.trialDays} days${WEB_APP_LIVE ? "" : " on iPhone"}</a>`}</div>
 </div>
 <p class="note gap">Prices in US dollars. Cancel any time; Pro runs to the end of the period you paid for. <a href="/pricing/">Everything in Free and Pro →</a> · <a href="/refunds/">Refunds</a> · <a href="/terms/">Terms</a></p>
 </div></section>
@@ -271,7 +274,7 @@ ${missBand(m)}
 ${cta("closing")}
 <a class="more" href="/faq/">Questions, answered →</a>
 </div></div></section>
-${guide(lead, isToday)}`;
+${guide(lead, isToday, play)}`;
 
   const desc = `Clutch puts a win probability on every NBA game, tells you why, and seals it before tip. Call every game free ${WEB_APP_LIVE ? "in your browser or on iPhone" : "on iPhone"} — the public Ledger grades every call.`;
   const ld = [

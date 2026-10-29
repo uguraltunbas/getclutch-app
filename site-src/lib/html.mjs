@@ -1,8 +1,9 @@
 // The page shell and the pieces every page shares: head (title, canonical,
 // Open Graph, JSON-LD, preloaded fonts, the theme script), the masthead, the
-// footer, the LED rail. No inline style or script anywhere — the CSP allows
-// neither — so team colours are classes in the stylesheet, widths are SVG
-// attributes, and Day or Night is set by a tiny external script in <head>.
+// footer, the LED rail. No inline style anywhere and one inline script — the
+// CSP allows no other — so team colours are classes in the stylesheet, widths
+// are SVG attributes, and Day or Night is set by a tiny script in <head> that
+// the build writes inline and the CSP admits by its hash.
 
 import { etDate } from "./time.mjs";
 
@@ -39,6 +40,14 @@ export const PLAY = WEB_APP_LIVE ? `${APP}/` : APP_STORE;
 export const playGame = (id) => (WEB_APP_LIVE ? `${APP}/games/${id}` : APP_STORE);
 /** Pro's checkout: the web app's paywall, or the iPhone app. */
 export const PLAY_PRO = WEB_APP_LIVE ? `${APP}/paywall` : APP_STORE;
+/**
+ * The main action has one name (owner's pick, UI/UX study 2026-10-28): "Play
+ * tonight in your browser →" on the page's buttons, "Play tonight" in the
+ * masthead. `open`: tonight still has a game to call; on a night with none
+ * left the long form drops "tonight" rather than promise a game.
+ */
+export const playWords = (open = true) => (open ? "Play tonight in your browser →" : "Play in your browser →");
+export const PLAY_SHORT = "Play tonight";
 
 /**
  * The Launch Pass (owner, 2026-10-07): sign in on the web app, tap Claim, and
@@ -94,6 +103,9 @@ export const appStoreLink = (path) => (/^\d+$/.test(APP_STORE_PT) ? `https://app
 
 export const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 
+/** A plan card's big price ("$9.99") in Plex Mono, its decimal point drawn narrow: a mono "." fills a whole digit's width. */
+export const priceFig = (s) => esc(s).replace(/\.(?=\d)/, '<span class="dp">.</span>');
+
 /** Search results cut a description near 160 characters: keep whole sentences up to that, else whole words and an ellipsis. */
 export const DESCRIPTION_MAX = 160;
 export function clipDescription(s, max = DESCRIPTION_MAX) {
@@ -139,7 +151,7 @@ const THEME = '<button class="tg" type="button"><span class="vh">Theme: </span><
 function masthead(current) {
   const links = NAV.map(([href, label, key]) => `<a href="${href}"${key === current ? ' aria-current="page"' : ""}>${label}</a>`).join("");
   const acts = WEB_APP_LIVE
-    ? `<a class="signin" href="${APP}/">Sign in</a><a class="btn sm" href="${APP}/"><span class="hide-s">Play in your browser</span><span class="show-s">Play free</span></a>`
+    ? `<a class="signin" href="${APP}/">Sign in</a><a class="btn sm" href="${APP}/">${PLAY_SHORT}</a>`
     : `<a class="btn sm" href="${APP_STORE}"><span class="hide-s">Get the iPhone app</span><span class="show-s">Get the app</span></a>`;
   return `<header class="top"><div class="wrap bar${WEB_APP_LIVE ? " live" : ""}">
 <a class="logo" href="/" aria-label="Clutch, front page">Clutch</a>
@@ -153,10 +165,10 @@ function footer(path) {
   return `<footer class="foot"><div class="wrap">
 <div class="fgrid">
 <div class="fbrand"><span class="logo">Clutch</span><p>NBA analytics for fans. A number for every game, the reasons behind it, and a public record of every call.</p></div>
-<nav aria-label="The paper"><span class="mono">The paper</span><a href="/tonight/">Tonight</a><a href="/ledger/">The Ledger</a><a href="/accuracy/">Accuracy</a><a href="/receipts/">Proof</a><a href="/teams/">Teams</a><a href="/playoff-chances/">Playoff chances</a></nav>
-<nav aria-label="About"><span class="mono">About</span><a href="/how-it-works/">How it works</a><a href="/faq/">FAQ</a><a href="/learn/">Learn</a><a href="/widget/">Widget</a><a href="/data/">Open data</a><a href="/feed.xml">RSS</a><a href="/tr/" hreflang="tr" lang="tr">Türkçe</a><a href="/pricing/">Pricing</a><a href="/company/">Company</a><a href="/support/">Support</a><a href="${APP_STORE}">iPhone app</a></nav>
-<nav aria-label="Legal"><span class="mono">Legal</span><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="/refunds/">Refunds</a></nav>
-<nav aria-label="Follow"><span class="mono">Follow</span><a href="${X_URL}" rel="me">X</a><a href="${LINKEDIN_URL}" rel="me">LinkedIn</a></nav>
+<nav class="fpaper" aria-label="The paper"><span class="mono">The paper</span><a href="/tonight/">Tonight</a><a href="/ledger/">The Ledger</a><a href="/accuracy/">Accuracy</a><a href="/receipts/">Proof</a><a href="/teams/">Teams</a><a href="/playoff-chances/">Playoff chances</a></nav>
+<nav class="fabout" aria-label="About"><span class="mono">About</span><a href="/how-it-works/">How it works</a><a href="/faq/">FAQ</a><a href="/learn/">Learn</a><a href="/widget/">Widget</a><a href="/data/">Open data</a><a href="/feed.xml">RSS</a><a href="/tr/" hreflang="tr" lang="tr">Türkçe</a><a href="/pricing/">Pricing</a><a href="/company/">Company</a><a href="/support/">Support</a><a href="${APP_STORE}">iPhone app</a></nav>
+<nav class="flegal" aria-label="Legal"><span class="mono">Legal</span><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="/refunds/">Refunds</a></nav>
+<nav class="ffollow" aria-label="Follow"><span class="mono">Follow</span><a href="${X_URL}" rel="me">X</a><a href="${LINKEDIN_URL}" rel="me">LinkedIn</a></nav>
 </div>
 ${path === "/" ? `<div class="flisted"><span class="mono">Listed on</span>${LISTED_ON.map((b) => `<a href="${b.href}"><img src="${b.img}" width="${b.w}" height="${b.h}" alt="${b.alt}"></a>`).join("")}</div>` : ""}
 <div class="fline"><span>Sports analytics for fans. Not affiliated with the NBA or any team.</span><span>© 2026 Clutch · Operated by Uğur Altunbaş</span></div>

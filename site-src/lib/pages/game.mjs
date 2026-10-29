@@ -3,9 +3,9 @@
 // who's out, and the page grading itself after the final. And
 // /games/<date>/ — the night's games on one page.
 
-import { page, esc, APP_STORE, ORIGIN, PLAY, playGame, WEB_APP_LIVE } from "../html.mjs";
-import { board, gameCard, statusText, gradeChip } from "../parts.mjs";
-import { pct, headlineFor, callPoints, receiptLine, shortHash, sealFileUrl, CALL_RULE, PRESEASON_DECK, rec, RATE_FLOOR, RECEIPTS_REPO } from "../copy.mjs";
+import { page, esc, APP_STORE, ORIGIN, PLAY, WEB_APP_LIVE, playWords } from "../html.mjs";
+import { board, gameCard, statusText, gradeChip, tonightOpen } from "../parts.mjs";
+import { pct, headlineFor, receiptLine, shortHash, sealFileUrl, CALL_RULE, PRESEASON_DECK, rec, RATE_FLOOR, RECEIPTS_REPO } from "../copy.mjs";
 import { matchupFor } from "./matchups.mjs";
 import { longDate, mediumDate, shortDate, weekday, timeET, isoET } from "../time.mjs";
 
@@ -111,18 +111,24 @@ function gradeSection(g) {
   return `<section class="gradebox" aria-labelledby="grade"><span class="d" aria-hidden="true">--·--</span><div><h2 id="grade">This page grades itself</h2><p>${live ? "Live now. " : ""}After the final you'll see the score, whether Clutch was right, and the receipt that proves the call came first.</p></div></section>`;
 }
 
+/**
+ * Under the instrument, before tip: how calls score and where to make one. The page's one call
+ * block is the instrument's pair (UI/UX study, 2026-10-28: a second pair in the aside, in the
+ * other order, invited a tap on the wrong side).
+ */
+function callNote(g) {
+  if (g.status !== "scheduled" || !g.hasCall) return "";
+  return WEB_APP_LIVE
+    ? `<p class="callnote">Call it before tip, free in your browser — no download. ${esc(CALL_RULE)} <a href="${APP_STORE}">On iPhone? Get the app →</a></p>`
+    : `<p class="callnote">Call it before tip in the iPhone app. ${esc(CALL_RULE)}</p>`;
+}
+
 function aside(g, m, night) {
   const s = g.side;
-  let call = "";
-  if (g.status === "scheduled" && g.hasCall) {
-    const fav = s.team, dog = s.other;
-    const pf = callPoints(s.prob), pd = callPoints(1 - s.prob);
-    call = `<section class="callcard" aria-labelledby="mk"><h2 id="mk">Make your call</h2><p>Call it before tip. ${esc(CALL_RULE)}</p>
-<div class="two"><a href="${playGame(g.id)}">${esc(fav.nickname)} · ${pf}</a><a class="ghost" href="${playGame(g.id)}">${esc(dog.nickname)} · ${pd}</a></div>
-${WEB_APP_LIVE ? `<small>Free, right here in your browser. No download.</small><a class="iph" href="${APP_STORE}"><span>On iPhone? Get the app</span><span class="amber">→</span></a>` : `<small>Free in the iPhone app. In your browser this October.</small>`}</section>`;
-  } else {
-    call = `<section class="callcard" aria-labelledby="mk"><h2 id="mk">Call tonight's games</h2><p>Every game gets Clutch's call. Make yours before tip and the morning grades you both.</p><div class="two">${WEB_APP_LIVE ? `<a href="${PLAY}">Play free</a><a class="ghost" href="${APP_STORE}">iPhone app</a>` : `<a href="${APP_STORE}">Get the iPhone app</a><a class="ghost" href="/ledger/">The Ledger</a>`}</div></section>`;
-  }
+  // Before tip the call is the instrument's; otherwise the aside sends readers to tonight's games.
+  const call = g.status === "scheduled" && g.hasCall
+    ? ""
+    : `<section class="callcard" aria-labelledby="mk"><h2 id="mk">Call tonight's games</h2><p>Every game gets Clutch's call. Make yours before tip and the morning grades you both.</p>${WEB_APP_LIVE ? `<a class="btn" href="${PLAY}">${playWords(tonightOpen(m))}</a><a class="iph" href="${APP_STORE}"><span>On iPhone? Get the app</span><span class="amber">→</span></a>` : `<a class="btn" href="${APP_STORE}">Get the iPhone app →</a><a class="iph" href="/ledger/"><span>Read the Ledger</span><span class="amber">→</span></a>`}</section>`;
   const mk = g.marketSide == null
     ? `<span class="ink3">${g.marketState === "none" ? "No number yet" : "Not on record"}</span>`
     : `<span class="d">${esc(s.team.abbreviation)} ${pct(g.marketSide)}</span>`;
@@ -158,6 +164,7 @@ ${sealLine(g, m)}
 <div class="stack">
 <article class="art">
 ${board(g, { kicker })}
+${callNote(g)}
 ${whySection(g, m)}
 ${spotsSection(g)}
 ${outSection(g)}

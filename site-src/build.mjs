@@ -105,7 +105,7 @@ const pages = [];
 pages.push(homePage(m), tonightPage(m));
 for (const g of m.pageGames) pages.push(gamePage(g, m));
 for (const d of Object.keys(m.nights)) pages.push(nightPage(d, m));
-pages.push(ledgerPage(m), accuracyPage(m), receiptsPage(m), howPage(m), pricingPage(), faqPage(), companyPage(), termsPage(), privacyPage(), refundsPage(), supportPage());
+pages.push(ledgerPage(m), accuracyPage(m), receiptsPage(m), howPage(m), pricingPage(m), faqPage(m), companyPage(), termsPage(), privacyPage(), refundsPage(), supportPage());
 pages.push(...teamPages(m));
 pages.push(...matchupPages(m));
 const playoffs = playoffsPage(m);
@@ -121,7 +121,7 @@ pages.push(notFoundPage());
 // The Win Totals rules stay on GitHub Pages (the App Store links there).
 const LEGACY = { "/terms.html": "/terms/", "/privacy.html": "/privacy/", "/support.html": "/support/", "/win-totals-rules.html": WIN_TOTALS_RULES_URL, "/win-totals/": WIN_TOTALS_RULES_URL };
 
-// ── assets: fonts, the stylesheet, the theme, live and guide scripts, content-hashed under /assets/ ──
+// ── assets: fonts, the stylesheet, the live and guide scripts, content-hashed under /assets/; the theme script, inline ──
 rmSync(OUT, { recursive: true, force: true });
 mkdirSync(join(OUT, "assets"), { recursive: true });
 const hash = (buf) => createHash("sha256").update(buf).digest("hex").slice(0, 10);
@@ -179,14 +179,17 @@ live = live.replace(/^\s*\/\*[\s\S]*?\*\/\s*/, "").replace(/^\s+/gm, "").replace
 const liveName = `/assets/live.${hash(live)}.js`;
 writeFileSync(join(OUT, liveName), live);
 
-// Day or Night before the first paint: a tiny synchronous script in <head> (the CSP forbids inline ones).
+// Day or Night before the first paint: a tiny synchronous script, inline in every page's <head>
+// (2026-10-29: as its own file it held a phone's first paint ~0.7 s). The CSP admits exactly this
+// script by its sha256 (static/_headers) and no other inline one.
 // It is squeezed harder than live.js: no space around punctuation outside its string and regex
 // literals (the file keeps to that: no comments inside, a semicolon after every statement).
-const squeeze = (js) => js.split(/("(?:[^"\\\n]|\\.)*"|\/(?![*/])(?:[^/\\\n]|\\.)+\/)/).map((part, i) => (i % 2 ? part : part.replace(/\s*([=,;{}()<>?:!+%|&[\]])\s*/g, "$1").replace(/\s+/g, " "))).join("").trim() + "\n";
+const squeeze = (js) => js.split(/("(?:[^"\\\n]|\\.)*"|\/(?![*/])(?:[^/\\\n]|\\.)+\/)/).map((part, i) => (i % 2 ? part : part.replace(/\s*([=,;{}()<>?:!+%|&[\]])\s*/g, "$1").replace(/\s+/g, " "))).join("").trim();
 const themeJs = squeeze(readFileSync(join(HERE, "static", "theme.js"), "utf8").replace(/^\s*\/\*[\s\S]*?\*\/\s*/, ""));
 try { new Function(themeJs); } catch (e) { console.error(`theme.js: squeezed into something that does not parse (${e.message})`); process.exit(1); }
-const themeName = `/assets/theme.${hash(themeJs)}.js`;
-writeFileSync(join(OUT, themeName), themeJs);
+if (/<\/script|<!--/i.test(themeJs)) { console.error("theme.js: holds </script or <!--, which can't sit inside an inline <script>"); process.exit(1); }
+const themeTag = `<script>${themeJs}</script>`;
+const themeHash = `'sha256-${createHash("sha256").update(themeJs).digest("base64")}'`;
 
 // The front page's guide ("Clutch in a minute"): deferred, on the front page only. Comments
 // and indentation out, as in live.js (its words are in the page's <template>, not here).
@@ -203,7 +206,7 @@ if (Buffer.byteLength(embedCss) > 3072) fail.push(`embed.css ${Buffer.byteLength
 
 // Wire the hashed names into every page.
 for (const p of pages) {
-  p.html = p.html.replaceAll('href="/embed.css"', `href="${embedCssName}"`).replaceAll('href="/site.css"', `href="${cssName}"`).replaceAll('src="/live.js"', `src="${liveName}"`).replaceAll('src="/theme.js"', `src="${themeName}"`).replaceAll('src="/tour.js"', `src="${tourName}"`);
+  p.html = p.html.replaceAll('href="/embed.css"', `href="${embedCssName}"`).replaceAll('href="/site.css"', `href="${cssName}"`).replaceAll('src="/live.js"', `src="${liveName}"`).replaceAll('<script src="/theme.js"></script>', () => themeTag).replaceAll('src="/tour.js"', `src="${tourName}"`);
   for (const [plain, hashed] of Object.entries(fontFiles)) p.html = p.html.replaceAll(`/fonts/${plain}`, hashed);
 }
 
@@ -228,7 +231,7 @@ mkdirSync(join(OUT, BADGE), { recursive: true });
 for (const b of badges) writeFileSync(join(OUT, b.path), b.body);
 const feed = feedXml(m);
 writeFileSync(join(OUT, FEED), feed);
-writeFileSync(join(OUT, "_headers"), readFileSync(join(HERE, "static", "_headers"), "utf8").replaceAll("__SUPABASE_URL__", SB_URL));
+writeFileSync(join(OUT, "_headers"), readFileSync(join(HERE, "static", "_headers"), "utf8").replaceAll("__SUPABASE_URL__", SB_URL).replaceAll("__THEME_SHA256__", themeHash));
 writeFileSync(join(OUT, "_redirects"), Object.entries(LEGACY).map(([a, b]) => `${a} ${b} 301`).join("\n") + "\n");
 
 // ── write the pages ──
@@ -388,7 +391,7 @@ for (const p of pages.filter((p) => !p.redirect)) {
   if (d && d.length > DESCRIPTION_MAX) fail.push(`${p.path}: description ${d.length} characters (search results cut at ${DESCRIPTION_MAX})`);
   if (seenTitle.has(t)) fail.push(`${p.path}: title also on ${seenTitle.get(t)}`); else seenTitle.set(t, p.path);
   if (seenDesc.has(d)) fail.push(`${p.path}: description also on ${seenDesc.get(d)}`); else seenDesc.set(d, p.path);
-  if (/\sstyle="/.test(p.html) || /<script>(?!\s*$)/.test(p.html.replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/g, ""))) fail.push(`${p.path}: inline style or script (the CSP forbids both)`);
+  if (/\sstyle="/.test(p.html) || /<script>(?!\s*$)/.test(p.html.replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/g, "").replace(themeTag, ""))) fail.push(`${p.path}: inline style or script (the CSP forbids both, the theme script aside)`);
   if (KEY && p.html.includes(KEY)) fail.push(`${p.path}: the anon key is in a page (it belongs only in the live script)`);
   const kb = Buffer.byteLength(p.html) / 1024;
   if (kb > 60) warn.push(`${p.path}: ${kb.toFixed(1)} KB (budget 60)`);
@@ -402,7 +405,8 @@ for (const c of [ed.night.paper, ed.day.paper]) {
   if (!themeJs.includes(c)) fail.push(`theme.js: the paper ${c} is not its theme-color`);
   if (!pages[0].html.includes(`<meta name="theme-color" content="${c}"`)) fail.push(`the page head: no theme-color ${c}`);
 }
-if (!pages.filter((p) => !p.redirect && !p.embed).every((p) => p.html.includes(`<script src="${themeName}"></script>`))) fail.push("a page without the theme script");
+if (!pages.filter((p) => !p.redirect && !p.embed).every((p) => p.html.includes(themeTag))) fail.push("a page without the theme script");
+if (!readFileSync(join(OUT, "_headers"), "utf8").includes(`script-src 'self' ${themeHash} `)) fail.push("_headers: the CSP doesn't admit the theme script's hash");
 if (!pages[0].html.includes(`<script src="${tourName}" defer></script>`) || !pages[0].html.includes('<template id="tour">')) fail.push("the front page without its guide (tour.js and its template)");
 // The Launch Pass input: said out loud when it is set but not shown.
 if (LAUNCH_INPUT) {
@@ -430,7 +434,7 @@ const tourB = Buffer.byteLength(tourJs), tourGz = gzipSync(tourJs, { level: 9 })
 // 149 bytes left at 32); still one render-blocking file, content-hashed, cached a year.
 if (cssKB > 34) fail.push(`CSS ${cssKB.toFixed(1)} KB (budget 34 KB, 34,816 bytes)`);
 if (liveKB > 5) fail.push(`live script ${liveKB.toFixed(1)} KB (budget 5)`);
-if (themeB > 700) fail.push(`theme script ${themeB} bytes (budget 700: it blocks the first paint)`);
+if (themeB > 700) fail.push(`theme script ${themeB} bytes (budget 700: it is in every page's head)`);
 if (tourGz > 3072) fail.push(`guide script ${tourGz} bytes gzipped (budget 3 KB)`);
 
 // ── report ──
@@ -445,4 +449,4 @@ if (fail.length) {
   for (const f of fail) console.error(`  FAIL: ${f}`);
   process.exit(1);
 }
-console.log(`  checks: betting words clean · titles/descriptions unique · canonicals · no inline style/script · budgets OK · contrast ${contrast.lines.length} pairs in both editions`);
+console.log(`  checks: betting words clean · titles/descriptions unique · canonicals · no inline style/script but the theme's · budgets OK · contrast ${contrast.lines.length} pairs in both editions`);

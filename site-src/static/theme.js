@@ -1,5 +1,6 @@
-/* Clutch · Day or Night. Loaded in <head>, before the stylesheet, so a pinned
-   edition never flashes the other one (the CSP allows no inline script).
+/* Clutch · Day or Night. Inline in every page's <head>, before the stylesheet,
+   so a pinned edition never flashes the other one; build.mjs puts it there and
+   the CSP admits it by its hash (no other inline script).
    The reader's pick — auto, light (Day) or dark (Night) — is kept in
    localStorage and put on <html data-theme>; auto leaves it to the
    stylesheet's prefers-color-scheme block. The stylesheet also shows the
@@ -12,7 +13,7 @@
    taken, or its chip offered on three visits (localStorage.tour, set by
    tour.js), so the "New here?" chip is gone before the first paint — no
    flash, no layout shift.
-   Kept tiny on purpose: it blocks the first paint (the build's budget: 700 B). */
+   Kept tiny on purpose: it is in every page's head (the build's budget: 700 B). */
 (function () {
   var d = document, r = d.documentElement, P = ["auto", "light", "dark"], t;
   try { t = P.indexOf(localStorage.theme); if (localStorage.tour) r.dataset.toured = 1; } catch (e) {}

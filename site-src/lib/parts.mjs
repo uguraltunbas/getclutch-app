@@ -20,6 +20,9 @@ export const scoreLine = (g) => (g.homeScore == null ? "" : `${g.away.abbreviati
 const teamCls = (g) => `a-${g.away.abbreviation} h-${g.home.abbreviation}`;
 const appGame = (g) => playGame(g.id);
 
+/** Does tonight (today, New York) still have a game to call? The main action's words follow it (html.mjs playWords). */
+export const tonightOpen = (m) => m.tonight === m.today && (m.nights[m.tonight] ?? []).some((g) => g.status !== "final" && g.status !== "postponed");
+
 /** What one grade reads like, as a chip. */
 export function gradeChip(g) {
   switch (g.grade) {
@@ -59,11 +62,13 @@ export function board(g, { kicker = "THE CALL", link = null, headingLevel = 0, t
   } else if (g.status === "postponed") {
     foot = `<div class="bfinal"><span class="d">POSTPONED</span><span class="chip">NOTHING TO GRADE</span></div>`;
   } else if (g.hasCall) {
+    // One look for both sides (UI/UX study, 2026-10-28): a fill means only "Your call" (the
+    // app's), so Clutch's side is the small amber tag, not a filled button. Away left, home right.
     const pa = callPoints(1 - g.homeProb), ph = callPoints(g.homeProb);
-    const btn = (t, pts, fav) => `<a class="cbtn${fav ? "" : " ghost"}" href="${appGame(g)}">CALL ${esc(t.abbreviation)} · ${pts}<span class="vh"> points if right: call the ${esc(t.nickname)} in the app</span></a>`;
+    const btn = (t, pts, fav) => `<a class="cbtn" href="${appGame(g)}"><b><span class="vh">Call the </span>${esc(t.nickname)}</b><span class="pts">+${pts} pts if right</span>${fav ? `<span class="cl">Clutch's call</span>` : ""}</a>`;
     foot = `<div class="bcall"${tour ? ' data-tour="call"' : ""}>${btn(g.away, pa, !favHome)}${btn(g.home, ph, favHome)}</div>`;
   } else {
-    foot = `<div class="bcall"${tour ? ' data-tour="call"' : ""}><a class="cbtn ghost wide" href="${appGame(g)}">CALL IT IN THE APP</a></div>`;
+    foot = `<div class="bcall"${tour ? ' data-tour="call"' : ""}><a class="cbtn wide" href="${appGame(g)}"><b>Call it in the app</b></a></div>`;
   }
   const head = link ? `<a class="bk" href="${link}">${kicker}</a>` : `<span class="bk">${kicker}</span>`;
   return `<div class="board gl ${teamCls(g)}${live ? " is-live" : ""}" data-gid="${g.id}" data-a="${g.away.abbreviation}" data-h="${g.home.abbreviation}"><span class="rs" aria-hidden="true"></span>
