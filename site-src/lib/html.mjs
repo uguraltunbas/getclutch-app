@@ -94,6 +94,7 @@ export const webAppLink = (placement) => `${APP}/${utm("web_app", placement)}`;
 const APP_STORE_PT = (process.env.APP_STORE_PT ?? "").trim();
 export function appStoreCampaign(path) {
   if (path === "/") return "site-home";
+  if (path.startsWith("/embed/")) return "site-embed";
   if (/^\/games\/[^/]+\/[^/]+\/$/.test(path)) return "site-game";
   if (path.startsWith("/games/")) return "site-night";
   if (path.startsWith("/teams/") || path.startsWith("/matchups/") || path === "/playoff-chances/") return "site-team";
