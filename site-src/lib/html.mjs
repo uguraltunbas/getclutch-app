@@ -120,15 +120,16 @@ export function clipDescription(s, max = DESCRIPTION_MAX) {
   return s.slice(0, s.lastIndexOf(" ", max - 1)).replace(/[,;:—–\s]+$/, "") + "…";
 }
 
+// Latin subsets (site-src/fonts/latin/README.md): 90 KB less to load before the first paint. Plex Mono stays whole (reserved name).
 export const FONTS = [
-  { file: "fraunces-900.woff2", family: "Fraunces", weight: 900, style: "normal", src: "desk-src/fonts/Fraunces_900Black.ttf", preload: true },
-  { file: "fraunces-900i.woff2", family: "Fraunces", weight: 900, style: "italic", src: "site-src/fonts/Fraunces_900Black_Italic.ttf" },
-  { file: "fraunces-700.woff2", family: "Fraunces", weight: 700, style: "normal", src: "desk-src/fonts/Fraunces_700Bold.ttf" },
-  { file: "fraunces-400i.woff2", family: "Fraunces", weight: 400, style: "italic", src: "desk-src/fonts/Fraunces_400Regular_Italic.ttf" },
-  { file: "franklin-400.woff2", family: "Libre Franklin", weight: 400, style: "normal", src: "desk-src/fonts/LibreFranklin_400Regular.ttf", preload: true },
-  { file: "franklin-700.woff2", family: "Libre Franklin", weight: 700, style: "normal", src: "site-src/fonts/LibreFranklin_700Bold.ttf" },
+  { file: "fraunces-900.woff2", family: "Fraunces", weight: 900, style: "normal", src: "site-src/fonts/latin/Fraunces_900Black.ttf", preload: true },
+  { file: "fraunces-900i.woff2", family: "Fraunces", weight: 900, style: "italic", src: "site-src/fonts/latin/Fraunces_900Black_Italic.ttf" },
+  { file: "fraunces-700.woff2", family: "Fraunces", weight: 700, style: "normal", src: "site-src/fonts/latin/Fraunces_700Bold.ttf" },
+  { file: "fraunces-400i.woff2", family: "Fraunces", weight: 400, style: "italic", src: "site-src/fonts/latin/Fraunces_400Regular_Italic.ttf" },
+  { file: "franklin-400.woff2", family: "Libre Franklin", weight: 400, style: "normal", src: "site-src/fonts/latin/LibreFranklin_400Regular.ttf", preload: true },
+  { file: "franklin-700.woff2", family: "Libre Franklin", weight: 700, style: "normal", src: "site-src/fonts/latin/LibreFranklin_700Bold.ttf" },
   { file: "plexmono-500.woff2", family: "IBM Plex Mono", weight: 500, style: "normal", src: "desk-src/fonts/IBMPlexMono_500Medium.ttf", preload: true },
-  { file: "doto-900.woff2", family: "Doto", weight: 900, style: "normal", src: "desk-src/fonts/Doto_900Black.ttf", preload: true },
+  { file: "doto-900.woff2", family: "Doto", weight: 900, style: "normal", src: "site-src/fonts/latin/Doto_900Black.ttf", preload: true },
 ];
 
 const NAV = [
