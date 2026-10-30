@@ -142,7 +142,7 @@ for (const lic of ["OFL-fraunces.txt", "OFL-libre-franklin.txt", "OFL-ibm-plex-m
 const fontCss = FONTS.map((f) => `@font-face{font-family:"${f.family}";${f.style === "normal" ? "" : `font-style:${f.style};`}${f.weight === 400 ? "" : `font-weight:${f.weight};`}font-display:swap;src:url(${fontFiles[f.file].replace("/assets/", "")})}`).join("\n");
 const cssSource = readFileSync(join(HERE, "static", "site.css"), "utf8");
 const ed = editions(cssSource);
-// Team colours are marks, never text: 3:1 on every ground they are drawn on, lifted toward the
+// Team colors are marks, never text: 3:1 on every ground they are drawn on, lifted toward the
 // ink in tenths when too dark (night) or too light (day) to see (lib/swatch.mjs, the app's rule).
 // Night: the paper, the cards and the glass (cool, the same in both editions). Day: the night shade
 // holds on the day paper, card and glass for almost every team (it was lifted to a mid tone);
@@ -154,7 +154,7 @@ const swatches = raw.teams.map((t) => {
   return { team: t.abbreviation, night, day: holds ? night : swatchOn(t.primary_color || "#555555", [ed.day.paper, ed.day.panel], ed.day.ink) };
 });
 const shade = (s) => (s.day === s.night ? s.night : `var(--d${s.team},${s.night})`);
-// One rule per colour (several teams share one).
+// One rule per color (several teams share one).
 const by = new Map();
 for (const s of swatches) by.set(shade(s), [...(by.get(shade(s)) ?? []), s.team]);
 const teamCss = [...by].map(([c, teams]) => `${teams.map((t) => `.a-${t}`).join(",")}{--ca:${c}}${teams.map((t) => `.h-${t}`).join(",")}{--ch:${c}}`).join("");
@@ -169,7 +169,7 @@ css = css.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\n+/g, "\n").replace(/\s*([{
 // Short names for the tokens (the source keeps the readable ones).
 const VARS = { amberHi: "ah", amberText: "at", onAmber: "oa", display: "fd", paper: "p", panelHi: "qh", panel: "q", ruleBold: "rb", ruleControl: "rc", rule: "r", ink2: "i2", ink3: "i3", ink4: "i4", ink: "i", amber: "a", body: "fb", mono: "fm", num: "fn", ledBloom: "lb", ledOff: "lo", hotText: "ht", hot: "h", glassLift: "gl", glassHi: "gh", glassRule: "gr", glassDots: "gd", glassAmber: "ga", glassLive: "gv", glass: "g", onGlassMuted: "om", onGlass: "og" };
 for (const [k, v] of Object.entries(VARS)) css = css.replace(new RegExp(`--${k}(?![\\w-])`, "g"), `--${v}`);
-// Shorter colour spellings, same colours: rgba() as #rrggbbaa, transparent as #0000.
+// Shorter color spellings, same colors: rgba() as #rrggbbaa, transparent as #0000.
 const hex2 = (n) => Math.round(n).toString(16).padStart(2, "0").toUpperCase();
 css = css.replace(/rgba\((\d+),(\d+),(\d+),([\d.]+)\)/g, (_, r, g, b, a) => `#${hex2(r)}${hex2(g)}${hex2(b)}${hex2(a * 255)}`).replace(/\btransparent\b/g, "#0000");
 const cssName = `/assets/site.${hash(css)}.css`;
@@ -290,7 +290,7 @@ const llms = `# Clutch
 
 > NBA win probability for every game, sealed before tip in a public GitHub repository and graded in public after the final. Free on the web (app.clutchledger.com) and on iPhone. Also known as Clutch Ledger.
 
-- Each morning Clutch publishes one number per NBA game: the chance the side it favours wins. The number is sealed with a SHA-256 fingerprint before tip-off and never edited.
+- Each morning Clutch publishes one number per NBA game: the chance the side it favors wins. The number is sealed with a SHA-256 fingerprint before tip-off and never edited.
 - After the final, the Ledger grades it beside ESPN BPI, the market and picking the home team every night, on the same games. Misses stay on the record.
 - ${llmsRecord}
 - ${backtestSentence(m.accuracy?.benchmark) ?? "The model's two-season test is on the How it works page."}${llmsCalibration}
@@ -408,7 +408,7 @@ for (const p of pages.filter((p) => !p.redirect)) {
 // Both editions: every text pair at its floor, every team swatch 3:1 on its grounds (check-contrast.mjs).
 const contrast = checkContrast(cssSource, { swatches });
 for (const f of contrast.failures) fail.push(`contrast: ${f}`);
-// The browser bar's colour is each edition's paper, in the page head and in theme.js.
+// The browser bar's color is each edition's paper, in the page head and in theme.js.
 for (const c of [ed.night.paper, ed.day.paper]) {
   if (!themeJs.includes(c)) fail.push(`theme.js: the paper ${c} is not its theme-color`);
   if (!pages[0].html.includes(`<meta name="theme-color" content="${c}"`)) fail.push(`the page head: no theme-color ${c}`);

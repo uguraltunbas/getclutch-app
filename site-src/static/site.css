@@ -9,7 +9,7 @@
    - The instruments (class "gl") are cool glass in BOTH editions (--glass…,
      the .gl rule after the Day block). --onAmber labels amber fills.
    - --hot is the live red as a fill or a mark, --hotText as text (by day the
-     darker red). Results wear no colour: ✓ and ✗ in the text colour.
+     darker red). Results wear no color: ✓ and ✗ in the text color.
    - Rules: --rule a divider, --ruleBold a strong one (decorative), --ruleControl
      a control's edge (3:1). --ink3 carries small labels (7:1 everywhere);
      --ink4 is for big dim digits only (3:1). Unlit LED dots: --rule on paper,
@@ -18,7 +18,7 @@
    one (the theme script in every page's head puts auto / light / dark on
    <html data-theme> before the first paint). check-contrast.mjs asserts every
    pair in both editions; the build runs it.
-   No inline styles anywhere (CSP): team colours are the classes at the end. */
+   No inline styles anywhere (CSP): team colors are the classes at the end. */
 /*@fonts*/
 :root{--paper:#15130F;--panel:#1C1914;--panelHi:#241F19;--ink:#F1E9D8;--ink2:#CFC4AE;--ink3:#B4AA97;--ink4:#7A7062;--amber:#FFB020;--amberHi:#FFC64D;--amberText:#FFB020;--onAmber:#15130F;--hot:#FF4D4D;--hotText:#FF4D4D;--rule:rgba(241,233,216,.14);--ruleBold:rgba(241,233,216,.28);--ruleControl:rgba(241,233,216,.5);--glass:#0F1114;--glassHi:#171A1F;--glassRule:#2A2E35;--glassDots:rgba(244,245,247,.06);--onGlass:#F4F5F7;--onGlassMuted:#A0A6B0;--glassAmber:#FFB020;--glassLive:#FF4D4D;--ledOff:#2A2E35;--glassLift:rgba(0,0,0,.5);--ledBloom:0 0 7px rgba(255,176,32,.55);--radius-card:14px;--radius-control:8px;--radius-tag:4px;--ed:"Night";
 --display:"Fraunces",Georgia,"Times New Roman",serif;--body:"Libre Franklin",-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;--mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;--num:"Doto","IBM Plex Mono",ui-monospace,monospace;color-scheme:dark}
@@ -221,7 +221,7 @@ a.bk:hover{color:var(--ink)}
 .ahead{margin-top:28px;border-top:1px solid var(--ruleBold);padding-top:12px}.arow{display:grid;grid-template-columns:130px minmax(0,1fr) auto;gap:16px;min-height:44px;padding:6px 0;border-bottom:1px solid var(--rule);font-size:15px;align-items:center;color:var(--ink)}.arow .d{font-family:var(--body);font-size:15px;font-weight:600}.arow .go{color:var(--ink3);font-size:20px;line-height:1}.arow:hover .go{color:var(--ink)}
 /* Tonight's games as rows (the design system's MiniScoreRow, lib/parts.mjs slateRow): no box, a
    hairline between rows; team codes in the LED face (28 px, the app's ledCode) with the team's
-   colour on the outer edge, Clutch's side lit; Clutch's number (32 px) between them. */
+   color on the outer edge, Clutch's side lit; Clutch's number (32 px) between them. */
 .slate{list-style:none;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:48px}
 .srow{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;min-height:68px;padding:12px 0;border-bottom:1px solid var(--rule);color:var(--ink);text-decoration:none}
 .code{justify-self:start;font:900 28px/1 var(--num);color:var(--ink4);padding-left:10px;border-left:4px solid var(--ca)}

@@ -245,7 +245,7 @@ export function nightPage(date, m) {
 <div class="rhead"><span class="kick">${esc(longDate(date))}</span><h1 class="rh1">${esc(h1)}</h1><p class="rdeck">${esc(lines.join(" "))}</p>
 <nav class="nights" aria-label="Nights">${dates.map((d) => `<a href="/games/${d}/"${d === date ? ' aria-current="page"' : ""}>${esc(shortDate(d))}</a>`).join("")}</nav></div>
 <div class="body"><div class="cards">${games.map(gameCard).join("")}</div>
-<p class="note">Amber is Clutch's number for the side it favours; the cream segment is the market's number for that side. <a href="/how-it-works/">How it works →</a></p></div>
+<p class="note">Amber is Clutch's number for the side it favors; the cream segment is the market's number for that side. <a href="/how-it-works/">How it works →</a></p></div>
 </div>`;
   const path = `/games/${date}/`;
   const title = `NBA predictions for ${mediumDate(date)}: win probability for every game · Clutch`;

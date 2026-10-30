@@ -31,7 +31,7 @@ export const OG_DAYS = 14;
 export const OG_BUDGET = 15;
 /** Bump when the template's look changes: every card gets a new address. */
 const DESIGN = 1;
-// The desk's Night Edition paper and ink (desk-src/brand.css): team colours lifted to 3:1 on it.
+// The desk's Night Edition paper and ink (desk-src/brand.css): team colors lifted to 3:1 on it.
 const PAPER = ["#15130F", "#101114"], INK = "#F1E9D8";
 
 /** The card's words and numbers for one game, or null (no number, postponed). */

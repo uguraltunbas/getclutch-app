@@ -1,8 +1,8 @@
 /* The embeddable boxes (/embed/…): framed on other people's sites, so small, system fonts, no
-   scripts, both editions by the reader's system setting. The site's Night colours; by Day a white
+   scripts, both editions by the reader's system setting. The site's Night colors; by Day a white
    paper (it sits on other people's pages) and, as on the site, amber only as a fill: Clutch's
    number is ink, its rail and the one button amber. Labels in the body face, sentence case, 13 px
-   at least; ✓ and ✗ in the text colour. */
+   at least; ✓ and ✗ in the text color. */
 :root{--p:#15130F;--i:#F1E9D8;--i3:#B4AA97;--a:#FFB020;--at:#FFB020;--on:#15130F;--r:rgba(241,233,216,.14);--led:#2A251E;color-scheme:dark}
 @media (prefers-color-scheme:light){:root{--p:#FFFFFF;--i:#0E0F12;--i3:#4A4F57;--at:#0E0F12;--on:#0E0F12;--r:rgba(14,15,18,.1);--led:rgba(14,15,18,.1);color-scheme:light}}
 *{box-sizing:border-box;margin:0}

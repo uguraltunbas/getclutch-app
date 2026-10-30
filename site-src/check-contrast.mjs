@@ -27,7 +27,7 @@ function parse(color) {
   }
   m = c.match(/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+))?\s*\)$/i);
   if (m) return { rgb: [+m[1], +m[2], +m[3]], a: m[4] === undefined ? 1 : +m[4] };
-  throw new Error(`check-contrast: can't read the colour "${c}"`);
+  throw new Error(`check-contrast: can't read the color "${c}"`);
 }
 
 const over = (fg, bg) => { const f = parse(fg); return f.rgb.map((v, i) => Math.round(v * f.a + bg[i] * (1 - f.a))); };

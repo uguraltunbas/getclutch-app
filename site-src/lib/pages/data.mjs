@@ -139,7 +139,7 @@ const FIELDS = [
   ["home, away", "Team codes (BKN, CHA, PHX…); home_name and away_name spell them out."],
   ["neutral", "true when neither side is at home."],
   ["clutch_home_win_prob", "Clutch's chance the home team wins, 0 to 1. clutch_away_win_prob is 1 minus it."],
-  ["called", "The side Clutch's number favours."],
+  ["called", "The side Clutch's number favors."],
   ["status", "scheduled, live, halftime or final."],
   ["home_score, away_score", "Filled once the game is final."],
   ["graded, called_right", "Whether the Ledger has graded the call, and whether the called side won."],

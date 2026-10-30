@@ -73,7 +73,7 @@ const LED = {
   /** Width in px of `text` at a dot pitch. */
   width(text, pitch) { return this.cols(text) * pitch; },
   /**
-   * Draws `text` with its top-left dot centre at (x, y).
+   * Draws `text` with its top-left dot center at (x, y).
    * opts: pitch (dot spacing px), r (dot radius, default pitch*0.36), on, off (null = no unlit dots),
    * glow (px), lit(i) → 0..1 per lit dot (for wipes), offPad (unlit columns drawn around the text).
    */

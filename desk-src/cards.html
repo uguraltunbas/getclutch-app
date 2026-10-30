@@ -47,7 +47,7 @@ function canvasAt(x, y, w, h) {
   root.appendChild(c);
   return c.getContext("2d");
 }
-/** An LED readout centred in a box, sized to fit its width. */
+/** An LED readout centered in a box, sized to fit its width. */
 function ledBox(ctx, text, bx, by, bw, bh, o = {}) {
   const cols = LED.cols(text);
   const pitch = Math.min(o.maxPitch ?? 60, Math.floor((bw - (o.inset ?? 60)) / cols), Math.floor((bh - (o.insetY ?? 60)) / 7));
@@ -198,7 +198,7 @@ T.calib = () => {
     <div class="dbl"></div>
     <div class="h1" style="margin-top:50px;font-size:84px">${tr ? "Clutch %72 dediğinde, <em>%71 oluyor.</em>" : "When Clutch says 72%, <em>it happens 71%.</em>"}</div>
     <div id="chart" style="margin-top:40px;height:640px;position:relative"></div>
-    <div class="lede" style="margin-top:26px;max-width:none;font-size:30px">${tr ? "Her nokta bir güven aralığı: Clutch favoriye ne dedi, favori ne sıklıkla kazandı. <b>Çizgiye ne kadar yakınsa, rakam o kadar dürüst.</b>" : "Each dot is a confidence band: what Clutch said about the favourite, and how often the favourite won. <b>The closer to the line, the more honest the number.</b>"}</div>
+    <div class="lede" style="margin-top:26px;max-width:none;font-size:30px">${tr ? "Her nokta bir güven aralığı: Clutch favoriye ne dedi, favori ne sıklıkla kazandı. <b>Çizgiye ne kadar yakınsa, rakam o kadar dürüst.</b>" : "Each dot is a confidence band: what Clutch said about the favorite, and how often the favorite won. <b>The closer to the line, the more honest the number.</b>"}</div>
   </div>`));
   root.insertAdjacentHTML("beforeend", foot("@getclutchledger"));
   const box = document.getElementById("chart").getBoundingClientRect();
@@ -218,7 +218,7 @@ function drawCalib(ctx, w, h, k, tr) {
     ctx.textAlign = "center"; ctx.fillText(v + "%", x(v), h - B + 44);
   }
   ctx.textAlign = "left"; ctx.fillStyle = "#7A7062"; ctx.font = "600 21px 'Plex Mono'";
-  ctx.fillText(tr ? "FAVORİ KAZANDI ↑" : "FAVOURITE WON ↑", L + 10, Tp + 24);
+  ctx.fillText(tr ? "FAVORİ KAZANDI ↑" : "FAVORITE WON ↑", L + 10, Tp + 24);
   ctx.textAlign = "right"; ctx.fillText(tr ? "CLUTCH DEDİ →" : "CLUTCH SAID →", w - R, h - B - 16);
   ctx.setLineDash([10, 10]); ctx.strokeStyle = "rgba(241,233,216,0.45)"; ctx.lineWidth = 3;
   ctx.beginPath(); ctx.moveTo(x(50), y(50)); ctx.lineTo(x(100), y(100)); ctx.stroke(); ctx.setLineDash([]);
@@ -368,7 +368,7 @@ T.ytbanner = () => {
   root.appendChild($(`<div style="position:absolute;left:0;right:0;top:760px;text-align:center;font:600 30px/1.4 var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--ink3)">Call every NBA game · sealed before tip · graded after the final</div>`));
 };
 
-/* hl — Instagram highlight cover: one LED symbol in the centre circle. */
+/* hl — Instagram highlight cover: one LED symbol in the center circle. */
 T.hl = () => {
   document.body.style.background = "var(--glass)"; root.style.background = "var(--glass)";
   const ctx = canvasAt(0, 0, W, H);

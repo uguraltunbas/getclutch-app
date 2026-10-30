@@ -8,7 +8,7 @@
    The Theme button (the masthead's top-right corner, every width) steps
    through the three, its first tap always turning the page: Auto → Day →
    Night on a dark system, Auto → Night → Day on a light one (only the step
-   back to Auto can look the same). The browser bar's colour follows the pick.
+   back to Auto can look the same). The browser bar's color follows the pick.
    It also puts data-toured on <html> once the front page's guide has been
    taken, or its chip offered on three visits (localStorage.tour, set by
    tour.js), so the "New here?" chip is gone before the first paint — no

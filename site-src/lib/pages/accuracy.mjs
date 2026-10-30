@@ -79,7 +79,7 @@ function liveSection(m) {
 
 function calibrationSection(m) {
   const bands = (m.record ? m.ledger?.calibration ?? [] : []).filter((b) => b && b.n > 0);
-  const intro = `<p class="sub">A 70% call should come true about 70 times in 100 — if Clutch's 70s win only half the time, the number is lying, however many games it gets right. So the season's calls are put in bands by the number Clutch gave the side it favoured, and each band is checked against what happened.</p>`;
+  const intro = `<p class="sub">A 70% call should come true about 70 times in 100 — if Clutch's 70s win only half the time, the number is lying, however many games it gets right. So the season's calls are put in bands by the number Clutch gave the side it favored, and each band is checked against what happened.</p>`;
   if (!bands.length) return `<section class="blk" aria-labelledby="cal"><h2 id="cal">When Clutch says 70%, does it happen 70%?</h2>${intro}<p class="note">The bands fill in from the first graded calls.</p></section>`;
   const readable = bands.filter((b) => b.n >= RATE_FLOOR && b.actual_pct != null);
   const best = readable.slice().sort((a, b) => b.n - a.n)[0];
@@ -122,7 +122,7 @@ function backtestBandsBlock(m) {
   return `<h3 class="side-h gap">When the test said 70%, did it happen 70%?</h3>
 <p><strong>${esc(lead)}</strong></p>
 <div class="scroll gap"><table class="tbl"><caption class="vh">Calibration in the walk-forward test, ${esc(t.seasons.join(" and "))}</caption><thead><tr><th scope="col">Clutch's band</th><th scope="col" class="num">Games</th><th scope="col" class="num">Said</th><th scope="col" class="num">Happened</th><th scope="col" class="num">Likely range</th></tr></thead><tbody>${rows}</tbody></table></div>
-<p class="note">The same bands as the live table above, counted the same way on the side Clutch favoured, over both test seasons together. A replay, so it says how the method holds up; the live bands say how this season's sealed numbers do.</p>`;
+<p class="note">The same bands as the live table above, counted the same way on the side Clutch favored, over both test seasons together. A replay, so it says how the method holds up; the live bands say how this season's sealed numbers do.</p>`;
 }
 
 function backtestSection(m) {

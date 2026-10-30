@@ -18,7 +18,7 @@ export const PRESEASON_DECK = "Starters rest and rotations are experiments. Your
 
 export const pct = (p) => Math.round(p * 100);
 
-/** The side Clutch's call favours (a 50/50 goes to the home team, as in the app). */
+/** The side Clutch's call favors (a 50/50 goes to the home team, as in the app). */
 export function pickSide(homeProb, home, away) {
   const isHome = homeProb >= 0.5;
   return { isHome, team: isHome ? home : away, other: isHome ? away : home, prob: isHome ? homeProb : 1 - homeProb };
@@ -105,7 +105,7 @@ export const RECEIPTS_REPO = "https://github.com/uguraltunbas/clutch-receipts";
 export const RECEIPTS_VERIFY_URL = `${RECEIPTS_REPO}/blob/main/VERIFY.md`;
 export const RECEIPTS_ACTIVITY_URL = `${RECEIPTS_REPO}/activity`;
 
-// Clutch's own numbers are free to reuse with credit; the same licence sits in the receipts repo.
+// Clutch's own numbers are free to reuse with credit; the same license sits in the receipts repo.
 export const DATA_LICENSE_URL = "https://creativecommons.org/licenses/by/4.0/";
 export const DATA_LICENSE_LINE = `Clutch's numbers on this page are free to reuse under <a href="${DATA_LICENSE_URL}" rel="license">CC BY 4.0</a>: credit Clutch and link to clutchledger.com.`;
 
@@ -166,10 +166,10 @@ export const isRetiredModel = (version) => !!version && !String(version).startsW
 export function wilson(hits, n, z = 1.96) {
   if (n <= 0) return null;
   const p = hits / n, denom = 1 + (z * z) / n;
-  const centre = (p + (z * z) / (2 * n)) / denom;
+  const center = (p + (z * z) / (2 * n)) / denom;
   const margin = (z * Math.sqrt((p * (1 - p)) / n + (z * z) / (4 * n * n))) / denom;
   const r1 = (x) => Math.round(x * 1000) / 10;
-  return [r1(Math.max(0, centre - margin)), r1(Math.min(1, centre + margin))];
+  return [r1(Math.max(0, center - margin)), r1(Math.min(1, center + margin))];
 }
 
 export function headlineRecord(l) {

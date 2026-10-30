@@ -1,6 +1,6 @@
 // The two-season walk-forward test's calibration bands (each game predicted by a
 // model fit only on earlier games), counted like the live Ledger's: the side the
-// model favoured, four bands. Generated from the replay's per-game rows in the
+// model favored, four bands. Generated from the replay's per-game rows in the
 // training repo (bands.py); /accuracy/ shows it only while
 // model/accuracy's current_version is `version`.
 export const BACKTEST_CALIBRATION = {

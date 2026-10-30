@@ -49,7 +49,7 @@ function rise(e, t, a, dur = 0.45, dist = 40) { const k = eo(seg(t, a, a + dur))
 function rng(seed) { let s = seed >>> 0 || 1; return () => { s ^= s << 13; s >>>= 0; s ^= s >> 17; s ^= s << 5; s >>>= 0; return s / 4294967296; }; }
 function dot(c, x, y, r, color) { c.fillStyle = color; c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.fill(); }
 function glowDots(c, pts, r, color, blur) { c.save(); c.shadowColor = color; c.shadowBlur = blur; c.fillStyle = color; for (const [x, y, a] of pts) { c.globalAlpha = a ?? 1; c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.fill(); } c.restore(); }
-/** An LED readout centred on (cx, cy) at a pitch. */
+/** An LED readout centered on (cx, cy) at a pitch. */
 function ledAt(c, text, cx, cy, pitch, o = {}) { const w = (LED.cols(text) - 1) * pitch; return LED.draw(c, text, cx - w / 2, cy - 3 * pitch, { pitch, off: o.off ?? null, on: o.on, glow: o.glow ?? pitch * 0.9, alpha: o.alpha, lit: o.lit, r: o.r }); }
 
 // ── the end card, shared by every scene ───────────────────────────────────
@@ -160,7 +160,7 @@ S.sim2000 = () => {
   };
 };
 
-/* stoppress — What-If: the star sits, the number falls. Demo game, labelled as an example. */
+/* stoppress — What-If: the star sits, the number falls. Demo game, labeled as an example. */
 S.stoppress = () => {
   const DUR = 10.4, T_END = 8.7;
   const from = +(Q.get("from") || 58), to = +(Q.get("to") || 43);
@@ -384,7 +384,7 @@ S.duel = () => {
   };
 };
 
-/* calib — the dots rise to where the favourites actually won. */
+/* calib — the dots rise to where the favorites actually won. */
 S.calib = () => {
   const DUR = 10.4, T_END = 8.7;
   el(`<div class="x eb" style="left:70px;right:70px;top:200px;display:flex;justify-content:space-between"><span>${tr ? "Kayıt · 2024-26 testi" : "The record · tested 2024-26"}</span><span class="r">${tr ? "2.631 maç" : "2,631 games"}</span></div>`);
@@ -402,7 +402,7 @@ S.calib = () => {
     const x = (v) => L + ((v - 50) / 50) * (w - L - R), y = (v) => h - B - ((v - 50) / 50) * (h - Tp - B);
     ctx.strokeStyle = "rgba(241,233,216,0.10)"; ctx.lineWidth = 2; ctx.font = "600 26px 'Plex Mono'"; ctx.fillStyle = "#B4AA97";
     for (let v = 50; v <= 100; v += 10) { ctx.beginPath(); ctx.moveTo(x(50), y(v)); ctx.lineTo(x(100), y(v)); ctx.stroke(); ctx.textAlign = "right"; ctx.fillText(v + "%", L - 18, y(v) + 9); ctx.textAlign = "center"; ctx.fillText(v + "%", x(v), h - B + 46); }
-    ctx.fillStyle = "#7A7062"; ctx.font = "600 23px 'Plex Mono'"; ctx.textAlign = "left"; ctx.fillText(tr ? "FAVORİ KAZANDI ↑" : "FAVOURITE WON ↑", L + 12, Tp + 26); ctx.textAlign = "right"; ctx.fillText(tr ? "CLUTCH DEDİ →" : "CLUTCH SAID →", w - R, h - B - 18);
+    ctx.fillStyle = "#7A7062"; ctx.font = "600 23px 'Plex Mono'"; ctx.textAlign = "left"; ctx.fillText(tr ? "FAVORİ KAZANDI ↑" : "FAVORITE WON ↑", L + 12, Tp + 26); ctx.textAlign = "right"; ctx.fillText(tr ? "CLUTCH DEDİ →" : "CLUTCH SAID →", w - R, h - B - 18);
     const kl = eo(seg(t, 0.3, 1.0));
     ctx.setLineDash([12, 12]); ctx.strokeStyle = "rgba(241,233,216,0.5)"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x(50), y(50)); ctx.lineTo(x(50 + 50 * kl), y(50 + 50 * kl)); ctx.stroke(); ctx.setLineDash([]);
     const pts = [];

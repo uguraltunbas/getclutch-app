@@ -38,7 +38,7 @@ export function gradeChip(g) {
 
 /**
  * The instrument — black glass in both editions (class "gl"): both teams,
- * Clutch's number big for the side it favours, the LED rail (amber =
+ * Clutch's number big for the side it favors, the LED rail (amber =
  * Clutch, the cream segment = the market), the legend, and the two call
  * buttons (or the final). `tour`: the front page's guide hooks — data-tour on
  * a plain wrapper round the head, numbers and rail (layout-neutral: .board>*
@@ -125,7 +125,7 @@ ${rail(g.side ? g.side.prob : null, g.marketSide, true)}
 
 /**
  * A game as one row, the design system's MiniScoreRow (no box): the two codes,
- * each with its team's colour on the outer edge and Clutch's side lit; Clutch's
+ * each with its team's color on the outer edge and Clutch's side lit; Clutch's
  * number between them and, under it, its side and the tip — or the clock and
  * score (static/live.js), or the final score and the grade. A link to the game page.
  */

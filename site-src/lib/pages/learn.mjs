@@ -30,7 +30,7 @@ function gap(d) {
 // ── What is NBA win probability? ──────────────────────────────────────
 
 function winProbArticle(m) {
-  // The example: tonight's (or the next night's) clearest favourite, else the last graded night's.
+  // The example: tonight's (or the next night's) clearest favorite, else the last graded night's.
   const ahead = (m.tonight ? m.nights[m.tonight] ?? [] : []).filter((g) => g.status === "scheduled" && g.hasCall && !g.preseason).sort((a, b) => b.side.prob - a.side.prob)[0];
   const last = lastGradedNight(m, m.today);
   const lastCalls = last ? m.calls.filter((c) => c.game_date === last && c.season_type !== "Preseason") : [];
@@ -51,18 +51,18 @@ function winProbArticle(m) {
   const expectedMisses = lastCalls.reduce((a, c) => a + (1 - c.claimed_pct / 100), 0);
   const exName = ex.path ? `<a href="${ex.path}">the ${esc(ex.fav)} ${ex.p}% against the ${esc(ex.other)}</a>` : `the ${esc(ex.fav)} ${ex.p}% against the ${esc(ex.other)}`;
   const bands = [
-    ["50–54%", "Narrowly", "Close to a coin flip. The favourite wins a little more often than not."],
+    ["50–54%", "Narrowly", "Close to a coin flip. The favorite wins a little more often than not."],
     ["55–61%", "By a possession", "A real edge, but the other side wins about two games in five."],
-    ["62–71%", "Clearly", "A solid favourite. Upsets still come about one game in three or four."],
-    ["72% and up", "Comfortably", "A strong favourite. Even at 80%, one game in five goes the other way."],
+    ["62–71%", "Clearly", "A solid favorite. Upsets still come about one game in three or four."],
+    ["72% and up", "Comfortably", "A strong favorite. Even at 80%, one game in five goes the other way."],
   ];
   const body = `
 <section class="panel" aria-labelledby="short"><span class="kick">The short answer</span><h2 id="short">A number for how often this game goes one way.</h2>
-<p class="sub">A win probability is a single number for how likely a team is to win a game. When Clutch gives ${exName} ${esc(ex.when)}, it means that in games like this one, a team in that position wins about ${ex.p} times in 100 and loses about ${100 - ex.p}. It is not a promise: a ${ex.p}% favourite should lose about one game in ${inN === 2 ? "two" : inN === 3 ? "three" : inN === 4 ? "four" : inN === 5 ? "five" : inN}.</p></section>
+<p class="sub">A win probability is a single number for how likely a team is to win a game. When Clutch gives ${exName} ${esc(ex.when)}, it means that in games like this one, a team in that position wins about ${ex.p} times in 100 and loses about ${100 - ex.p}. It is not a promise: ${String(ex.p)[0] === "8" ? "an" : "a"} ${ex.p}% favorite should lose about one game in ${inN === 2 ? "two" : inN === 3 ? "three" : inN === 4 ? "four" : inN === 5 ? "five" : inN}.</p></section>
 
 <section aria-labelledby="read"><h2 class="sh" id="read">How to read the number</h2>
 <div class="scroll"><table class="tbl"><caption class="vh">What each range of win probability means</caption><thead><tr><th scope="col">Number</th><th scope="col">Clutch says</th><th scope="col">What it means</th></tr></thead><tbody>${bands.map(([n, w, d]) => `<tr><td class="num">${n}</td><td class="amber">${esc(w)}</td><td>${esc(d)}</td></tr>`).join("")}</tbody></table></div>
-<p class="note">The words are the ones over each number on Clutch's game pages. The number always belongs to the side Clutch favours; the other side's is 100 minus it.</p></section>
+<p class="note">The words are the ones over each number on Clutch's game pages. The number always belongs to the side Clutch favors; the other side's is 100 minus it.</p></section>
 
 <section class="blk" aria-labelledby="made"><h2 id="made">Where the number comes from</h2>
 <p>A pregame win probability starts from how good each team is this season and lately, then adjusts for the night itself: rest and back-to-backs, travel, altitude, a neutral floor, and who is listed on the league's official injury report, weighted by how much each player has been worth. Home court matters too${homes.length ? `: home teams won ${list(homes.map((h) => `${(h * 100).toFixed(1)}%`))} of the games in ${list(seasons)}` : ""}.</p>
@@ -75,11 +75,11 @@ function winProbArticle(m) {
 <p>TV broadcasts and score apps often show a live win probability that moves with every possession. Clutch's number is the pregame one: made on the day of the game, sealed in public before tip, and graded after the final, so it can be checked against what happened.</p></section>
 
 <section class="blk" aria-labelledby="good"><h2 id="good">How to tell a good one</h2>
-<p>Two checks. First, does it come true as often as it says? Of all the games a source called at 70%, the favourite should win about 70 in every 100. That is calibration. Second, is it confident when it's right and cautious when it isn't? The Brier score grades that: lower is better, and a coin flip on every game scores 0.250.</p>
+<p>Two checks. First, does it come true as often as it says? Of all the games a source called at 70%, the favorite should win about 70 in every 100. That is calibration. Second, is it confident when it's right and cautious when it isn't? The Brier score grades that: lower is better, and a coin flip on every game scores 0.250.</p>
 <p>Clutch prints both for its own numbers, band by band, beside ESPN BPI, the market and picking the home team. <a href="/accuracy/">How accurate Clutch is →</a> · <a href="/learn/espn-bpi-accuracy/">How accurate is ESPN BPI? →</a></p></section>
 
-${lastCalls.length ? `<section class="blk" aria-labelledby="upsets"><h2 id="upsets">Why favourites lose</h2>
-<p>On ${esc(shortDate(last))}, Clutch's favourites won ${held} of ${lastCalls.length}. Its numbers for those games added up to about ${expectedMisses.toFixed(1)} expected losses, so ${lastCalls.length - held === 0 ? "a perfect night was luckier than it looks" : lastCalls.length - held < expectedMisses - 0.5 ? "the night went better than the numbers said it would" : lastCalls.length - held > expectedMisses + 0.5 ? "the night went worse than the numbers said it would" : "the night went about as the numbers said"}. A source whose favourites never lose isn't giving probabilities; over a season, a 70% favourite should lose about three games in ten.</p></section>` : ""}
+${lastCalls.length ? `<section class="blk" aria-labelledby="upsets"><h2 id="upsets">Why favorites lose</h2>
+<p>On ${esc(shortDate(last))}, Clutch's favorites won ${held} of ${lastCalls.length}. Its numbers for those games added up to about ${expectedMisses.toFixed(1)} expected losses, so ${lastCalls.length - held === 0 ? "a perfect night was luckier than it looks" : lastCalls.length - held < expectedMisses - 0.5 ? "the night went better than the numbers said it would" : lastCalls.length - held > expectedMisses + 0.5 ? "the night went worse than the numbers said it would" : "the night went about as the numbers said"}. A source whose favorites never lose isn't giving probabilities; over a season, a 70% favorite should lose about three games in ten.</p></section>` : ""}
 
 <p class="note">The example and the night above are rebuilt from Clutch's data every day. <a href="/learn/">More on reading the numbers →</a></p>`;
   return {
@@ -113,14 +113,14 @@ function brierArticle(m) {
   const band = (b) => `${Math.round(b.lo * 100)}–${Math.round(b.hi * 100)}%`;
   const body = `
 <section class="panel" aria-labelledby="short"><span class="kick">The short answer</span><h2 id="short">Does 70% happen 70% of the time, and how confident was it when it mattered?</h2>
-<p class="sub">Calibration asks whether a forecaster's numbers come true as often as they say: of all the games called at 70%, the favourite should win about 70 in 100. The Brier score turns calibration and confidence into one number per forecaster. Lower is better and a coin flip on every game scores 0.250. Over the last two NBA seasons the market's final price scored ${sc(T("market"))}, ESPN BPI ${sc(T("espn_bpi"))}, and picking the home team every night ${sc(T("always_home"))}.</p></section>
+<p class="sub">Calibration asks whether a forecaster's numbers come true as often as they say: of all the games called at 70%, the favorite should win about 70 in 100. The Brier score turns calibration and confidence into one number per forecaster. Lower is better and a coin flip on every game scores 0.250. Over the last two NBA seasons the market's final price scored ${sc(T("market"))}, ESPN BPI ${sc(T("espn_bpi"))}, and picking the home team every night ${sc(T("always_home"))}.</p></section>
 
 <section class="blk" aria-labelledby="cal"><h2 id="cal">Calibration</h2>
-<p>Put a forecaster's games in bands by the number it gave the favourite: 50–60%, 60–70%, and so on. In each band, count how often the favourite won. A calibrated forecaster's 60s win about 60% of the time and its 80s about 80%. If its 80s win only 65%, the 80s are overconfident, however many games it gets right.</p>
+<p>Put a forecaster's games in bands by the number it gave the favorite: 50–60%, 60–70%, and so on. In each band, count how often the favorite won. A calibrated forecaster's 60s win about 60% of the time and its 80s about 80%. If its 80s win only 65%, the 80s are overconfident, however many games it gets right.</p>
 <p>Small samples lie. Eight games in a band can easily come out 5 of 8 or 7 of 8 by luck, so a band means little until it holds a few dozen games.${bands.length ? ` Clutch's bands this season, so far: ${esc(bands.map((b) => `${band(b)}, ${b.hits} of ${b.n}`).join("; "))}.` : ""} <a href="/accuracy/">Every band, updated each morning →</a></p></section>
 
 <section aria-labelledby="brier"><h2 class="sh" id="brier">The Brier score, one game at a time</h2>
-<p class="sub">For each game, take the number given to the side that lost and square it; average over every game. A favourite at ${pct(worst.q)}% that loses costs ${b3(worst.q ** 2)}; the same favourite winning costs ${b3((1 - worst.q) ** 2)}. Here are Clutch's graded calls from ${esc(shortDate(last))}, scored:</p>
+<p class="sub">For each game, take the number given to the side that lost and square it; average over every game. A favorite at ${pct(worst.q)}% that loses costs ${b3(worst.q ** 2)}; the same favorite winning costs ${b3((1 - worst.q) ** 2)}. Here are Clutch's graded calls from ${esc(shortDate(last))}, scored:</p>
 <div class="scroll gap"><table class="tbl"><caption class="vh">Brier score for each call on ${esc(shortDate(last))}</caption><thead><tr><th scope="col">Game</th><th scope="col" class="num">Clutch</th><th scope="col">Result</th><th scope="col" class="num">Cost</th></tr></thead><tbody>${rows.map((r) => `<tr><td>${esc(r.c.matchup.replace(" @ ", " at "))}</td><td class="num">${esc(r.c.pick)} ${Math.round(r.c.claimed_pct)}%</td><td>${r.c.correct ? '<span class="chip win">✓ Right</span>' : '<span class="chip loss">✗ Wrong</span>'}</td><td class="num">${b3(r.cost)}</td></tr>`).join("")}</tbody></table></div>
 <p class="note">The night's average: ${b3(avg)} on ${rows.length} ${rows.length === 1 ? "game" : "games"}. One night says little; the seasons below are 1,300 games each.</p></section>
 
@@ -168,7 +168,7 @@ function sealArticle(m) {
 <p class="sub">A real pregame prediction leaves three marks: a fingerprint of the numbers published before tip, a timestamp the forecaster cannot set, and a record that keeps every miss. Screenshots and posts made after the final prove nothing, and a dated blog post can be edited the next morning.</p></section>
 
 <section class="blk" aria-labelledby="why"><h2 id="why">Why it matters</h2>
-<p>A track record is easy to fake without a single lie you can point to: post only the calls that came in, delete the ones that didn't, nudge a number after the injury news, or write the prediction up once the game is over. Each one makes a forecaster look better than it is. The only defence is a record that was fixed in public before the games and can't be quietly trimmed afterwards.</p></section>
+<p>A track record is easy to fake without a single lie you can point to: post only the calls that came in, delete the ones that didn't, nudge a number after the injury news, or write the prediction up once the game is over. Each one makes a forecaster look better than it is. The only defense is a record that was fixed in public before the games and can't be quietly trimmed afterwards.</p></section>
 
 <section class="blk" aria-labelledby="fp"><h2 id="fp">1. A fingerprint before tip</h2>
 <p>Clutch writes every game's number into a file and publishes the file's SHA-256 fingerprint: 64 characters computed from its contents. Change one digit of one number and the fingerprint comes out completely different, so a published fingerprint pins the file down exactly. On ${esc(shortDate(last))}, the night's first file held ${games.length} ${games.length === 1 ? "game" : "games"} and its fingerprint, shortened, is <code>${esc(shortHash(seal.sha256))}</code>.</p></section>
@@ -183,7 +183,7 @@ function sealArticle(m) {
 <p>Download any night's file, compute its fingerprint with a tool your computer already has (<code>shasum -a 256</code> on a Mac, <code>certutil -hashfile</code> on Windows), and compare it with the one on the Proof page; then check its arrival time against the tip. It takes about two minutes. <a href="/receipts/">Step by step, on the Proof page →</a></p></section>
 
 <section class="blk" aria-labelledby="not"><h2 id="not">What a seal doesn't prove</h2>
-<p>A seal proves when a number was made, not that it was any good. For that you need many graded games: how often the favourites won, and how each band of numbers held up. <a href="/accuracy/">How accurate Clutch is →</a> · <a href="/learn/calibration-and-brier-score/">Calibration and the Brier score →</a></p></section>
+<p>A seal proves when a number was made, not that it was any good. For that you need many graded games: how often the favorites won, and how each band of numbers held up. <a href="/accuracy/">How accurate Clutch is →</a> · <a href="/learn/calibration-and-brier-score/">Calibration and the Brier score →</a></p></section>
 
 <p class="note">The example above is rebuilt from Clutch's public files every day.</p>`;
   return {
@@ -258,7 +258,7 @@ function bpiArticle(m) {
 <p class="note">Right: how often the side given over 50% won. Score: the Brier score, lower is better; a coin flip on every game scores 0.250. Every row is graded on exactly the same ${seasons.map((s) => `${bench[s].n.toLocaleString("en-US")} games in ${s}`).join(" and ")}.</p></section>
 
 <section class="blk" aria-labelledby="why"><h2 id="why">Why picking the winner isn't the whole story</h2>
-<p>Most NBA games have a clear favourite, and favourites win about two games in three. Any sensible number picks those games, so every source above lands near 69% and the share of winners barely separates them. What separates them is the number. A 90% call that loses should cost more than a 55% call that loses, and a team given 70% should win about 70 times in 100.</p>
+<p>Most NBA games have a clear favorite, and favorites win about two games in three. Any sensible number picks those games, so every source above lands near 69% and the share of winners barely separates them. What separates them is the number. A 90% call that loses should cost more than a 55% call that loses, and a team given 70% should win about 70 times in 100.</p>
 <p>The Brier score does exactly that. For each game, take the probability given to the team that lost, square it, and average over every game. A 55% call that misses costs 0.30; a 90% call that misses costs 0.81; a 90% call that holds costs 0.01. It rewards being confident when you're right and punishes it when you're wrong, which is what a probability is for.</p></section>
 
 <section class="blk" aria-labelledby="clutch"><h2 id="clutch">Is Clutch more accurate than BPI?</h2>

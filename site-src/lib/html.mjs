@@ -1,7 +1,7 @@
 // The page shell and the pieces every page shares: head (title, canonical,
 // Open Graph, JSON-LD, preloaded fonts, the theme script), the masthead, the
 // footer, the LED rail. No inline style anywhere and one inline script — the
-// CSP allows no other — so team colours are classes in the stylesheet, widths
+// CSP allows no other — so team colors are classes in the stylesheet, widths
 // are SVG attributes, and Day or Night is set by a tiny script in <head> that
 // the build writes inline and the CSP admits by its hash.
 
@@ -243,7 +243,7 @@ ${live ? '<script src="/live.js" defer></script>' : ""}${tour ? '<script src="/t
 
 /**
  * The LED rail: 24 segments, lit up to Clutch's number for the side it
- * favours, the market's number for that side as the one cream segment
+ * favors, the market's number for that side as the one cream segment
  * (amber = Clutch, cream = the market). `p` and `market` in 0..1 or null.
  */
 export function rail(p, market, small = false) {

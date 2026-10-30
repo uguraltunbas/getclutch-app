@@ -1,6 +1,6 @@
-// A team colour that can be seen on the paper — the app's own rule (mobile
-// lib/theme/teamSwatch.ts, ported): team colours are marks, never text, so
-// the floor is WCAG's 3:1 for graphics against the ground. A colour under it
+// A team color that can be seen on the paper — the app's own rule (mobile
+// lib/theme/teamSwatch.ts, ported): team colors are marks, never text, so
+// the floor is WCAG's 3:1 for graphics against the ground. A color under it
 // is lifted toward the ink in tenths until it clears (the Nets' black, the
 // navy teams at night; the Spurs' silver by day), keeping its hue. The ground
 // may be a list (the paper and the card a swatch sits on): it must clear all.
@@ -24,7 +24,7 @@ function lum([r, g, b]) {
   return 0.2126 * ch(r) + 0.7152 * ch(g) + 0.0722 * ch(b);
 }
 
-/** WCAG contrast of two opaque hex colours; null when either can't be read. */
+/** WCAG contrast of two opaque hex colors; null when either can't be read. */
 export function contrastOf(a, b) {
   const x = parse(a), y = parse(b);
   if (!x || !y) return null;
@@ -43,7 +43,7 @@ function worst(color, ground) {
   return low;
 }
 
-/** `color` as it should be drawn on `ground` (one colour or a list): itself at 3:1 or more, else lifted toward `ink` until it is. */
+/** `color` as it should be drawn on `ground` (one color or a list): itself at 3:1 or more, else lifted toward `ink` until it is. */
 export function swatchOn(color, ground, ink) {
   const c = parse(color), i = parse(ink);
   const first = worst(color, ground);
