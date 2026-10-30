@@ -1,0 +1,78 @@
+# Clutch's daily posts (t70): the radar starts this when a batch is due —
+# Tonight and the game of the night before tip, the receipts after the finals
+# (and the week on Mondays), "the number moved" when a player is ruled out —
+# and each post goes to Uğur on Telegram for a tap (engine-src/make.mjs).
+#
+# Why here, in the public site repository: Actions minutes are free for a
+# public repository, and the drawing needs nothing private. The share
+# studio's drawing and words are vendored in engine-src/vendor/ (built by the
+# private monorepo's apps/radar/content/vendor.mjs, the same code the web app
+# already ships) instead of read from clutch-mobile with a token: a token in a
+# public workflow could leak and read the whole app. The simulation stays
+# private: the game of the night's winners come from the content-gotn Edge
+# Function (CONTENT_GOTN_KEY), "the number moved" gets its What-If numbers
+# from the radar.
+#
+# Secrets: SUPABASE_ANON_KEY (the public key the site reads with),
+# CONTENT_KEY (the radar's door), CONTENT_GOTN_KEY (the function's door).
+# Variable: RADAR_URL. Without the radar's two, a run draws, checks and logs,
+# and sends nothing.
+#
+# The log names each post and its checks, never a caption or a number; the
+# files are never kept as artifacts (the repository is public). Inputs reach
+# the script as environment variables, never inside a shell line. Actions are
+# pinned to a commit (the tag in the comment), as in site.yml.
+name: Daily posts
+on:
+  workflow_dispatch:
+    inputs:
+      series:
+        description: "tonight,gotn · receipts · receipts,week · moved"
+        required: true
+        type: string
+      date:
+        description: "ET date (YYYY-MM-DD)"
+        required: true
+        type: string
+      extra:
+        description: "JSON from the radar"
+        required: false
+        default: "{}"
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: content-${{ github.event.inputs.date }}-${{ github.event.inputs.series }}
+  cancel-in-progress: false
+jobs:
+  make:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+      - name: ffmpeg
+        run: sudo apt-get update -q && sudo apt-get install -y -q ffmpeg
+      - name: The vendored studio is the one that was built
+        run: node engine-src/vendor-check.mjs
+      - name: Tests
+        env:
+          CHROME_PATH: /usr/bin/google-chrome
+          CI: "true"
+        run: node --test engine-src/test/*.test.mjs
+      - name: Make the posts
+        env:
+          CHROME_PATH: /usr/bin/google-chrome
+          CI: "true"
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          CONTENT_KEY: ${{ secrets.CONTENT_KEY }}
+          CONTENT_GOTN_KEY: ${{ secrets.CONTENT_GOTN_KEY }}
+          RADAR_URL: ${{ vars.RADAR_URL }}
+          INPUT_SERIES: ${{ github.event.inputs.series }}
+          INPUT_DATE: ${{ github.event.inputs.date }}
+          INPUT_EXTRA: ${{ github.event.inputs.extra }}
+        run: node engine-src/make.mjs

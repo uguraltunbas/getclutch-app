@@ -1,0 +1,57 @@
+{
+  "built_from": {
+    "repo": "uguraltunbas/clutch-mobile",
+    "commit": "ecf5b7a8ff98abbfaf57da6e964b44114d4dc3fd"
+  },
+  "bundle_sha256": "12c571f3a9220aa7ac1837c8d03c70a341140c08f5a69e6ae9f74d9e9844c791",
+  "inputs": [
+    {
+      "path": "lib/constants/bettingWords.ts",
+      "sha256": "9769e800b6c9c58633d2fdebfd129becd9c6405322fecc5e48ced05fb0e4f18c"
+    },
+    {
+      "path": "lib/reel/colors.ts",
+      "sha256": "3e19a72a02a20908e4a52b656053561acca493d456f879639bb4771e0dc531d1"
+    },
+    {
+      "path": "lib/studio/ab.ts",
+      "sha256": "2da9ab345ca7f60749b2e7306478a602a523464446cec80733b3501556f85e7e"
+    },
+    {
+      "path": "lib/studio/captions.ts",
+      "sha256": "9a4b775b18d98a8f0237ba24eeeb75da1b7e2fe18eab23b31410eb66f2f16649"
+    },
+    {
+      "path": "lib/studio/led.ts",
+      "sha256": "4409aa1b0af66077f0a3af043b9086279893a8eb292570408404d64bd67a9674"
+    },
+    {
+      "path": "lib/studio/model.ts",
+      "sha256": "a4e3ee639add596d8682f36dc74ae501e7b440b6041ec53de0a86a35009d7f0c"
+    },
+    {
+      "path": "lib/studio/paint.ts",
+      "sha256": "2324fbbaa94a255bf32c3354e56426c01cc937f03a86f5830d31f498898730f0"
+    },
+    {
+      "path": "lib/studio/series.ts",
+      "sha256": "1e91b5ebf3ace2d5e7c10a79b211baa0ec67e67a9d02324387f9c46145e1054a"
+    },
+    {
+      "path": "lib/theme/colors.ts",
+      "sha256": "6bdb8df5154e1bb71a22def48543bd2748823adc94b2c2b8d8a781ffbac708a0"
+    },
+    {
+      "path": "lib/theme/palette.ts",
+      "sha256": "865a4e5946d4104f59bfcea334767d655d3bd70fc092fe77c6a236adf7055e47"
+    },
+    {
+      "path": "lib/theme/teamSwatch.ts",
+      "sha256": "34740834ec3dda23bcb1ca2e779b4446d44900f2ecb1bd28caebd011e1cfa30a"
+    },
+    {
+      "path": "lib/time/et.ts",
+      "sha256": "ceda83a990a1e456ed3d2c6b85f4fe2974701dc8eab8fe94c6c3d0d03743ae40"
+    }
+  ]
+}

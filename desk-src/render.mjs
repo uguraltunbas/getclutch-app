@@ -7,6 +7,10 @@
 //   node render.mjs cards  <job.json>   each {page, query, out, w, h} → PNG (JPEG when out ends .jpg)
 //   node render.mjs video  <job.json>   each {page, query, out, w, h, fps, dur} → MP4
 //
+// The content engine (engine-src/make.mjs) imports the same functions: a job
+// may also carry `init` (an expression run once the page is up, before any
+// frame) and `crf` (the video's quality; 17 by default).
+//
 // A video page exposes window.renderFrame(t) (seconds) and window.DURATION;
 // every frame is drawn from t alone, so a render is deterministic and
 // never depends on how fast this Mac is. Frames are piped straight into
@@ -22,7 +26,7 @@ const CHROME = process.env.CHROME_PATH || "/Applications/Google Chrome.app/Conte
 const PORT = 9300 + Math.floor(Math.random() * 500);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-async function launch() {
+export async function launch() {
   const profile = join(process.env.TMPDIR ?? "/tmp", `clutch-render-${PORT}`);
   const proc = spawn(CHROME, [
     "--headless=new", `--remote-debugging-port=${PORT}`, `--user-data-dir=${profile}`,
@@ -44,7 +48,7 @@ async function launch() {
   throw new Error("Chrome did not start: " + err.slice(-1500));
 }
 
-function client(url) {
+export function client(url) {
   const ws = new WebSocket(url);
   let id = 0;
   const pending = new Map();
@@ -70,7 +74,7 @@ function client(url) {
   };
 }
 
-async function open(cdp, job) {
+export async function open(cdp, job) {
   await cdp.send("Emulation.setDeviceMetricsOverride", { width: job.w, height: job.h, deviceScaleFactor: 1, mobile: false });
   const file = resolve(HERE, job.page);
   const url = pathToFileURL(file).href + (job.query ? `?${job.query}` : "");
@@ -79,20 +83,21 @@ async function open(cdp, job) {
   await loaded;
   const r = await cdp.send("Runtime.evaluate", { expression: "document.fonts.ready.then(() => (window.READY ? window.READY() : true)).then(() => document.fonts.size)", awaitPromise: true, returnByValue: true });
   if (r.exceptionDetails) throw new Error(`page error in ${job.page}?${job.query}: ${JSON.stringify(r.exceptionDetails).slice(0, 400)}`);
+  if (job.init) return evalOrThrow(cdp, job.init);
 }
 
-async function evalOrThrow(cdp, expression) {
+export async function evalOrThrow(cdp, expression) {
   const r = await cdp.send("Runtime.evaluate", { expression, awaitPromise: true, returnByValue: true });
   if (r.exceptionDetails) throw new Error(`${expression}: ${r.exceptionDetails.exception?.description ?? r.exceptionDetails.text}`);
   return r.result?.value;
 }
 
-async function shot(cdp, format = "png", quality) {
+export async function shot(cdp, format = "png", quality) {
   const r = await cdp.send("Page.captureScreenshot", { format, ...(quality ? { quality } : {}), fromSurface: true, captureBeyondViewport: false });
   return Buffer.from(r.data, "base64");
 }
 
-async function cards(cdp, jobs) {
+export async function cards(cdp, jobs) {
   for (const job of jobs) {
     await open(cdp, job);
     await evalOrThrow(cdp, "window.renderFrame ? window.renderFrame(window.STILL ?? 0) : 0");
@@ -105,7 +110,7 @@ async function cards(cdp, jobs) {
   }
 }
 
-async function video(cdp, job) {
+export async function video(cdp, job) {
   await open(cdp, job);
   const fps = job.fps ?? 30;
   const dur = job.dur ?? (await evalOrThrow(cdp, "window.DURATION"));
@@ -113,7 +118,7 @@ async function video(cdp, job) {
   const out = resolve(HERE, job.out);
   mkdirSync(dirname(out), { recursive: true });
   const ff = spawn("ffmpeg", ["-v", "error", "-y", "-f", "image2pipe", "-framerate", String(fps), "-i", "-",
-    "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "17", "-preset", "medium", "-movflags", "+faststart", "-r", String(fps), out],
+    "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", String(job.crf ?? 17), "-preset", "medium", "-movflags", "+faststart", "-r", String(fps), out],
     { stdio: ["pipe", "inherit", "inherit"] });
   const done = new Promise((res, rej) => ff.on("close", (c) => (c === 0 ? res() : rej(new Error(`ffmpeg exit ${c}`)))));
   const t0 = Date.now();
@@ -133,7 +138,7 @@ async function video(cdp, job) {
 }
 
 /** Still frames of a video page at chosen times, tiled into one contact sheet for review. */
-async function stills(cdp, job) {
+export async function stills(cdp, job) {
   await open(cdp, job);
   const out = resolve(HERE, job.out);
   mkdirSync(dirname(out), { recursive: true });
@@ -151,20 +156,27 @@ async function stills(cdp, job) {
   console.log("stills", job.out);
 }
 
-const [mode, jobFile, only] = process.argv.slice(2);
-let jobs = JSON.parse(readFileSync(resolve(process.cwd(), jobFile), "utf8"));
-if (only) jobs = jobs.filter((j) => j.out.includes(only));
-const { proc, ws } = await launch();
-const cdp = client(ws);
-await cdp.ready;
-await cdp.send("Page.enable");
-await cdp.send("Runtime.enable");
-try {
-  if (mode === "cards") await cards(cdp, jobs);
-  else if (mode === "video") for (const j of jobs) await video(cdp, j);
-  else if (mode === "stills") for (const j of jobs) await stills(cdp, j);
-  else throw new Error(`unknown mode ${mode}`);
-} finally {
-  cdp.close();
-  proc.kill();
+/** One Chrome for many jobs: `await using`-free so it runs on Node 20. */
+export async function session() {
+  const { proc, ws } = await launch();
+  const cdp = client(ws);
+  await cdp.ready;
+  await cdp.send("Page.enable");
+  await cdp.send("Runtime.enable");
+  return { cdp, close() { cdp.close(); proc.kill(); } };
+}
+
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  const [mode, jobFile, only] = process.argv.slice(2);
+  let jobs = JSON.parse(readFileSync(resolve(process.cwd(), jobFile), "utf8"));
+  if (only) jobs = jobs.filter((j) => j.out.includes(only));
+  const { cdp, close } = await session();
+  try {
+    if (mode === "cards") await cards(cdp, jobs);
+    else if (mode === "video") for (const j of jobs) await video(cdp, j);
+    else if (mode === "stills") for (const j of jobs) await stills(cdp, j);
+    else throw new Error(`unknown mode ${mode}`);
+  } finally {
+    close();
+  }
 }
