@@ -7,6 +7,7 @@ import { page, esc, APP_STORE, ORIGIN, PLAY, WEB_APP_LIVE, playWords } from "../
 import { board, gameCard, statusText, gradeChip, tonightOpen } from "../parts.mjs";
 import { pct, headlineFor, receiptLine, shortHash, sealFileUrl, CALL_RULE, PRESEASON_DECK, rec, RATE_FLOOR, RECEIPTS_REPO } from "../copy.mjs";
 import { matchupFor } from "./matchups.mjs";
+import { formSection } from "../form.mjs";
 import { longDate, mediumDate, shortDate, weekday, timeET, isoET } from "../time.mjs";
 
 const the = (t) => `the ${t.nickname}`;
@@ -169,6 +170,7 @@ ${callNote(g)}
 ${whySection(g, m)}
 ${spotsSection(g)}
 ${outSection(g)}
+${g.status === "postponed" ? "" : formSection(m, g.away, g.home, g.date, { heading: g.status === "scheduled" ? "Coming in" : "How they came in", chance: g.status === "scheduled" && g.date >= m.today })}
 ${gradeSection(g)}
 </article>
 ${aside(g, m, night)}

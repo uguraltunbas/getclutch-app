@@ -339,6 +339,8 @@ a.bk:hover{color:var(--ink)}
 .tbl .m{font-family:var(--mono);font-size:13px}
 .tbl .st{font-weight:600;font-size:13px;color:var(--ink)}
 .tbl .num{text-align:right}.tbl td.num{font-family:var(--mono)}.tbl td.lead{font-weight:700}
+/* The form table (lib/form.mjs): words and numbers mixed, so the body face with even-width figures. */
+.tbl.form td{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}.tbl.form th[scope=row]{font-size:14px;color:var(--ink2);font-weight:500}
 .scroll{overflow-x:auto}
 .gradebox{border:1px dashed var(--ruleBold);padding:18px 20px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:22px;align-items:center}
 .gradebox.done{border-style:solid;background:var(--panel)}.gradenote{border-top:1px solid var(--rule);padding-top:12px;font-size:14px;line-height:1.5;color:var(--ink3)}

@@ -13,6 +13,7 @@
 import { page, esc, ORIGIN, teamSlug } from "../html.mjs";
 import { pct, normalizeStatus, finalLabel, rec } from "../copy.mjs";
 import { shortDate, mediumDate, dayLabel, timeET, shift } from "../time.mjs";
+import { formSection } from "../form.mjs";
 
 const pairKey = (x, y) => [x, y].sort().join("|");
 const LEAD_DAYS = 7;
@@ -118,6 +119,30 @@ function lastRow(c) {
   return `<div class="callrow"><span class="mono">${esc(shortDate(c.game_date))}</span><span>${esc(label)}</span><span class="d">${esc(c.pick)} ${Math.round(c.claimed_pct)}</span><span>${c.correct ? '<span class="chip win">✓ Right</span>' : '<span class="chip loss">✗ Wrong</span>'}</span></div>`;
 }
 
+/**
+ * The next meeting: when and where, and — once it has one — Clutch's number, its biggest reason
+ * and who is listed out (the game's own page has the rest).
+ */
+function nextSection(g) {
+  if (!g) return "";
+  const where = g.neutral ? "" : g.home.arena ? `, ${g.home.arena}` : "";
+  const when = `${g.away.nickname} at ${g.home.nickname}, ${dayLabel(g.date)}${g.tipUtc ? ` · ${timeET(g.tipUtc)}` : ""}${where}.`;
+  let call = "";
+  if (g.hasCall) {
+    const r = g.reasons[0];
+    const toward = r ? (r.toward === "home" ? g.home : g.away).nickname : "";
+    call = `<p class="gap">Clutch gives the ${esc(g.side.team.nickname)} a ${pct(g.side.prob)}% chance.${r ? ` The biggest reason: ${esc(r.label)}, toward the ${esc(toward)}${r.share != null ? ` (${r.share}% of the call)` : ""}.` : ""}${g.page ? ` <a href="${g.path}">The full call →</a>` : ""}</p>`;
+  }
+  const title = (n) => String(n).replace(/\b\w/g, (c) => c.toUpperCase());
+  // The injury report only for a game on tonight's slate (its own page); a week out, today's list isn't its list.
+  const out = !g.page ? [] : [g.away, g.home].map((t) => {
+    const xs = g.absences.filter((a) => a.team === t.abbreviation).slice(0, 3);
+    return xs.length ? `${t.abbreviation}: ${xs.map((a) => `${title(a.name)} (${String(a.status).toLowerCase()})`).join(", ")}` : "";
+  }).filter(Boolean);
+  const outLine = g.page && (g.hasCall || out.length) ?`<p class="note gap">${out.length ? `On the injury report: ${esc(out.join("; "))}.` : "Nobody listed on the injury report for either team."}</p>` : "";
+  return `<section aria-labelledby="next"><h2 class="sh" id="next">Next meeting</h2><p class="sub">${esc(when)}</p>${call}${outLine}</section>`;
+}
+
 function matchupPage(s, m) {
   const { a, b, path } = s;
   const played = s.games.filter((g) => g.status === "final" && g.homeScore != null && !g.preseason);
@@ -142,7 +167,9 @@ function matchupPage(s, m) {
   const thisSeason = s.games.filter((g) => g.status === "final" || g.status === "postponed" || g.status === "live" || g.status === "halftime");
   const body = `<div class="wrap r"><div class="rhead"><span class="kick">Head to head · ${esc(m.current)}</span><h1 class="rh1">${esc(a.nickname)} vs ${esc(b.nickname)}</h1><p class="rdeck">${esc(deck)}</p>${stats ? `<div class="stat gap">${stats}</div>` : ""}</div>
 <div class="body">
-<section aria-labelledby="season"><h2 class="sh" id="season">This season</h2>${thisSeason.length ? thisSeason.map(row).join("") : '<p class="sub">No finals yet between these two this season.</p>'}</section>
+${nextSection(next)}
+${formSection(m, next?.away ?? a, next?.home ?? b, m.today, { heading: `Where they stand, ${shortDate(m.today)}`, chance: true })}
+<section aria-labelledby="season"><h2 class="sh${next ? " s" : ""}" id="season">This season</h2>${thisSeason.length ? thisSeason.map(row).join("") : '<p class="sub">No finals yet between these two this season.</p>'}</section>
 ${ahead.length ? `<section aria-labelledby="ahead"><h2 class="sh s" id="ahead">Still to come</h2>${ahead.map(row).join("")}<p class="note gap">Clutch's number for each game lands the morning of the game and is sealed before tip.</p></section>` : ""}
 ${s.prev.length ? `<section aria-labelledby="lastseason"><h2 class="sh s" id="lastseason">Last season, ${esc(m.prevSeason)}</h2>${s.prev.map((g) => prevRow(g, m)).join("")}<p class="note gap">${pt ? `${esc(pt)}. ` : ""}${prevCalls.length ? `Clutch's graded calls on these games: ${rec(prevRight, prevCalls.length)}${m.last?.retired && m.last.season === m.prevSeason ? ", made by the model Clutch has since retired" : ""}. ` : ""}${s.prev.some((g) => g.playIn) ? "The play-in counts in no series." : ""}</p></section>` : ""}
 ${s.last.length ? `<section aria-labelledby="earlier"><h2 class="sh s" id="earlier">Clutch's calls, earlier seasons</h2>${s.last.map(lastRow).join("")}<p class="note gap">The Ledger's graded calls on this pair: ${rec(lastRight, s.last.length)}${m.last?.retired ? `, made by the model Clutch has since retired` : ""}. Only calls it could prove were made before tip are graded.</p></section>` : ""}

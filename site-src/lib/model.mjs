@@ -101,7 +101,7 @@ export function buildModel(raw) {
   // season's regular season for each team's record.
   const finals = (rows) => (rows ?? []).map((g) => ({
     id: g.id, date: g.game_date, home: T[g.home_team_id], away: T[g.away_team_id], homeScore: g.home_score, awayScore: g.away_score,
-    period: g.period, seasonType: g.season_type, playIn: String(g.nba_id ?? "").startsWith("005"),
+    period: g.period, seasonType: g.season_type, playIn: String(g.nba_id ?? "").startsWith("005"), neutral: g.neutral_site === true,
   })).filter((g) => g.home && g.away && g.homeScore != null && g.awayScore != null);
   const lastSeason = finals(raw.lastSeason), thisSeason = finals(raw.thisSeason);
   const record = ledger && ledgerStage(ledger, current) === "season" ? headlineRecord(ledger) : null;

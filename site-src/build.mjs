@@ -41,7 +41,7 @@ import { fileURLToPath } from "node:url";
 import { supabase, loadAll } from "./lib/data.mjs";
 import { buildModel } from "./lib/model.mjs";
 import worker, { EMBED_HEADERS, EMBED_DROPS } from "./worker.js";
-import { etDate, seasonOf } from "./lib/time.mjs";
+import { etDate, seasonOf, shift } from "./lib/time.mjs";
 import { FONTS, ORIGIN, APP, APP_STORE, INDEXNOW_KEY, WEB_APP_LIVE, WIN_TOTALS_RULES_URL, DESCRIPTION_MAX, LAUNCH_INPUT, LAUNCH_VALID, LAUNCH_UNTIL, LAUNCH_ON, LAUNCH_WORDS } from "./lib/html.mjs";
 import { ttfToWoff2 } from "./lib/woff2.mjs";
 import { swatchOn } from "./lib/swatch.mjs";
@@ -66,6 +66,7 @@ import { feedXml, feedItems, FEED } from "./lib/feed.mjs";
 import { dataPage, dataFiles, dataRows, FILES, FTE_COLUMNS } from "./lib/pages/data.mjs";
 import { TERMS, PRIVACY, REFUNDS, SUPPORT, LEGAL_UPDATED } from "./content/legal.mjs";
 import { FEATURES, PLAN } from "./content/features.mjs";
+import { SEARCH_KEEP } from "./content/search-keep.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, "..");
@@ -249,6 +250,14 @@ for (const p of pages) {
   writeFileSync(file, p.html);
 }
 const indexed = pages.filter((p) => !p.redirect && !p.embed && p.path.endsWith("/"));
+// The sitemap puts forward only the pages worth indexing (Bing had indexed 8 of 335 on
+// 2026-10-30, with every past night in the list): everything but /games/, the game and
+// night pages of the last SITEMAP_NIGHTS nights and tonight, and older game pages that
+// earned search impressions (content/search-keep.mjs). The rest stay live and linked.
+const SITEMAP_NIGHTS = 2;
+const sitemapFrom = shift(TODAY, -SITEMAP_NIGHTS);
+const listed = indexed.filter((p) => { const d = p.path.match(/^\/games\/(\d{4}-\d{2}-\d{2})\//)?.[1]; return !d || d >= sitemapFrom || SEARCH_KEEP.has(p.path); });
+for (const k of SEARCH_KEEP) if (!indexed.some((p) => p.path === k)) warn.push(`search-keep: ${k} is not a page in this build`);
 const today = new Date().toISOString().slice(0, 10);
 // lastmod only moves when a page really changes (search engines stop trusting a
 // sitemap whose every date is the build's): a past night is graded the morning
@@ -264,7 +273,7 @@ function lastmod(path) {
   if (["/terms/", "/privacy/", "/refunds/", "/support/"].includes(path)) return LEGAL_ISO;
   return today;
 }
-writeFileSync(join(OUT, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${indexed.map((p) => `<url><loc>${ORIGIN}${p.path}</loc><lastmod>${lastmod(p.path)}</lastmod><changefreq>${p.path === "/" || p.path === "/tonight/" || p.path.startsWith("/games/") ? "hourly" : "daily"}</changefreq><priority>${p.path === "/" ? "1.0" : p.path === "/tonight/" ? "0.9" : p.path.startsWith("/games/") ? "0.8" : "0.6"}</priority></url>`).join("\n")}\n</urlset>\n`);
+writeFileSync(join(OUT, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${listed.map((p) => `<url><loc>${ORIGIN}${p.path}</loc><lastmod>${lastmod(p.path)}</lastmod><changefreq>${p.path === "/" || p.path === "/tonight/" || p.path.startsWith("/games/") ? "hourly" : "daily"}</changefreq><priority>${p.path === "/" ? "1.0" : p.path === "/tonight/" ? "0.9" : p.path.startsWith("/games/") ? "0.8" : "0.6"}</priority></url>`).join("\n")}\n</urlset>\n`);
 // Search engines, AI answers and model training may all read the paper: a new name
 // is known to an assistant only if it was in what the model learned from (owner
 // decision 2026-10-25, reversing chat 13's ai-train=no). Content-Signal is
@@ -486,7 +495,7 @@ if (tourGz > 3072) fail.push(`guide script ${tourGz} bytes gzipped (budget 3 KB)
 const sizes = indexed.map((p) => Buffer.byteLength(p.html));
 const kinds = { games: m.pageGames.length, nights: Object.keys(m.nights).length, teams: pages.filter((p) => p.path.startsWith("/teams/")).length, matchups: pages.filter((p) => p.path.startsWith("/matchups/")).length };
 console.log(`site ${TODAY} → ${OUT} · web app ${WEB_APP_LIVE ? "LIVE (browser links on)" : "not live (play links → App Store)"}${LAUNCH_ON ? ` · Launch Pass on (guard ${LAUNCH_UNTIL}, never printed)` : ""}`);
-console.log(`  ${pages.length} pages (${indexed.length} indexed; ${kinds.games} game pages over ${kinds.nights} nights, ${kinds.teams} team pages, ${kinds.matchups} head-to-head pages), tonight = ${m.tonight ?? "none"}`);
+console.log(`  ${pages.length} pages (${indexed.length} indexed, ${listed.length} in the sitemap; ${kinds.games} game pages over ${kinds.nights} nights, ${kinds.teams} team pages, ${kinds.matchups} head-to-head pages), tonight = ${m.tonight ?? "none"}`);
 console.log(`  share cards: ${og.ready.size} of ${ogPlan.length} game pages of the last ${OG_DAYS} days (${og.rendered} drawn now in ${ogSecs.toFixed(1)}s, ${og.missing} on /og/game.jpg until a later build, ${og.pruned} old cards deleted)`);
 console.log(`  html ${(Math.min(...sizes) / 1024).toFixed(1)}–${(Math.max(...sizes) / 1024).toFixed(1)} KB · css ${cssKB.toFixed(1)} KB · live.js ${liveKB.toFixed(2)} KB · theme.js ${themeB} B · tour.js ${tourB} B (${tourGz} B gzip) · fonts ${(fontBytes / 1024).toFixed(0)} KB (${FONTS.length} woff2)`);
 for (const w of warn) console.warn(`  warn: ${w}`);
