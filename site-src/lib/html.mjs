@@ -174,7 +174,7 @@ function footer(path) {
 <nav class="flegal" aria-label="Legal"><span class="mono">Legal</span><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="/refunds/">Refunds</a></nav>
 <nav class="ffollow" aria-label="Follow"><span class="mono">Follow</span><a href="${X_URL}" rel="me">X</a><a href="${LINKEDIN_URL}" rel="me">LinkedIn</a></nav>
 </div>
-${path === "/" ? `<div class="flisted"><span class="mono">Listed on</span>${LISTED_ON.map((b) => `<a href="${b.href}"><img src="${b.img}" width="${b.w}" height="${b.h}" alt="${b.alt}"></a>`).join("")}</div>` : ""}
+${path === "/" ? `<div class="flisted"><span class="mono">Listed on</span>${LISTED_ON.map((b) => `<a href="${b.href}"><img src="${b.img}" width="${b.w}" height="${b.h}" alt="${b.alt}" loading="lazy" decoding="async"></a>`).join("")}</div>` : ""}
 <div class="fline"><span>Sports analytics for fans. Not affiliated with the NBA or any team.</span><span>© 2026 Clutch · Operated by Uğur Altunbaş</span></div>
 </div></footer>`;
 }

@@ -81,5 +81,6 @@
       .catch(function () { timer = setTimeout(load, 5 * MIN); });
   }
   document.addEventListener("visibilitychange", function () { if (!document.hidden && !timer && !done) load(); });
-  load();
+  // The first look waits for the page's own load, so it never takes bandwidth from the fonts and the first paint.
+  if (document.readyState === "complete") load(); else window.addEventListener("load", load, { once: true });
 })();
