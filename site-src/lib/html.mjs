@@ -26,7 +26,13 @@ export const LINKEDIN_URL = "https://www.linkedin.com/company/clutchledger/";
  * (owner, 2026-10-25). Front page only, so the rest of the site carries no outside links in its footer;
  * the images are copies in static/badges (the CSP loads no outside image), linked as each one asks.
  */
-const LISTED_ON = [{ href: "https://fazier.com/launches/clutch-ledger", img: "/badges/fazier.svg", w: 103, h: 44, alt: "Launched on Fazier" }];
+const LISTED_ON = [
+  { href: "https://fazier.com/launches/clutch-ledger", img: "/badges/fazier.svg", w: 103, h: 44, alt: "Launched on Fazier" },
+  // Product Hunt (launched 2026-10-23) and SaaSHub (approved): drawn here in Fazier's slate so the row reads as one
+  // set, with no live vote count (owner, 2026-11-01).
+  { href: "https://www.producthunt.com/products/clutch-ledger", img: "/badges/producthunt.svg", w: 132, h: 44, alt: "Launched on Product Hunt" },
+  { href: "https://www.saashub.com/clutch-ledger", img: "/badges/saashub.svg", w: 110, h: 44, alt: "Approved on SaaSHub" },
+];
 export const WIN_TOTALS_RULES_URL = "https://uguraltunbas.github.io/getclutch-app/win-totals-rules.html";
 
 /**

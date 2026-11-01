@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="132" height="44" viewBox="0 0 132 44" fill="none">
+<path fill="#586179" fill-rule="evenodd" d="M16 6a16 16 0 1 1 0 32 16 16 0 0 1 0-32zm2.13 16H13.6v-4.8h4.53a2.4 2.4 0 0 1 0 4.8zm0-8H10.4v16h3.2v-4.8h4.53a5.6 5.6 0 0 0 0-11.2z"/>
+<text x="40" y="18" fill="#586179" font-family="Verdana, Helvetica, Arial, sans-serif" font-size="8" letter-spacing=".9" textLength="70" lengthAdjust="spacingAndGlyphs">LAUNCHED ON</text>
+<text x="40" y="34" fill="#3F4A63" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="16" font-weight="700" textLength="90" lengthAdjust="spacingAndGlyphs">Product Hunt</text>
+</svg>
