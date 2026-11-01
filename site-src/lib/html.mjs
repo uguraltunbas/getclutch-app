@@ -165,17 +165,30 @@ function masthead(current) {
 </div></header>`;
 }
 
+/**
+ * The footer as the paper's back page (owner's pick A, "Kolofon", 2026-11-01): a closing
+ * line with the one main action (left out on the front page, which ends on its own), the
+ * index in three dotted rows, then the colophon — the name, one line, the legal links.
+ * Every page stays linked (the rows wrap); each link is a 44 px tap. No operator name here
+ * (owner, 2026-11-01): the Terms, Privacy, Refunds and Support pages carry it.
+ */
+const FOOT_ROWS = [
+  ["The paper", [["/tonight/", "Tonight"], ["/ledger/", "The Ledger"], ["/accuracy/", "Accuracy"], ["/receipts/", "Proof"], ["/teams/", "Teams"], ["/playoff-chances/", "Playoff chances"]]],
+  ["About", [["/how-it-works/", "How it works"], ["/pricing/", "Pricing"], ["/faq/", "FAQ"], ["/learn/", "Learn"], ["/support/", "Support"], ["/company/", "Company"]]],
+  ["More", [["/widget/", "Widget"], ["/data/", "Open data"], ["/feed.xml", "RSS"], ["/tr/", "Türkçe", ' hreflang="tr" lang="tr"'], [X_URL, "X", ' rel="me"'], [LINKEDIN_URL, "LinkedIn", ' rel="me"']]],
+];
+
 function footer(path) {
-  return `<footer class="foot"><div class="wrap">
-<div class="fgrid">
-<div class="fbrand"><span class="logo">Clutch</span><p>NBA analytics for fans. A number for every game, the reasons behind it, and a public record of every call.</p></div>
-<nav class="fpaper" aria-label="The paper"><span class="mono">The paper</span><a href="/tonight/">Tonight</a><a href="/ledger/">The Ledger</a><a href="/accuracy/">Accuracy</a><a href="/receipts/">Proof</a><a href="/teams/">Teams</a><a href="/playoff-chances/">Playoff chances</a></nav>
-<nav class="fabout" aria-label="About"><span class="mono">About</span><a href="/how-it-works/">How it works</a><a href="/faq/">FAQ</a><a href="/learn/">Learn</a><a href="/widget/">Widget</a><a href="/data/">Open data</a><a href="/feed.xml">RSS</a><a href="/tr/" hreflang="tr" lang="tr">Türkçe</a><a href="/pricing/">Pricing</a><a href="/company/">Company</a><a href="/support/">Support</a><a href="${APP_STORE}">iPhone app</a></nav>
-<nav class="flegal" aria-label="Legal"><span class="mono">Legal</span><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="/refunds/">Refunds</a></nav>
-<nav class="ffollow" aria-label="Follow"><span class="mono">Follow</span><a href="${X_URL}" rel="me">X</a><a href="${LINKEDIN_URL}" rel="me">LinkedIn</a></nav>
-</div>
+  const rows = FOOT_ROWS.map(([label, links]) => `<div><span class="mono">${label}</span><span>${links.map(([href, text, attrs = ""]) => `<a href="${href}"${attrs}>${text}</a>`).join("")}</span></div>`).join("");
+  const close = path === "/" ? "" : WEB_APP_LIVE
+    ? `<div class="fclose"><div><span class="mono">Every NBA game, every night</span><p class="fh">Call it before tip.</p></div><div class="cta"><a class="btn" href="${webAppLink("footer")}">${playWords(false)}</a><a class="alt" href="${APP_STORE}">Get the iPhone app</a></div></div>`
+    : `<div class="fclose"><div><span class="mono">Every NBA game, every night</span><p class="fh">Call it before tip.</p></div><div class="cta"><a class="btn" href="${APP_STORE}">Get the iPhone app →</a></div></div>`;
+  return `<footer class="foot${close ? "" : " bare"}"><div class="wrap">
+${close}
+<nav class="findex" aria-label="Index">${rows}</nav>
 ${path === "/" ? `<div class="flisted"><span class="mono">Listed on</span>${LISTED_ON.map((b) => `<a href="${b.href}"><img src="${b.img}" width="${b.w}" height="${b.h}" alt="${b.alt}" loading="lazy" decoding="async"></a>`).join("")}</div>` : ""}
-<div class="fline"><span>Sports analytics for fans. Not affiliated with the NBA or any team.</span><span>© 2026 Clutch · Operated by Uğur Altunbaş</span></div>
+<div class="fcolo"><span class="logo">Clutch</span><p>Sealed before tip. Graded after the final. The misses stay on the record.</p>
+<div class="fine"><nav aria-label="Legal"><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="/refunds/">Refunds</a></nav><span>© 2026 Clutch · Sports analytics for fans. Not affiliated with the NBA or any team.</span></div></div>
 </div></footer>`;
 }
 

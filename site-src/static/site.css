@@ -109,6 +109,10 @@ a.logo:hover{color:var(--ink)}
 .btns{display:flex;gap:12px;flex-wrap:wrap}
 .more{font-size:15px;font-weight:500;color:var(--ink3)}
 .more:hover{color:var(--ink)}
+/* Small text links as 44 px taps (UX 2026-11-01): the box grows to 44, a negative margin gives the
+   height back, so nothing on the page moves. */
+.top .logo{display:inline-flex;align-items:center;min-height:44px}
+.more,.bk,.note a{display:inline-flex;align-items:center;min-height:44px;min-width:44px;margin-block:-12px}
 
 /* the edition line and headlines */
 .edition{display:flex;justify-content:space-between;gap:16px;border-bottom:3px double var(--ink);padding:22px 0 8px;font-size:13px;color:var(--ink3)}
@@ -294,19 +298,25 @@ a.bk:hover{color:var(--ink)}
 .last .h2{font-size:72px}
 .last .btns,.last .cta{justify-content:center}
 
-/* footer */
-.foot{padding:56px 0;margin-top:104px}
-.fgrid{display:grid;grid-template-columns:minmax(0,2fr) repeat(4,minmax(0,1fr));gap:32px}
-.fbrand .logo{font-size:40px}
-.fbrand p{font-size:14px;line-height:1.55;color:var(--ink3);max-width:340px;margin-top:10px}
-.foot nav{display:flex;flex-flow:column;gap:10px;font-size:14.5px}
-.foot nav a{color:var(--ink2)}
+/* footer: the paper's back page (owner's pick A, 2026-11-01) — closing line, index, colophon */
+.foot{margin-top:104px;padding-bottom:40px}
+.foot .mono{color:var(--ink3)}
+.fclose{border-top:3px double var(--ink);padding:36px 0 32px;display:flex;justify-content:space-between;align-items:center;gap:20px 40px;flex-wrap:wrap}
+.fh{font-family:var(--display);font-weight:900;font-size:44px;line-height:1.05;letter-spacing:-1px;margin-top:6px}
+.findex{border-top:1px solid var(--ruleBold)}
+.bare .findex{border-top:3px double var(--ink)}
+.findex>div{display:grid;grid-template-columns:120px minmax(0,1fr);gap:8px;border-bottom:1px solid var(--rule);padding:6px 0}
+.findex .mono{padding-top:13px}
+.findex span+span{display:flex;flex-wrap:wrap;font-size:15px}
+.foot nav a{display:inline-flex;align-items:center;min-height:44px;min-width:44px;color:var(--ink2);margin-right:20px}
 .foot nav a:hover{color:var(--ink)}
-.foot nav .mono{color:var(--ink3)}
-.flisted{margin-top:32px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-.flisted .mono{color:var(--ink3)}
+.flisted{margin-top:24px;display:flex;align-items:center;gap:16px}
 .flisted img{display:block}
-.fline{border-top:1px solid var(--rule);margin-top:40px;padding-top:18px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:12.5px;line-height:1.5;color:var(--ink3)}
+.fcolo{padding-top:24px;display:flex;align-items:baseline;gap:6px 20px;flex-wrap:wrap}
+.fcolo .logo{font-size:30px}
+.fcolo p{font:italic 16px/1.45 var(--display);color:var(--ink2)}
+.fine{flex-basis:100%;display:flex;justify-content:space-between;align-items:center;column-gap:24px;flex-wrap:wrap;font-size:12.5px;color:var(--ink3)}
+.fine nav a{color:var(--ink3)}
 
 /* the game page */
 .ghead{padding:26px 0 20px;display:flex;flex-flow:column;gap:14px;border-bottom:3px double var(--ink)}
@@ -457,12 +467,11 @@ a.bk:hover{color:var(--ink)}
 @media (max-width:980px){.hero,.proof{grid-template-columns:minmax(0,1fr);gap:36px}.nav,.signin{display:none}.menu{display:block}.stack{grid-template-columns:minmax(0,1fr)}.aside{border-left:0;padding-left:0}.gh1,.gh1.long{font-size:64px;letter-spacing:-2px}}
 @media (max-width:760px){
 .wrap,.wrap.n{padding:0 16px}
-.h1{font-size:50px;letter-spacing:-1.5px}.heroband .h1{padding-top:22px}
+.h1{font-size:50px;letter-spacing:-1.5px}.heroband .h1{padding-top:14px;font-size:44px;letter-spacing:-1.2px}
 .h2{font-size:38px;letter-spacing:-1px}.last .h2{font-size:44px}
-.hero{padding:20px 0 48px;gap:24px}.hero-l{gap:16px}.lede{font-size:18px}
+.hero{padding:14px 0 48px;gap:24px}.hero-l{gap:16px}.hero .cta{gap:0 20px}.lede{font-size:18px}
 .g3,.faq,.plans{grid-template-columns:minmax(0,1fr);gap:24px}
-.fgrid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"b b" "p a" "l a" "f a";gap:20px 16px}.fbrand{grid-area:b}.fpaper{grid-area:p}.fabout{grid-area:a;align-self:start}.flegal{grid-area:l}.ffollow{grid-area:f}
-.foot nav{gap:0}.foot nav a{display:flex;align-items:center;min-height:44px}
+.fclose{padding:28px 0 22px;gap:14px}.fh{font-size:34px}.findex>div{grid-template-columns:86px minmax(0,1fr)}
 .big{font-size:104px}
 .hide-s{display:none!important}.show-s{display:inline}
 .cards{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:8px;gap:12px}

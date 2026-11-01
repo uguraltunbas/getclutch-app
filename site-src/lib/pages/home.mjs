@@ -223,13 +223,15 @@ ${liveOne ? `<a class="livechip gl d" href="${liveOne.path}" data-gid="${liveOne
   // One button (owner, 2026-10-27): the web app; the iPhone app is a small link under it.
   // Its one name (html.mjs playWords) is the masthead's, the closing's and the Free plan's too.
   const play = playWords(tonightOpen(m));
-  const cta = (where) => WEB_APP_LIVE
-    ? `<div class="cta"><a class="btn lg" href="${webAppLink(where)}">${play}</a><a class="alt" href="${APP_STORE}">Get the iPhone app</a></div>`
-    : `<div class="cta"><a class="btn lg" href="${APP_STORE}">Get the iPhone app →</a><a class="alt" href="/ledger/">Read the Ledger</a></div>`;
+  // `extra` sits in the same row (the hero's promise beside the small link: on a phone that row is
+  // one line, so the lead game's call buttons reach the first screen; UX 2026-11-01).
+  const cta = (where, extra = "") => WEB_APP_LIVE
+    ? `<div class="cta"><a class="btn lg" href="${webAppLink(where)}">${play}</a><a class="alt" href="${APP_STORE}">Get the iPhone app</a>${extra}</div>`
+    : `<div class="cta"><a class="btn lg" href="${APP_STORE}">Get the iPhone app →</a><a class="alt" href="/ledger/">Read the Ledger</a>${extra}</div>`;
   const promise = LAUNCH_ON
     ? `<div class="promise"><span><a href="${passLink("hero")}"><b class="o">Launch Pass</b> · Pro free on the web →</a></span></div>`
     : WEB_APP_LIVE
-      ? '<div class="promise"><span>Free</span><span>No download</span><span>Public Ledger</span></div>'
+      ? '<div class="promise"><span>Free</span><span>No download</span><span class="hide-s">Public Ledger</span></div>'
       : '<div class="promise"><span>Free</span><span>Public Ledger</span><span>Coming to your browser</span></div>';
 
   const body = `<section class="heroband"><span class="dots" aria-hidden="true"></span><div class="wrap">
@@ -237,8 +239,7 @@ ${liveOne ? `<a class="livechip gl d" href="${liveOne.path}" data-gid="${liveOne
 <h1 class="h1">Call every game.<br><em>Beat Clutch.</em></h1>
 <div class="hero"><div class="hero-l">
 <p class="lede">Clutch puts a number on every NBA game, tells you why, and seals it before tip. Make your own call — the morning grades you both.</p>
-${cta("hero")}
-${promise}
+${cta("hero", promise)}
 </div><div class="hero-r">${leadBoard}
 <button class="tchip" type="button" data-tour-go>New here? <strong>Take the 1-minute tour</strong><span aria-hidden="true">→</span></button></div></div></div>
 ${ticker}</section>
