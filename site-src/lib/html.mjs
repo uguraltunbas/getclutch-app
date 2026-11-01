@@ -6,6 +6,8 @@
 // the build writes inline and the CSP admits by its hash.
 
 import { etDate } from "./time.mjs";
+import { RECEIPTS_REPO } from "./copy.mjs";
+import { SUPPORT_EMAIL } from "../content/legal.mjs";
 
 export const ORIGIN = "https://clutchledger.com";
 export const APP = "https://app.clutchledger.com";
@@ -24,7 +26,7 @@ export const LINKEDIN_URL = "https://www.linkedin.com/company/clutchledger/";
  * (owner, 2026-10-25). Front page only, so the rest of the site carries no outside links in its footer;
  * the images are copies in static/badges (the CSP loads no outside image), linked as each one asks.
  */
-const LISTED_ON = [{ href: "https://fazier.com", img: "/badges/fazier.svg", w: 103, h: 44, alt: "Launched on Fazier" }];
+const LISTED_ON = [{ href: "https://fazier.com/launches/clutch-ledger", img: "/badges/fazier.svg", w: 103, h: 44, alt: "Launched on Fazier" }];
 export const WIN_TOTALS_RULES_URL = "https://uguraltunbas.github.io/getclutch-app/win-totals-rules.html";
 
 /**
@@ -166,29 +168,44 @@ function masthead(current) {
 }
 
 /**
- * The footer as the paper's back page (owner's pick A, "Kolofon", 2026-11-01): a closing
- * line with the one main action (left out on the front page, which ends on its own), the
- * index in three dotted rows, then the colophon — the name, one line, the legal links.
- * Every page stays linked (the rows wrap); each link is a 44 px tap. No operator name here
- * (owner, 2026-11-01): the Terms, Privacy, Refunds and Support pages carry it.
+ * The footer as the paper's masthead box, its künye (owner's pick C, footer study 2026-11-01):
+ * the name and one line with the accounts as round keys, the box that says when Clutch seals
+ * and grades and where the receipts are, the index beside it, the legal line. Every page stays
+ * linked; every link is a 44 px tap. No operator name here (owner, 2026-11-01): the Terms,
+ * Privacy, Refunds and Support pages carry it.
  */
-const FOOT_ROWS = [
+const ICON = {
+  x: "M18.24 2.25h3.31l-7.23 8.26 8.5 11.24h-6.65l-5.21-6.82-5.97 6.82H1.68l7.73-8.84L1.25 2.25h6.83l4.71 6.23zm-1.16 17.52h1.83L7.08 4.13H5.12z",
+  in: "M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z",
+  gh: "M12 .3a12 12 0 0 0-3.8 23.38c.6.12.83-.26.83-.57l-.02-2.05c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.33-1.76-1.33-1.76-1.09-.74.08-.73.08-.73 1.2.09 1.84 1.24 1.84 1.24 1.07 1.83 2.81 1.3 3.5 1 .1-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.29-1.23 3.29-1.23.64 1.66.24 2.88.12 3.18a4.65 4.65 0 0 1 1.23 3.22c0 4.61-2.8 5.63-5.48 5.92.42.36.81 1.1.81 2.22l-.01 3.29c0 .31.2.69.82.57A12 12 0 0 0 12 .3",
+  rss: "M6.18 15.64a2.18 2.18 0 1 1 0 4.36 2.18 2.18 0 0 1 0-4.36M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27zm0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93z",
+};
+const SOCIAL = [[X_URL, "x", "Clutch on X", ' rel="me"'], [LINKEDIN_URL, "in", "Clutch on LinkedIn", ' rel="me"'], [RECEIPTS_REPO, "gh", "Clutch's receipts on GitHub", ""], ["/feed.xml", "rss", "RSS feed", ""]];
+const FOOT_INDEX = [
   ["The paper", [["/tonight/", "Tonight"], ["/ledger/", "The Ledger"], ["/accuracy/", "Accuracy"], ["/receipts/", "Proof"], ["/teams/", "Teams"], ["/playoff-chances/", "Playoff chances"]]],
   ["About", [["/how-it-works/", "How it works"], ["/pricing/", "Pricing"], ["/faq/", "FAQ"], ["/learn/", "Learn"], ["/support/", "Support"], ["/company/", "Company"]]],
-  ["More", [["/widget/", "Widget"], ["/data/", "Open data"], ["/feed.xml", "RSS"], ["/tr/", "Türkçe", ' hreflang="tr" lang="tr"'], [X_URL, "X", ' rel="me"'], [LINKEDIN_URL, "LinkedIn", ' rel="me"']]],
+  ["More", [["/widget/", "Widget"], ["/data/", "Open data"], ["/tr/", "Türkçe", ' hreflang="tr" lang="tr"'], [APP_STORE, "iPhone app"]]],
+];
+const KUNYE = [
+  ["Published", "Every night of the NBA season"],
+  ["Seals", "Every game, before tip"],
+  ["Grades", "After the final, beside the market"],
+  ["Corrections", "None. The misses stay on the record."],
+  ["Receipts", `<a href="${RECEIPTS_REPO}">Public, on GitHub</a>`],
+  ["Write to", `<a href="mailto:${SUPPORT_EMAIL}">${SUPPORT_EMAIL}</a>`],
 ];
 
 function footer(path) {
-  const rows = FOOT_ROWS.map(([label, links]) => `<div><span class="mono">${label}</span><span>${links.map(([href, text, attrs = ""]) => `<a href="${href}"${attrs}>${text}</a>`).join("")}</span></div>`).join("");
-  const close = path === "/" ? "" : WEB_APP_LIVE
-    ? `<div class="fclose"><div><span class="mono">Every NBA game, every night</span><p class="fh">Call it before tip.</p></div><div class="cta"><a class="btn" href="${webAppLink("footer")}">${playWords(false)}</a><a class="alt" href="${APP_STORE}">Get the iPhone app</a></div></div>`
-    : `<div class="fclose"><div><span class="mono">Every NBA game, every night</span><p class="fh">Call it before tip.</p></div><div class="cta"><a class="btn" href="${APP_STORE}">Get the iPhone app →</a></div></div>`;
-  return `<footer class="foot${close ? "" : " bare"}"><div class="wrap">
-${close}
-<nav class="findex" aria-label="Index">${rows}</nav>
-${path === "/" ? `<div class="flisted"><span class="mono">Listed on</span>${LISTED_ON.map((b) => `<a href="${b.href}"><img src="${b.img}" width="${b.w}" height="${b.h}" alt="${b.alt}" loading="lazy" decoding="async"></a>`).join("")}</div>` : ""}
-<div class="fcolo"><span class="logo">Clutch</span><p>Sealed before tip. Graded after the final. The misses stay on the record.</p>
-<div class="fine"><nav aria-label="Legal"><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="/refunds/">Refunds</a></nav><span>© 2026 Clutch · Sports analytics for fans. Not affiliated with the NBA or any team.</span></div></div>
+  const keys = SOCIAL.map(([href, icon, label, attrs]) => `<a href="${href}" aria-label="${esc(label)}"${attrs}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${ICON[icon]}"/></svg></a>`).join("");
+  const index = FOOT_INDEX.map(([label, links]) => `<div><p>${label}</p>${links.map(([href, text, attrs = ""]) => `<a href="${href}"${attrs}>${text}</a>`).join("")}</div>`).join("");
+  const listed = path === "/" ? `<p class="flisted">${LISTED_ON.map((b) => `<a href="${b.href}"><img src="${b.img}" width="${b.w}" height="${b.h}" alt="${b.alt}" loading="lazy" decoding="async"></a>`).join("")}</p>` : "";
+  return `<footer class="foot"><div class="wrap">
+<div class="ftop"><div><span class="logo">Clutch</span><p>The NBA, called before tip and graded in public.</p></div><nav class="fkeys" aria-label="Follow Clutch">${keys}</nav></div>
+<div class="fgrid">
+<dl class="kunye"><p>The masthead</p>${KUNYE.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("")}</dl>
+<nav class="findex" aria-label="Index">${index}${listed}</nav>
+</div>
+<div class="fine"><nav aria-label="Legal"><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="/refunds/">Refunds</a></nav><span>© 2026 Clutch · Sports analytics for fans. Not affiliated with the NBA or any team.</span></div>
 </div></footer>`;
 }
 
