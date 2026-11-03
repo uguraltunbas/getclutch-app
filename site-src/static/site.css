@@ -106,6 +106,8 @@ a.logo:hover{color:var(--ink)}
 .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--ruleControl);padding:11px 15px}
 .btn.ghost.lg{padding:17px 24px;box-shadow:none}
 .btn.ghost:hover{border-color:var(--ink);color:var(--ink)}
+/* the unsubscribe page's button (lib/pages/unsubscribe.mjs): a <button>, hidden until its script runs */
+button.btn{border:0;font-family:inherit;cursor:pointer}.btn[hidden]{display:none}button.btn:disabled{opacity:.6;cursor:default}.unbox #un-out{margin-top:12px}
 .btns{display:flex;gap:12px;flex-wrap:wrap}
 .more{font-size:15px;font-weight:500;color:var(--ink3)}
 .more:hover{color:var(--ink)}

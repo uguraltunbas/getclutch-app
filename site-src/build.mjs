@@ -53,6 +53,7 @@ import { homePage } from "./lib/pages/home.mjs";
 import { gamePage, nightPage } from "./lib/pages/game.mjs";
 import { ledgerPage, receiptsPage } from "./lib/pages/paper.mjs";
 import { howPage, pricingPage, faqPage, companyPage, termsPage, privacyPage, refundsPage, supportPage } from "./lib/pages/about.mjs";
+import { unsubscribePage } from "./lib/pages/unsubscribe.mjs";
 import { teamPages, notFoundPage } from "./lib/pages/teams.mjs";
 import { accuracyPage, backtestSentence, backtestBands } from "./lib/pages/accuracy.mjs";
 import { matchupPages } from "./lib/pages/matchups.mjs";
@@ -117,6 +118,7 @@ pages.push(...trPages(m));
 pages.push(...embedPages(m));
 pages.push(dataPage(m));
 if (playoffs) pages.push(playoffs); else warn.push("no season board: /playoff-chances/ left out");
+pages.push(unsubscribePage());
 pages.push(notFoundPage());
 // Old GitHub Pages links on the new domain: 301s in _redirects only (no .html
 // stub pages: next to /terms/index.html a terms.html stub would answer /terms).
@@ -207,6 +209,13 @@ const ledgerName = `/assets/ledger.${hash(ledgerJs)}.js`;
 writeFileSync(join(OUT, ledgerName), ledgerJs);
 if (Buffer.byteLength(ledgerJs) > 1536) fail.push(`ledger.js ${Buffer.byteLength(ledgerJs)} bytes (budget 1.5 KB)`);
 
+// The unsubscribe button (/unsubscribe/ only, lib/pages/unsubscribe.mjs): trimmed like the guide, with the Supabase URL in place.
+const unsubJs = readFileSync(join(HERE, "static", "unsubscribe.js"), "utf8").replace("__SUPABASE_URL__", SB_URL).replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s+/gm, "").replace(/\n+/g, "\n").trim() + "\n";
+try { new Function(unsubJs); } catch (e) { console.error(`unsubscribe.js: trimmed into something that does not parse (${e.message})`); process.exit(1); }
+const unsubName = `/assets/unsubscribe.${hash(unsubJs)}.js`;
+writeFileSync(join(OUT, unsubName), unsubJs);
+if (Buffer.byteLength(unsubJs) > 1536) fail.push(`unsubscribe.js ${Buffer.byteLength(unsubJs)} bytes (budget 1.5 KB)`);
+
 // The embeddable boxes' own small stylesheet (lib/pages/embed.mjs): comments and spaces out, content-hashed.
 const embedCss = readFileSync(join(HERE, "static", "embed.css"), "utf8").replace(/\/\*[\s\S]*?\*\//g, "").replace(/\s*([{};:,>])\s*/g, "$1").replace(/\n+/g, "").trim() + "\n";
 const embedCssName = `/assets/embed.${hash(embedCss)}.css`;
@@ -215,7 +224,7 @@ if (Buffer.byteLength(embedCss) > 3072) fail.push(`embed.css ${Buffer.byteLength
 
 // Wire the hashed names into every page.
 for (const p of pages) {
-  p.html = p.html.replaceAll('href="/embed.css"', `href="${embedCssName}"`).replaceAll('href="/site.css"', `href="${cssName}"`).replaceAll('src="/live.js"', `src="${liveName}"`).replaceAll('<script src="/theme.js"></script>', () => themeTag).replaceAll('src="/tour.js"', `src="${tourName}"`).replaceAll('src="/ledger.js"', `src="${ledgerName}"`);
+  p.html = p.html.replaceAll('href="/embed.css"', `href="${embedCssName}"`).replaceAll('href="/site.css"', `href="${cssName}"`).replaceAll('src="/live.js"', `src="${liveName}"`).replaceAll('<script src="/theme.js"></script>', () => themeTag).replaceAll('src="/tour.js"', `src="${tourName}"`).replaceAll('src="/ledger.js"', `src="${ledgerName}"`).replaceAll('src="/unsubscribe.js"', `src="${unsubName}"`);
   for (const [plain, hashed] of Object.entries(fontFiles)) p.html = p.html.replaceAll(`/fonts/${plain}`, hashed);
 }
 
@@ -249,7 +258,7 @@ for (const p of pages) {
   mkdirSync(dirname(file), { recursive: true });
   writeFileSync(file, p.html);
 }
-const indexed = pages.filter((p) => !p.redirect && !p.embed && p.path.endsWith("/"));
+const indexed = pages.filter((p) => !p.redirect && !p.embed && !p.noindex && p.path.endsWith("/"));
 // The sitemap puts forward only the pages worth indexing (Bing had indexed 8 of 335 on
 // 2026-10-30, with every past night in the list): everything but /games/, the game and
 // night pages of the last SITEMAP_NIGHTS nights and tonight, and older game pages that
