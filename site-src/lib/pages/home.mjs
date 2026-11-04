@@ -9,7 +9,7 @@ import { page, esc, bar, APP_STORE, ORIGIN, PLAY, PLAY_PRO, WEB_APP_LIVE, LAUNCH
 import { board, gameCard, lineIsWhy, scoreLine, statusText, tonightOpen } from "../parts.mjs";
 import { pct, callPoints, comparisons, opener, verdictOf, rec, shortHash, RATE_FLOOR, REGULAR_SEASON_START } from "../copy.mjs";
 import { longDate, dayLabel, shortDate, weekday, timeET, countWord, shift } from "../time.mjs";
-import { FRONT_FREE, FRONT_PRO, PLAN } from "../../content/features.mjs";
+import { FRONT_FREE, FRONT_PRO, FRONT_ELITE, PLAN, ELITE } from "../../content/features.mjs";
 import { worstMiss, lastGradedNight } from "../model.mjs";
 import { organizationLd } from "../../content/company.mjs";
 
@@ -270,8 +270,9 @@ ${missBand(m)}
 <div class="plans">
 <div class="plan row"><h3>Free</h3><div class="price"><span class="d">$0</span><span>for good</span></div><ul>${FRONT_FREE.map((x) => `<li>${esc(x)}</li>`).join("")}</ul><a class="btn ghost" href="${PLAY}">${WEB_APP_LIVE ? play : "Get the free iPhone app"}</a></div>
 <div class="plan pro"><span class="tag">${PLAN.trialDays} days free on annual</span><h3>Pro</h3><div class="price"><span class="d">${priceFig(PLAN.monthly)}</span><span>a month · or ${PLAN.annual} a year</span></div>${LAUNCH_ON ? '<p class="offer">Free on the web during the launch, with the Launch Pass.</p>' : ""}<ul>${FRONT_PRO.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>${LAUNCH_ON ? `<a class="btn" href="${passLink("pricing")}">Claim your Launch Pass</a>` : `<a class="btn" href="${PLAY_PRO}">Try Pro free for ${PLAN.trialDays} days${WEB_APP_LIVE ? "" : " on iPhone"}</a>`}</div>
+<div class="plan elite"><h3>Elite</h3><div class="price"><span class="d">${priceFig(ELITE.monthly)}</span><span>a month · or ${ELITE.annual} a year</span></div><ul>${FRONT_ELITE.map((x) => `<li>${esc(x)}</li>`).join("")}</ul><a class="btn" href="${WEB_APP_LIVE ? PLAY_PRO + "?tier=elite" : PLAY_PRO}">Get Elite${WEB_APP_LIVE ? "" : " on iPhone"}</a></div>
 </div>
-<p class="note gap">Prices in US dollars. Cancel any time; Pro runs to the end of the period you paid for. <a href="/pricing/">Everything in Free and Pro →</a> · <a href="/refunds/">Refunds</a> · <a href="/terms/">Terms</a></p>
+<p class="note gap">Prices in US dollars. Cancel any time; a plan runs to the end of the period you paid for. <a href="/pricing/">Everything in Free, Pro and Elite →</a> · <a href="/refunds/">Refunds</a> · <a href="/terms/">Terms</a></p>
 </div></section>
 
 <section class="sec" aria-labelledby="last-h"><div class="wrap"><div class="last">

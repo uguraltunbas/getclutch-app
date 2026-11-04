@@ -46,9 +46,24 @@ export const PLAN = {
   trialDays: 7,
 };
 
+/**
+ * Clutch Elite (lib/constants/plans.ts ELITE_PLAN, the browser's lines). On the
+ * web since 2026-11-04 through Paddle; in the iPhone app since 1.0.12. No free
+ * trial. One plan at a time on an account. Nothing about cards: Paddle reads
+ * this site, so the list is only what the web's paywall says.
+ */
+export const ELITE = {
+  name: "Clutch Elite",
+  line: "Everything in Pro, and the tools behind the numbers.",
+  monthly: "$19.99",
+  annual: "$119.99",
+  annualPerMonth: "$10.00",
+};
+
 /** The plan cards' short lists, the same on the front page and /pricing/ (the table under the cards there has every row). */
 export const FRONT_FREE = ["Every game's number, the market's beside it, and the top three reasons", "Call any game for points and level titles, plus one Free Pro day a month", "The Ledger and the receipts, for everyone"];
 export const FRONT_PRO = ["Model only, the projected final and every factor", "Late-news alerts and every close game", "The simulation, and the season simulated nightly"];
+export const FRONT_ELITE = ["Everything in Clutch Pro", "Clutch AI: up to 100 questions a day (18+)", "The season as a CSV: every sealed call, its result and its grade", "One plan on your account: Elite opens in the iPhone app too"];
 
 /**
  * The questions page (/faq/). The front page used to carry these, the free
