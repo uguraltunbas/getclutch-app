@@ -119,7 +119,7 @@ export function companyPage() {
     ["Founder", esc(c.founder)],
     ["Based in", `${esc(c.city)}, ${esc(c.country)}`],
     ["Founded", esc(c.foundedText)],
-    ["On the App Store", `Since April 24, 2026 · <a href="${APP_STORE}">Clutch — the Basketball Ledger</a>`],
+    ["On the App Store", `Since April 24, 2026 · <a href="${APP_STORE}">Clutch — Basketball Stats &amp; AI</a>`],
     ["Funding", esc(c.funding)],
     ["Contact", mail],
   ];
