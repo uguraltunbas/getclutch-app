@@ -19,6 +19,10 @@
 // the card and billing details, a web plan is canceled from its Manage button,
 // and in the web app usage includes the landing page, the referrer and an
 // opened alert (notification_log.opened_at, migration 079).
+// Since November 5, 2026 the web app sells Clutch Elite too (Paddle, $19.99 a
+// month or $119.99 a year, no free trial; mobile branch web-elite): Terms,
+// Refunds and Support say "the plan", not "Pro", wherever both are meant, and
+// one plan at a time per account (Paddle has no upgrade between the two).
 // Since Clutch AI (October 29, 2026, shipped with it): Privacy › Clutch AI in the
 // consent card's own words (mobile app/ask.tsx, approved by the owner), with what is
 // kept as the ask-clutch function's contract says (supabase/functions/ask-clutch/
@@ -32,12 +36,12 @@
 
 export const SUPPORT_EMAIL = "ugur@clutchledger.com";
 export const OPERATOR = "Uğur Altunbaş";
-export const LEGAL_UPDATED = "October 23, 2026";
+export const LEGAL_UPDATED = "November 5, 2026";
 export const PADDLE_BUYER_TERMS = "https://www.paddle.com/legal/checkout-buyer-terms";
 
 export const TERMS = {
   title: "Terms",
-  updated: "October 26, 2026",
+  updated: "November 5, 2026",
   intro: "By using Clutch you agree to these terms. They are short on purpose.",
   sections: [
     { title: "What Clutch is", body: "An NBA analytics app: a model's win probabilities, the reasoning behind them, and a public record of every call it has made. Predictions are estimates, not guarantees, and the record shows how often they have been wrong." },
@@ -62,7 +66,7 @@ export const TERMS = {
       title: "Subscriptions and passes",
       body:
         "In the iPhone app:\n" +
-        "• Clutch Pro is an auto-renewable subscription sold through Apple, monthly or yearly. Elite, an earlier plan no longer sold, keeps renewing for anyone who holds it and includes everything in Pro.\n" +
+        "• Clutch Pro and Clutch Elite are auto-renewable subscriptions sold through Apple, each monthly or yearly. Elite includes everything in Pro.\n" +
         "• Pro for 24 hours is a single purchase: everything in Pro for 24 hours from when it opens. It does not renew. If Apple refunds it, it ends.\n" +
         "• A Free Pro day is 24 hours of Pro at no charge: one a calendar month (US Eastern time) for every signed-in reader, used when you choose. It opens everything in Pro except Clutch AI. It does not roll over and does not renew, and it does not depend on points.\n" +
         "• You can buy or restore without an account; sign in with Apple to keep your plan on every device.\n" +
@@ -73,10 +77,11 @@ export const TERMS = {
     {
       title: "Buying on the web",
       body:
-        "• On the web (app.clutchledger.com), Clutch Pro is sold monthly ($9.99) or yearly ($59.99, with 7 days free the first time) by Paddle.com, our reseller and merchant of record. Paddle takes the payment, handles sales tax and VAT and sends the receipt, and Paddle's buyer terms apply to the purchase alongside these terms.\n" +
-        "• A web subscription renews automatically at the end of each period until you cancel it. You can cancel any time; Pro runs to the end of the period you paid for. A trial canceled before it ends is never charged.\n" +
+        "• On the web (app.clutchledger.com), Clutch Pro is sold monthly ($9.99) or yearly ($59.99, with 7 days free the first time), and Clutch Elite, which includes everything in Pro, monthly ($19.99) or yearly ($119.99, no free trial). Both are sold by Paddle.com, our reseller and merchant of record. Paddle takes the payment, handles sales tax and VAT and sends the receipt, and Paddle's buyer terms apply to the purchase alongside these terms.\n" +
+        "• A web subscription renews automatically at the end of each period until you cancel it. You can cancel any time; the plan runs to the end of the period you paid for. A trial canceled before it ends is never charged.\n" +
+        "• One plan at a time on an account. To move from Pro to Elite on the web, cancel Pro; when it ends, choose Elite. A plan bought in the iPhone app moves up there, through Apple.\n" +
         "• Refunds for web purchases: see the Refund Policy. Pro for 24 hours is sold only in the iPhone app.\n" +
-        "• One account everywhere: Pro bought on the web opens in the iPhone app when you sign in with the same account, and the other way round.",
+        "• One account everywhere: a plan bought on the web opens in the iPhone app when you sign in with the same account, and the other way round.",
       link: { href: "/refunds/", label: "Refund Policy →" },
     },
     { title: "Fair use", body: "Don't use the app unlawfully, scrape or reverse-engineer its data or models, automate it, or try to get around its limits." },
@@ -91,7 +96,7 @@ export const ANTHROPIC_PRIVACY = "https://www.anthropic.com/legal/privacy";
 
 export const PRIVACY = {
   title: "Privacy",
-  updated: "October 29, 2026",
+  updated: "November 5, 2026",
   intro: "Clutch is an NBA analytics app. You can read every page without an account. This policy says what we collect when you do sign in or use a feature that needs one, why, and who else touches it.",
   sections: [
     {
@@ -115,7 +120,7 @@ export const PRIVACY = {
         "• Supabase — accounts and database (stored with encryption at rest and in transit; row-level security keeps your rows yours).\n" +
         "• RevenueCat — subscription status.\n" +
         "• Apple and Google — sign-in; Apple — payments in the iPhone app.\n" +
-        "• Paddle — sells Clutch Pro on the web as our reseller and merchant of record: it takes the payment and keeps your card and billing details.\n" +
+        "• Paddle — sells Clutch Pro and Clutch Elite on the web as our reseller and merchant of record: it takes the payment and keeps your card and billing details.\n" +
         "• Anthropic — writes Clutch AI's answers, as our processor, when you have switched Clutch AI on (see Clutch AI, below).\n" +
         "• Expo — delivers push notifications.\n" +
         "• Resend — sends our e-mails.\n" +
@@ -163,18 +168,18 @@ export const PRIVACY = {
 export const REFUNDS = {
   title: "Refund Policy",
   updated: LEGAL_UPDATED,
-  intro: "How refunds work for Clutch Pro, wherever you bought it. Short, like the rest.",
+  intro: "How refunds work for Clutch Pro and Clutch Elite, wherever you bought them. Short, like the rest.",
   sections: [
     {
       title: "Bought on the web",
       body:
-        "Clutch Pro bought at app.clutchledger.com is sold by Paddle.com, our reseller and merchant of record, and refunds follow Paddle's buyer terms.\n" +
+        "Clutch Pro and Clutch Elite bought at app.clutchledger.com are sold by Paddle.com, our reseller and merchant of record, and refunds follow Paddle's buyer terms.\n" +
         `On top of them: if you ask within 14 days of a purchase or of a renewal, you get a full refund of that payment. Write to ${SUPPORT_EMAIL} from the e-mail address on the order, or include the order number from Paddle's receipt, and we ask Paddle to refund it. The money goes back to the card or account you paid with; how long it takes to show depends on your bank.\n` +
-        "A refunded payment ends the Pro it paid for.",
+        "A refunded payment ends the plan it paid for.",
       link: { href: PADDLE_BUYER_TERMS, label: "Paddle's buyer terms →" },
     },
-    { title: "The free trial", body: "The yearly plan starts with 7 days free the first time. Cancel before the trial ends (on iPhone, at least 24 hours before) and you are not charged." },
-    { title: "Canceling", body: "You can cancel a subscription any time. It stops renewing, and Pro runs to the end of the period you paid for. Canceling on its own doesn't refund the current period — ask within 14 days (above) if you want that." },
+    { title: "The free trial", body: "Clutch Pro's yearly plan starts with 7 days free the first time; Clutch Elite has no free trial. Cancel before the trial ends (on iPhone, at least 24 hours before) and you are not charged." },
+    { title: "Canceling", body: "You can cancel a subscription any time. It stops renewing, and the plan runs to the end of the period you paid for. Canceling on its own doesn't refund the current period — ask within 14 days (above) if you want that." },
     { title: "Bought in the iPhone app", body: "Purchases made in the iPhone app are sold and refunded by Apple, under Apple's policies — we can't refund them ourselves. Ask Apple at reportaproblem.apple.com, or in Settings › your name › Media & Purchases.", link: { href: "https://reportaproblem.apple.com", label: "reportaproblem.apple.com →" } },
     { title: "Free Pro time", body: "The monthly Free Pro day costs nothing and has no cash value, so there is nothing to refund; a refund of a purchase never takes it back." },
     { title: "Contact", body: `${SUPPORT_EMAIL} — we answer within 48 hours. Clutch is operated by ${OPERATOR}.` },
@@ -183,12 +188,12 @@ export const REFUNDS = {
 
 export const SUPPORT = {
   title: "Support",
-  updated: "October 28, 2026",
+  updated: "November 5, 2026",
   intro: "Answers to the questions people actually ask. Anything else: write to us.",
   sections: [
-    { title: "Cancel a subscription", body: "Bought in the iPhone app: Settings › your name › Subscriptions › Clutch › Cancel. Those subscriptions are managed by Apple, not inside the app.\nBought on the web: in the web app, You › Your plan › Manage, or from the link in Paddle's receipt e-mail — or write to us and we cancel it for you. Either way, Pro runs to the end of the period you paid for." },
+    { title: "Cancel a subscription", body: "Bought in the iPhone app: Settings › your name › Subscriptions › Clutch › Cancel. Those subscriptions are managed by Apple, not inside the app.\nBought on the web: in the web app, You › Your plan › Manage, or from the link in Paddle's receipt e-mail — or write to us and we cancel it for you. Either way, the plan runs to the end of the period you paid for." },
     { title: "Get a refund", body: "Web purchases: a full refund within 14 days of a purchase or renewal — see the Refund Policy. iPhone purchases: Apple handles refunds at reportaproblem.apple.com.", link: { href: "/refunds/", label: "Refund Policy →" } },
-    { title: "Restore a purchase", body: "In the iPhone app: You › Restore purchases, signed in with the same account you bought with. On the web: sign in with the same account; Pro follows the account." },
+    { title: "Restore a purchase", body: "In the iPhone app: You › Restore purchases, signed in with the same account you bought with. On the web: sign in with the same account; your plan follows the account." },
     { title: "Delete your account", body: "Open the app › You › Delete account. It removes your profile, team, alert settings, calls, capsule, Win Totals sheet and points. You can also e-mail us to ask." },
     { title: "Alerts don't arrive", body: "In the iPhone app: check Settings › Notifications › Clutch, then the app's You › Notifications. The app shows a notice when iOS has them switched off.\nIn a browser: sign in, open You › Notifications, switch them on and allow them when the browser asks. If the browser blocked them, allow notifications for app.clutchledger.com in its settings. On an iPhone or iPad a browser tab can't show alerts: tap Share › Add to Home Screen, then open Clutch from there (iOS 16.4 or later)." },
     { title: "Why is the record not better than picking the home team?", body: "When it isn't, the Ledger says so: it prints what is true. Every call is timestamped and sealed before tip-off and graded after the final, wins and misses alike, beside the market, ESPN and picking the home team." },
