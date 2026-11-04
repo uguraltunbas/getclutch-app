@@ -64,7 +64,7 @@ export const TERMS = {
         "In the iPhone app:\n" +
         "• Clutch Pro is an auto-renewable subscription sold through Apple, monthly or yearly. Elite, an earlier plan no longer sold, keeps renewing for anyone who holds it and includes everything in Pro.\n" +
         "• Pro for 24 hours is a single purchase: everything in Pro for 24 hours from when it opens. It does not renew. If Apple refunds it, it ends.\n" +
-        "• A Free Pro day is 24 hours of Pro at no charge: one a calendar month (US Eastern time) for every signed-in reader, used when you choose. It does not roll over and does not renew, and it does not depend on points.\n" +
+        "• A Free Pro day is 24 hours of Pro at no charge: one a calendar month (US Eastern time) for every signed-in reader, used when you choose. It opens everything in Pro except Clutch AI. It does not roll over and does not renew, and it does not depend on points.\n" +
         "• You can buy or restore without an account; sign in with Apple to keep your plan on every device.\n" +
         "• Payment is charged to your Apple ID at confirmation.\n" +
         "• A subscription renews automatically unless it is canceled at least 24 hours before the end of the period; manage or cancel it in Settings › Apple ID › Subscriptions.\n" +
@@ -192,7 +192,7 @@ export const SUPPORT = {
     { title: "Delete your account", body: "Open the app › You › Delete account. It removes your profile, team, alert settings, calls, capsule, Win Totals sheet and points. You can also e-mail us to ask." },
     { title: "Alerts don't arrive", body: "In the iPhone app: check Settings › Notifications › Clutch, then the app's You › Notifications. The app shows a notice when iOS has them switched off.\nIn a browser: sign in, open You › Notifications, switch them on and allow them when the browser asks. If the browser blocked them, allow notifications for app.clutchledger.com in its settings. On an iPhone or iPad a browser tab can't show alerts: tap Share › Add to Home Screen, then open Clutch from there (iOS 16.4 or later)." },
     { title: "Why is the record not better than picking the home team?", body: "When it isn't, the Ledger says so: it prints what is true. Every call is timestamped and sealed before tip-off and graded after the final, wins and misses alike, beside the market, ESPN and picking the home team." },
-    { title: "Points, titles and the Free Pro day", body: "Points are earned by playing — calls, Stat Line, the Time Capsule — and when your favorite team wins. They are never bought, never paid out and unlock nothing you pay for; every level earns a title, from Rookie to Hall of Fame. Separately, everyone signed in gets one Free Pro day a month: 24 hours of Pro at no charge, used when you choose." },
+    { title: "Points, titles and the Free Pro day", body: "Points are earned by playing — calls, Stat Line, the Time Capsule — and when your favorite team wins. They are never bought, never paid out and unlock nothing you pay for; every level earns a title, from Rookie to Hall of Fame. Separately, everyone signed in gets one Free Pro day a month: 24 hours of Pro at no charge, everything but Clutch AI, used when you choose." },
     { title: "Report a bug", body: "E-mail us with what happened, your device and browser or iOS version. A screenshot helps." },
     { title: "Contact", body: `${SUPPORT_EMAIL} — we answer within 48 hours. Clutch is operated by ${OPERATOR}.` },
   ],
