@@ -66,7 +66,7 @@ import { embedPages, badgeFiles, BADGE } from "./lib/pages/embed.mjs";
 import { feedXml, feedItems, FEED } from "./lib/feed.mjs";
 import { dataPage, dataFiles, dataRows, FILES, FTE_COLUMNS } from "./lib/pages/data.mjs";
 import { TERMS, PRIVACY, REFUNDS, SUPPORT, LEGAL_UPDATED } from "./content/legal.mjs";
-import { FEATURES, PLAN } from "./content/features.mjs";
+import { FEATURES, PLAN, ELITE } from "./content/features.mjs";
 import { SEARCH_KEEP } from "./content/search-keep.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -320,7 +320,12 @@ ${FEATURES.filter((f) => f.free).map((f) => `- ${f.label}`).join("\n")}
 
 ## What ${PLAN.name} adds (${PLAN.monthly} a month or ${PLAN.annual} a year, ${PLAN.trialDays} days free)
 
-${FEATURES.filter((f) => !f.free).map((f) => `- ${f.label}`).join("\n")}
+${FEATURES.filter((f) => !f.free && f.pro !== false).map((f) => `- ${f.label}`).join("\n")}
+
+## What ${ELITE.name} adds (${ELITE.monthly} a month or ${ELITE.annual} a year, no free trial; everything in Pro, plus)
+
+${FEATURES.filter((f) => f.pro === false).map((f) => `- ${f.label}`).join("\n")}
+- Clutch AI at 100 questions a day instead of 5
 
 ## Where it runs
 

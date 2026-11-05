@@ -1,7 +1,10 @@
 import { WEB_APP_LIVE, LAUNCH_ON, LAUNCH_WORDS, passLink, webAppLink, playWords } from "../lib/html.mjs";
 
-// What Free and Pro contain — the app's ONE list, copied word for word from
-// the mobile repo's lib/constants/plans.ts (FEATURES, 1.0.6 · Faz 6 · Dalga A).
+// What Free, Pro and Elite contain — the app's ONE list, copied word for word from
+// the mobile repo's lib/constants/plans.ts (FEATURES, ELITE_PLAN.webBenefits). Elite has
+// every Pro row; `elite` overrides a cell where it differs (Clutch AI), and a row with
+// free and pro both false is Elite's alone. The Card Lab and the other Elite tools of the
+// iPhone are left out on purpose: the site never speaks of cards (Paddle).
 // The pricing page renders these rows exactly; the front page quotes some of
 // them, also exactly. Change the app's list first, then this copy.
 
@@ -12,28 +15,31 @@ export const FEATURES = [
   { label: "Sealed before tip ✓: every number in a public record anyone can check", free: true, pro: true },
   { label: "Our worst miss: last night's biggest miss, and what fooled Clutch", free: true, pro: true },
   { label: "Who's out: tonight's injury report, by minutes", free: true, pro: true },
-  { label: "What-If: who plays, Flip it, and Flip it duels with friends", free: true, pro: true },
+  { label: "What-If: who plays, FLIP IT, and FLIP IT duels with friends", free: true, pro: true },
   { label: "Ask Clutch: questions answered from Clutch's own numbers, no daily limit", free: true, pro: true },
   { label: "Every team's playoff chances, updated nightly", free: true, pro: true },
   { label: "The Time Capsule: seal your season before opening night, scored at the All-Star break against Clutch and the market", free: true, pro: true },
   { label: "Your season: the Scrapbook of nights you beat Clutch, and Your month", free: true, pro: true },
-  { label: "Upset call, How sure?, This week, Stat Line and Buzzer beater", free: true, pro: true },
+  { label: "How sure?, This week, Stat Line and Buzzer beater", free: true, pro: true },
   { label: "Leagues: private leagues with friends", free: true, pro: true },
   { label: "Listen: tonight's games, read aloud", free: true, pro: true },
-  { label: "Game video and the Front page: any graded game as a 15-second video or a front page, made on your phone, to share", free: true, pro: true },
+  { label: "Game video and the Front page: any graded game as a 15-second video or a front page, made on your device, to share", free: true, pro: true },
   { label: "Close-game alert and the lock screen: your team free, any game on Pro", free: "Team", pro: "All" },
+  { label: "Clutch AI: ask in your own words, and Claude, Anthropic's model, writes the answer from Clutch's own numbers, for readers 18 and older", free: false, pro: "5 a day", elite: "100 a day" },
   { label: "Model only: Clutch's own number before the market, and the games where the two disagree", free: false, pro: true },
-  { label: "Projected final, margin and total, beside the market", free: false, pro: true },
+  { label: "Clutch's projected score, margin and total points, sealed before tip (free after the final)", free: false, pro: true },
   { label: "The full why: every factor weighed, why the number moved, and games like this one", free: false, pro: true },
   { label: "Late-news alerts: a push when a late scratch or the market moves Clutch's call", free: false, pro: true },
   { label: "What happened: every graded game taken apart, and If everyone had played", free: false, pro: true },
   { label: "Your yearbook: your season printed — the season so far any time, the final edition after the Finals", free: false, pro: true },
   { label: "What-If Pro: rest, home court, pace, shooting and turnover nights, minutes limits and playoff intensity, all measured", free: false, pro: true },
   {
-    label: "The simulation: tonight's game played 2,000 times on your phone — how often each team wins, the likely final, how the upset happens, every player's range, any What-If played out (ungraded)",
+    label: "The simulation: tonight's game played 2,000 times on your device — how often each team wins, the likely final, how the upset happens, every player's range, any What-If played out (ungraded)",
     free: false, pro: true,
   },
   { label: "The season, simulated nightly: seeds, every round and the title, projected wins, the games that swing them", free: false, pro: true },
+  // Elite's alone on the web (ELITE_PLAN.webBenefits).
+  { label: "The season as a CSV: every sealed call, its result and its grade", free: false, pro: false, elite: true },
 ];
 
 /** The one plan (lib/constants/plans.ts PLAN). Prices are the store's; on the web, Paddle's — the same in US dollars. */
@@ -60,10 +66,41 @@ export const ELITE = {
   annualPerMonth: "$10.00",
 };
 
-/** The plan cards' short lists, the same on the front page and /pricing/ (the table under the cards there has every row). */
+/**
+ * The plan cards. /pricing/ reads the long lists, each led by a line on who the plan is for;
+ * the front page the short ones (its cards share a row, so they stay short). The table
+ * under the pricing cards has every row. Plain words first, the app's names after.
+ */
+export const WHO = {
+  free: "For anyone who wants to follow the NBA with a number they can check.",
+  pro: PLAN.line,
+  elite: "Everything in Pro, and the tools behind the numbers.",
+};
 export const FRONT_FREE = ["Every game's number, the market's beside it, and the top three reasons", "Call any game for points and level titles, plus one Free Pro day a month", "The Ledger and the receipts, for everyone"];
-export const FRONT_PRO = ["Model only, the projected final and every factor", "Late-news alerts and every close game", "The simulation, and the season simulated nightly"];
-export const FRONT_ELITE = ["Everything in Clutch Pro", "Clutch AI: up to 100 questions a day (18+)", "The season as a CSV: every sealed call, its result and its grade", "One plan on your account: Elite opens in the iPhone app too"];
+export const FRONT_PRO = ["Clutch AI: ask questions in your own words, 5 a day (18+)", "Model only, the projected final and every factor", "Late-news alerts and every close game", "The simulation, and the season simulated nightly"];
+export const FRONT_ELITE = ["Clutch AI at 100 questions a day (18+)", "The season as a CSV: every sealed call, its result and its grade", "Everything in Clutch Pro"];
+export const PRICING_FREE = [
+  "Clutch's call on every game: a win probability for each NBA game, with the market's number beside it and the top three reasons behind it",
+  "The Ledger: every call Clutch makes, graded in public beside the market and ESPN, misses included",
+  "Call games yourself, earn points, levels and titles, and keep the Scrapbook of the nights you beat Clutch",
+  "Who's out: tonight's injury report by minutes, and What-If: change who plays and watch the number move",
+  "Ask Clutch, private leagues with friends and every team's playoff chances, updated nightly",
+  "One Free Pro day a month, to try everything in Pro",
+];
+export const PRICING_PRO = [
+  "Clutch AI: ask in your own words and get an answer written from Clutch's own numbers, up to 5 questions a day (18+)",
+  "Model only: Clutch's own number before the market is mixed in, plus a projected score, margin and total for every game",
+  "The full why: every factor weighed, and why the number moved",
+  "Late-news alerts when a late scratch or the market moves the call, and a close-game alert for any game",
+  "What happened: every graded game taken apart after the final",
+  "The simulation: tonight's game played 2,000 times on your device, and the whole season simulated nightly",
+];
+export const PRICING_ELITE = [
+  "Clutch AI at 100 questions a day (18+), 20 times what Pro has",
+  "The season as a CSV: every sealed call, its result and its grade, ready for a spreadsheet",
+  "Everything in Clutch Pro: Model only, the projected final, the full why, late-news alerts and the simulation",
+  "One plan on your account: Elite opens in the iPhone app too, with the same account",
+];
 
 /**
  * The questions page (/faq/). The front page used to carry these, the free
@@ -83,6 +120,7 @@ export const FAQ = [
       ? { q: "Do I need an iPhone?", a: `No. Everything to follow and call runs in your browser. ${IPHONE_EXTRAS}`, link: { href: webAppLink("faq"), label: playWords() } }
       : { q: "Do I need an iPhone?", a: "Today, to make calls, yes: Clutch is an iPhone app. The browser version opens this October, with the same paper and the same calls. Every number is on this site already." },
   ...(WEB_APP_LIVE ? [{ q: "Is it one account on the web and on iPhone?", a: "Yes. One account everywhere: sign in the same way on both, and Pro bought on one carries over to the other." }] : []),
-  { q: "What does Pro add?", a: "Model only — Clutch's own number before the market — the projected final, every factor, late-news alerts and the simulation." },
-  { q: "Can I cancel?", a: "Any time. Pro runs to the end of the period you paid for, and the 7-day free trial on the yearly plan costs nothing if you cancel before it ends (on iPhone, at least 24 hours before)." },
+  { q: "What does Pro add?", a: "Clutch AI (5 questions a day), Model only — Clutch's own number before the market — the projected final, every factor, late-news alerts and the simulation." },
+  { q: "What does Elite add?", a: "Everything in Pro, plus Clutch AI at 100 questions a day and the season as a CSV: every sealed call, its result and its grade. Elite is $19.99 a month or $119.99 a year, with no free trial, and one plan per account." },
+  { q: "Can I cancel?", a: "Any time. Your plan, Pro or Elite, runs to the end of the period you paid for, and Pro's 7-day free trial on the yearly plan costs nothing if you cancel before it ends (on iPhone, at least 24 hours before)." },
 ];
