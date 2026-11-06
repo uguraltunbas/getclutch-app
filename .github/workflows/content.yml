@@ -27,7 +27,7 @@ on:
   workflow_dispatch:
     inputs:
       series:
-        description: "tonight,gotn · receipts · receipts,week · moved"
+        description: "tonight,gotn · receipts,cardhit,hotrun · receipts,week,cardhit,hotrun · moved"
         required: true
         type: string
       date:

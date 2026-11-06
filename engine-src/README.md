@@ -11,6 +11,8 @@ Telegram with [Publish] and [Skip] before anything is posted.
 | Receipts | the morning after | last night's graded calls, misses first, and the night's last seal |
 | The number moved | when a player is ruled out | the What-If without him beside the sealed number |
 | The week | Mondays | last week's graded calls |
+| Card hit | the morning after a card won | the free `cards/<date>` snapshot: the won cards, each leg's final, the morning seal they were built from |
+| Hot run | the morning the run at 75%+ passes a round mark, or breaks | the Ledger's calls shown at 75% or more this season, each checked against its seal |
 
 Each post is a 4:5 still (JPEG) and a 9:16 video (H.264, no sound), with
 three checks: no sportsbook word drawn or written, the facts are from today,
@@ -20,8 +22,9 @@ the number shown is a seal's on the public chain.
   public anon key, through `site-src/lib/data.mjs`'s reader.
 - `page.html` / `page.js` draw one post with `vendor/studio.js`, the app's
   share studio, built from the app's source and checked by `vendor-check.mjs`
-  (its hash is the manifest's). The drawing runs in headless Chrome through
-  `desk-src/render.mjs`.
+  (its hash is the manifest's). The card hit and the hot run are drawn by
+  `paper.js` on the paper of the app's card share image. The drawing runs in
+  headless Chrome through `desk-src/render.mjs`.
 - `checks.mjs` holds the three checks; `make.mjs` runs a batch and hands each
   post to the radar (`ingest.mjs`).
 

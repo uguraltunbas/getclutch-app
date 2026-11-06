@@ -1,10 +1,12 @@
 // One post on one canvas, for engine-src/make.mjs (through desk-src/render.mjs):
-//   setup(job)      builds the post from its facts with the studio (vendor/studio.js);
+//   setup(job)      builds the post from its facts with the studio (vendor/studio.js),
+//                   or on the app's card paper (paper.js: the card hit, the hot run);
 //                   what it made stays in window.MADE (size, length, caption, title)
 //   renderFrame(t)  draws the still (t ignored) or the video's frame at t seconds
 //   lint()          the app's word list over every drawn word and the caption
 (() => {
   const S = window.ClutchStudio;
+  const P = window.ClutchPaper;
   const canvas = document.getElementById("c");
   const ctx = canvas.getContext("2d", { alpha: false });
   const drawn = new Set();
@@ -49,6 +51,10 @@
         const w = S.buildWeek(job.date, f.calls);
         return { post: S.weekPost(w), caption: S.weekCaption(w, limit), title: `${w.right} of ${w.total} right` };
       }
+      case "cardhit":
+        return { post: P.cardhitPost(job.date, f), caption: P.cardhitCaption(job.date, f, limit), title: P.cardhitTitle(f) };
+      case "hotrun":
+        return { post: P.hotrunPost(job.date, f), caption: P.hotrunCaption(job.date, f, limit), title: P.hotrunTitle(f) };
       default:
         throw new Error(`unknown series ${job.series}`);
     }
@@ -56,6 +62,7 @@
 
   window.setup = async (job) => {
     await S.abFontsReady();
+    await P.fontsReady();
     await document.fonts.ready;
     const made = build(job);
     if (!made.post) return (window.MADE = { empty: true });

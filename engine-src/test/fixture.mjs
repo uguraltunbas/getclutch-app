@@ -13,9 +13,11 @@ const hex = (c) => c.repeat(64);
 
 export const rows = () => ({
   teams: [
-    ["ATL", "Hawks"], ["CLE", "Cavaliers"], ["MEM", "Grizzlies"], ["POR", "Trail Blazers"],
-    ["NYK", "Knicks"], ["PHI", "76ers"], ["CHA", "Hornets"], ["WAS", "Wizards"],
-  ].map(([abbreviation, nickname]) => ({ id: `t-${abbreviation}`, abbreviation, nickname })),
+    ["ATL", "Hawks", "Atlanta"], ["CLE", "Cavaliers", "Cleveland"], ["MEM", "Grizzlies", "Memphis"], ["POR", "Trail Blazers", "Portland"],
+    ["NYK", "Knicks", "New York"], ["PHI", "76ers", "Philadelphia"], ["CHA", "Hornets", "Charlotte"], ["WAS", "Wizards", "Washington"],
+    ["BOS", "Celtics", "Boston"], ["MIA", "Heat", "Miami"], ["LAL", "Lakers", "Los Angeles"], ["GSW", "Warriors", "San Francisco"],
+    ["DEN", "Nuggets", "Denver"], ["UTA", "Jazz", "Salt Lake City"], ["MIL", "Bucks", "Milwaukee"], ["CHI", "Bulls", "Chicago"],
+  ].map(([abbreviation, nickname, city]) => ({ id: `t-${abbreviation}`, abbreviation, nickname, city })),
   games: [
     { id: G.cleAtl, game_date: LAST_NIGHT, game_time_utc: "2026-10-29T23:00:00+00:00", status: "final", season_type: "Regular Season", home_team_id: "t-ATL", away_team_id: "t-CLE" },
     { id: G.memPor, game_date: LAST_NIGHT, game_time_utc: "2026-10-30T02:00:00+00:00", status: "final", season_type: "Regular Season", home_team_id: "t-POR", away_team_id: "t-MEM" },
@@ -65,6 +67,77 @@ function ledgerCalls() {
     out.push(call(id(101 + i * 2), d, "CHA @ WAS", "CHA", 55 + i, i % 3 !== 0, "108-104", `${d}T23:30:00+00:00`));
   });
   return out;
+}
+
+/**
+ * A night of eight games whose three cards all won (the free cards/<date>
+ * snapshot, legs open), the morning seal they were built from (id 40) and a
+ * later one that moved a number (41). By the rule: Solid PHI ATL MEM,
+ * Balanced + BOS WAS, Bold the three closest games' underdogs LAL UTA CHI.
+ * `edit(cards)` changes the snapshot's cards before they are stored.
+ */
+export const CARD_NIGHT = "2026-10-27";
+export function cardNight(r, edit = (cards) => cards) {
+  const night = [
+    // id, away, home, tip (UTC), the seal's home win probability, final away–home
+    [7, "CLE", "ATL", "2026-10-27T23:00:00+00:00", 0.8, [99, 112]],
+    [8, "MEM", "POR", "2026-10-27T23:00:00+00:00", 0.3, [118, 104]],
+    [9, "NYK", "PHI", "2026-10-27T23:30:00+00:00", 0.85, [97, 120]],
+    [10, "CHA", "WAS", "2026-10-28T00:00:00+00:00", 0.64, [101, 109]],
+    [11, "BOS", "MIA", "2026-10-28T00:00:00+00:00", 0.33, [113, 105]],
+    [12, "LAL", "GSW", "2026-10-28T02:00:00+00:00", 0.55, [112, 108]],
+    [13, "DEN", "UTA", "2026-10-28T01:00:00+00:00", 0.42, [110, 115]],
+    [14, "MIL", "CHI", "2026-10-28T00:30:00+00:00", 0.4, [104, 111]],
+  ];
+  for (const [n, away, home, tip, , [as, hs]] of night) {
+    r.games.push({ id: id(n), game_date: CARD_NIGHT, game_time_utc: tip, status: "final", season_type: "Regular Season", home_team_id: `t-${home}`, away_team_id: `t-${away}`, home_score: hs, away_score: as });
+  }
+  r.receipts.push(
+    { id: 40, kind: "seal", slate_date: CARD_NIGHT, sha256: hex("a"), prev_sha256: hex("4"), committed_at: "2026-10-27T14:01:00+00:00", n_games: 8, commit_url: "https://github.com/uguraltunbas/clutch-receipts/commit/aaaa", path: "seals/2026/10/27/seal-140100Z.json" },
+    { id: 41, kind: "seal", slate_date: CARD_NIGHT, sha256: hex("b"), prev_sha256: hex("a"), committed_at: "2026-10-27T19:01:00+00:00", n_games: 8, commit_url: "https://github.com/uguraltunbas/clutch-receipts/commit/bbbb", path: "seals/2026/10/27/seal-190100Z.json" },
+  );
+  for (const [n, , , , p] of night) {
+    r.receipt_games.push({ receipt_id: 40, game_id: id(n), home_win_prob: p });
+    r.receipt_games.push({ receipt_id: 41, game_id: id(n), home_win_prob: n === 9 ? 0.87 : p }); // PHI moved after the cards were built
+  }
+  const byTeam = {};
+  for (const [n, away, home, tip, p] of night) {
+    byTeam[home] = { game_id: id(n), team: home, team_id: `t-${home}`, opponent: away, home: true, chance: p, tip };
+    byTeam[away] = { game_id: id(n), team: away, team_id: `t-${away}`, opponent: home, home: false, chance: Math.round((1 - p) * 1e4) / 1e4, tip };
+  }
+  const card = (tier, teams) => {
+    const legs = teams.map((t) => byTeam[t]);
+    return { tier, status: "won", locked: false, leg_count: legs.length, chance: legs.reduce((a, l) => a * l.chance, 1), legs };
+  };
+  const cards = edit([card("solid", ["PHI", "ATL", "MEM"]), card("balanced", ["PHI", "ATL", "MEM", "BOS", "WAS"]), card("bold", ["LAL", "UTA", "CHI"])]);
+  r.snapshots[`cards/${CARD_NIGHT}`] = { at: "2026-10-28T07:30:00Z", body: { date: CARD_NIGHT, built_at: "2026-10-27T14:02:00Z", rule: "v1", cards } };
+  return r;
+}
+
+/**
+ * A run of right calls at 75% or more on three nights before last night
+ * (`right` of them, 76–85%, each with its seal before tip), then last night:
+ * Cleveland at Atlanta shown at 80% (right), and with `miss` Portland at 76%
+ * (it lost 103–124 to Memphis). Changes rows() in place.
+ */
+export function hotNights(r, { right = 9, miss = false } = {}) {
+  const calls = r.snapshots["ledger/calls"].body.calls;
+  const nights = ["2026-10-26", "2026-10-27", "2026-10-28"];
+  for (let k = 0; k < right; k++) {
+    const d = nights[k % 3], pct = 76 + (k % 10);
+    const game_id = id(300 + k), tip_utc = `${d}T23:${String(k).padStart(2, "0")}:00+00:00`;
+    calls.push({ game_id, game_date: d, matchup: "NYK @ PHI", pick: "PHI", claimed_pct: pct, correct: true, final: "99-110", tip_utc, season: "2026-27", season_type: "Regular Season" });
+    r.receipt_games.push({ receipt_id: 300 + nights.indexOf(d), game_id, home_win_prob: pct / 100 });
+  }
+  nights.forEach((d, i) => r.receipts.push({ id: 300 + i, kind: "seal", slate_date: d, sha256: hex("7"), prev_sha256: hex("6"), committed_at: `${d}T14:00:00+00:00`, n_games: 3, commit_url: "https://github.com/uguraltunbas/clutch-receipts/commit/cccc" }));
+  const hot = (gid, pct, home) => {
+    calls.find((c) => c.game_id === gid).claimed_pct = pct;
+    for (const g of r.receipt_games.filter((x) => x.game_id === gid)) g.home_win_prob = home;
+  };
+  hot(G.cleAtl, 80, 0.8);
+  if (miss) hot(G.memPor, 76, 0.76);
+  r.snapshots["ledger/calls"].body.total = calls.length;
+  return r;
 }
 
 /** The week's seals (one a night with calls), added to rows() where a test needs them. */

@@ -10,11 +10,12 @@ import assert from "node:assert/strict";
 import { existsSync, mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { facts, gotnRuns, mondayOf, movedInput, slugOf } from "../facts.mjs";
+import { facts, gotnRuns, hotRun, jointChance, mondayOf, movedInput, rebuildCards, sealedCall, slugOf } from "../facts.mjs";
 import { fresh, RULES, sealed, words } from "../checks.mjs";
 import { radar } from "../ingest.mjs";
 import { readInputs, run } from "../make.mjs";
-import { fakeDb, fakeRuns, G, LAST_NIGHT, NOW, rows, TODAY, weekSeals } from "./fixture.mjs";
+import { bettingWordsIn } from "../../site-src/lib/betting.mjs";
+import { CARD_NIGHT, cardNight, fakeDb, fakeRuns, G, hotNights, LAST_NIGHT, NOW, rows, TODAY, weekSeals } from "./fixture.mjs";
 
 const F = (r = rows(), runs = async () => fakeRuns()) => facts(fakeDb(r), { runs });
 const H = 3600e3;
@@ -218,6 +219,171 @@ test("fresh, after the games: every final in, the Ledger computed after them, or
   assert.equal(cut.wait, undefined); // a list cut short won't fill itself in: held back, not retried
 });
 
+// ── the good-news series: a card hit, the hot run ──
+
+const cardRows = (edit) => cardNight(rows(), edit);
+const MORNING = Date.parse("2026-10-28T13:00:00Z"); // the recap batch the morning after the card night
+const setStatus = (status, tiers) => (cards) => cards.map((c) => (tiers.includes(c.tier) ? { ...c, status } : c));
+
+test("the cards' rule: Solid the 3 surest favorites, Balanced the 5, Bold the 3 likeliest underdogs outside Solid; ties to the earlier tip", () => {
+  const g = (n, home, tipUtc = `2026-10-27T2${n}:00:00Z`) => ({ id: `g${n}`, tipUtc, homeAbbr: `H${n}`, awayAbbr: `A${n}`, home });
+  const eight = [g(1, 0.8), g(2, 0.3), g(3, 0.85), g(4, 0.64), g(5, 0.33), g(6, 0.55), g(7, 0.42), g(8, 0.4)];
+  assert.deepEqual(rebuildCards(eight), { solid: ["H3", "H1", "A2"], balanced: ["H3", "H1", "A2", "A5", "H4"], bold: ["A6", "H7", "H8"] });
+  assert.deepEqual(Object.keys(rebuildCards(eight.slice(0, 3))), ["solid"]); // a short night: only the cards it has games for
+  assert.deepEqual(Object.keys(rebuildCards(eight.slice(0, 5))), ["solid", "balanced"]);
+  const tie = [g(1, 0.7, "2026-10-27T23:30:00Z"), g(2, 0.7, "2026-10-27T23:00:00Z"), g(3, 0.6), g(4, 0.9)];
+  assert.deepEqual(rebuildCards(tie).solid, ["H4", "H2", "H1"]); // the same number: the earlier tip first
+});
+
+test("every card hitting: Balanced × Bold (Solid's legs are Balanced's); one game on both sides can't", () => {
+  const leg = (game_id, team, chance) => ({ game_id, team, chance });
+  const solid = { legs: [leg(1, "A", 0.8), leg(2, "B", 0.7), leg(3, "C", 0.6)] };
+  const balanced = { legs: [...solid.legs, leg(4, "D", 0.6), leg(5, "E", 0.55)] };
+  const bold = { legs: [leg(6, "F", 0.45), leg(7, "G", 0.4), leg(8, "H", 0.35)] };
+  assert.ok(Math.abs(jointChance([solid, balanced, bold]) - 0.8 * 0.7 * 0.6 * 0.6 * 0.55 * 0.45 * 0.4 * 0.35) < 1e-12);
+  assert.equal(jointChance([balanced, { legs: [leg(5, "X", 0.45)] }]), 0);
+});
+
+test("card hit: the won cards, each leg's final and chance, the morning seal they were built from", async () => {
+  const p = await F(cardRows()).plan("cardhit", CARD_NIGHT);
+  assert.equal(p.key, `cardhit:${CARD_NIGHT}`);
+  assert.equal(p.path, "/");
+  assert.equal(p.expires, "2026-10-28T20:00:00.000Z");
+  const f = p.facts;
+  assert.deepEqual(f.cards.map((c) => `${c.tier}:${c.legs.map((l) => l.team).join(" ")}`), ["solid:PHI ATL MEM", "balanced:PHI ATL MEM BOS WAS", "bold:LAL UTA CHI"]);
+  assert.deepEqual([f.all, f.night, f.games], [true, 3, 8]);
+  assert.ok(Math.abs(f.joint - 0.85 * 0.8 * 0.7 * 0.67 * 0.64 * 0.45 * 0.42 * 0.4) < 1e-9);
+  const bold = f.cards[2].legs;
+  assert.deepEqual(bold.map((l) => [l.name, l.final, l.chance]), [["LA Lakers", "112–108 GSW", 0.45], ["Utah", "115–110 DEN", 0.42], ["Chicago", "111–104 MIL", 0.4]]); // the app's names, not the teams table's cities
+  assert.equal(f.firstTip, "2026-10-27T23:00:00+00:00");
+  assert.deepEqual(f.seal, { committed_at: "2026-10-27T14:01:00+00:00", sha256: "a".repeat(64), file: "seal-140100Z.json", repo: "github.com/uguraltunbas/clutch-receipts" }); // 40, not the later 41 that moved PHI
+  assert.equal(sealed(p).ok, true);
+  assert.equal(fresh(p, MORNING).ok, true);
+});
+
+test("card hit: one card won and one lost draws the won one; nothing won, or no cards, is nothing to post", async () => {
+  const some = await F(cardRows(setStatus("lost", ["balanced", "bold"]))).plan("cardhit", CARD_NIGHT);
+  assert.deepEqual(some.facts.cards.map((c) => c.tier), ["solid"]);
+  assert.deepEqual([some.facts.all, some.facts.joint], [false, null]);
+  assert.equal(sealed(some).ok, true);
+  const none = await F(cardRows(setStatus("lost", ["solid", "balanced", "bold"]))).plan("cardhit", CARD_NIGHT);
+  assert.match(none.empty, /no card hit/);
+  assert.match((await F().plan("cardhit", LAST_NIGHT)).empty, /no cards/);
+});
+
+test("card hit: a card still being graded, or its legs not public yet, waits; a won card with a lost leg fails", async () => {
+  const pending = await F(cardRows(setStatus("pending", ["bold"]))).plan("cardhit", CARD_NIGHT);
+  assert.equal(pending.facts, null);
+  assert.equal(fresh(pending, MORNING).wait, true);
+  assert.match(sealed(pending).note, /aren't graded/);
+  const locked = await F(cardRows((cards) => cards.map((c) => (c.tier === "bold" ? { ...c, locked: true, legs: [] } : c)))).plan("cardhit", CARD_NIGHT);
+  assert.equal(fresh(locked, MORNING).wait, true);
+  const r = cardRows();
+  r.games.find((g) => g.id === r.snapshots[`cards/${CARD_NIGHT}`].body.cards[2].legs[0].game_id).home_score = 120; // GSW won after all
+  const bad = await F(r).plan("cardhit", CARD_NIGHT);
+  const f = fresh(bad, MORNING);
+  assert.equal(f.ok, false);
+  assert.equal(f.wait, undefined);
+  assert.match(f.note, /LAL/);
+});
+
+test("card hit: the cards must rebuild from the seal by the rule, and the seal be committed before the first tip", async () => {
+  const swapped = await F(cardRows((cards) => cards.map((c) => (c.tier === "solid" ? { ...c, legs: [c.legs[1], c.legs[0], c.legs[2]] } : c)))).plan("cardhit", CARD_NIGHT);
+  assert.match(sealed(swapped).note, /solid doesn't rebuild/);
+  const r = cardRows();
+  for (const s of r.receipts.filter((x) => x.slate_date === CARD_NIGHT)) s.committed_at = "2026-10-27T23:05:00+00:00";
+  const late = await F(r).plan("cardhit", CARD_NIGHT);
+  assert.match(sealed(late).note, /no seal before the first tip/);
+});
+
+test("the hot run: right calls since the last miss, never one that tipped with it; the season's own; a cut list says since when", () => {
+  const c = (game_id, game_date, tip, correct, claimed_pct = 80, season = "2026-27") => ({ game_id, game_date, tip_utc: `${game_date}T${tip}:00Z`, correct, claimed_pct, season, season_type: "Regular Season", pick: "X", matchup: "Y @ X" });
+  const calls = [
+    c("a", "2026-10-26", "23:00", true), c("b", "2026-10-27", "23:00", false), c("c", "2026-10-27", "23:00", true), c("d", "2026-10-28", "23:00", true),
+    c("e", "2026-10-28", "23:30", true, 74.4), c("f", "2026-10-28", "23:45", true, 74.5), c("p", "2025-04-10", "23:00", true, 90, "2024-25"),
+  ];
+  const h = hotRun({ calls, total: calls.length }, "2026-10-28");
+  assert.equal(h.run, 2); // d and f: c tipped with the miss; e is shown at 74%
+  assert.deepEqual([h.record.right, h.record.wrong], [4, 1]);
+  assert.equal(h.since, null);
+  assert.equal(h.runFrom, "2026-10-27");
+  assert.equal(h.trigger, null);
+  const cut = hotRun({ calls: calls.slice(0, 6), total: 900 }, "2026-10-28");
+  assert.equal(cut.since, "2026-10-27"); // the list starts mid-season on the 26th: whole nights only, from the 27th
+  assert.deepEqual([cut.record.right, cut.record.wrong], [3, 1]);
+  const missNight = hotRun({ calls, total: calls.length }, "2026-10-27");
+  assert.deepEqual(missNight.trigger, { kind: "break", ended: 1 });
+});
+
+test("the hot run: a post when the run passes a mark of 10, every call on it checked against its seal", async () => {
+  const p = await F(hotNights(rows(), { right: 9 })).plan("hotrun", LAST_NIGHT);
+  assert.equal(p.key, `hotrun:${LAST_NIGHT}`);
+  assert.equal(p.path, "/ledger/");
+  const f = p.facts;
+  assert.deepEqual([f.kind, f.mark, f.run, f.record.right, f.record.wrong, f.record.expected], ["mark", 10, 10, 10, 0, 8]);
+  assert.deepEqual(f.sealed, { count: 10, of: 10 });
+  assert.equal(f.tiles.length, 10);
+  assert.equal(sealed(p).ok, true);
+  assert.equal(fresh(p, NOW).ok, true);
+  assert.match((await F(hotNights(rows(), { right: 4 })).plan("hotrun", LAST_NIGHT)).empty, /the run is 5, past no new mark/);
+  assert.match((await F().plan("hotrun", LAST_NIGHT)).empty, /no call at 75% or more/);
+});
+
+test("the hot run: the morning a 75% call misses always posts, with the final; the run that ended counts the calls before it", async () => {
+  const p = await F(hotNights(rows(), { right: 12, miss: true })).plan("hotrun", LAST_NIGHT);
+  const f = p.facts;
+  assert.deepEqual([f.kind, f.ended, f.run, f.record.right, f.record.wrong], ["break", 13, 0, 13, 1]); // ATL tipped before POR's miss
+  assert.deepEqual(f.misses.map((m) => [m.pick, m.name, m.final]), [["POR", "Portland", "124-103"]]);
+  assert.equal(f.tilesFor, 14);
+  assert.equal(sealed(p).ok, true);
+  const small = await F(hotNights(rows(), { right: 2, miss: true })).plan("hotrun", LAST_NIGHT);
+  assert.deepEqual([small.facts.kind, small.facts.ended], ["break", 3]);
+});
+
+test("the hot run: a call whose seal doesn't hold the Ledger's number, or came after the tip, fails sealed; an ungraded night waits", async () => {
+  const r = hotNights(rows(), { right: 9 });
+  r.receipt_games.find((x) => x.receipt_id === 300).home_win_prob = 0.7;
+  assert.match(sealed(await F(r).plan("hotrun", LAST_NIGHT)).note, /PHI 76%: the newest seal before tip doesn't hold/);
+  const r2 = hotNights(rows(), { right: 9 });
+  r2.receipts.find((x) => x.id === 10).committed_at = "2026-10-29T23:10:00+00:00";
+  assert.match(sealed(await F(r2).plan("hotrun", LAST_NIGHT)).note, /ATL 80%/);
+  assert.equal(sealedCall({ seal: { committed_at: "2026-10-29T22:00:00Z" }, tip: "2026-10-29T23:00:00Z", held: 77.85, pct: 77.8 }), true); // the Ledger's one decimal
+  const r3 = hotNights(rows(), { right: 9 });
+  r3.snapshots["ledger/calls"].at = "2026-10-30T04:00:00Z";
+  const early = await F(r3).plan("hotrun", LAST_NIGHT);
+  assert.equal(early.facts, null);
+  assert.equal(fresh(early, NOW).wait, true);
+});
+
+test("the good-news captions: the cards claimed, never the Ledger; the run as the Ledger shows it; no sportsbook word, no 100%", async () => {
+  await import("../paper.js");
+  const P = globalThis.ClutchPaper;
+  const c = (await F(cardRows()).plan("cardhit", CARD_NIGHT)).facts;
+  const one = (await F(cardRows(setStatus("lost", ["balanced", "bold"]))).plan("cardhit", CARD_NIGHT)).facts;
+  const mark = (await F(hotNights(rows(), { right: 9 })).plan("hotrun", LAST_NIGHT)).facts;
+  const brk = (await F(hotNights(rows(), { right: 12, miss: true })).plan("hotrun", LAST_NIGHT)).facts;
+  const caps = [P.cardhitCaption(CARD_NIGHT, c), P.cardhitCaption(CARD_NIGHT, one), P.hotrunCaption(LAST_NIGHT, mark), P.hotrunCaption(LAST_NIGHT, brk)];
+  assert.match(caps[0].short, /^Oct 27: all three of Clutch's Cards hit\./);
+  assert.match(caps[0].short, /about a 1-in-65 night/);
+  assert.match(caps[0].short, /10:01 AM ET seal, before the first tip/);
+  assert.match(caps[1].short, /^Oct 27: Clutch's Solid card hit\./);
+  assert.match(caps[2].short, /Every time Clutch said 75% or higher this season: 10–0\./);
+  assert.match(caps[2].short, /expected 8\.0 right/);
+  assert.match(caps[3].short, /ends at 13: POR 76% lost 103–124 to MEM/);
+  assert.match(caps[3].short, /13–1/);
+  for (const cap of caps) {
+    for (const s of [cap.short, cap.long]) {
+      assert.deepEqual(bettingWordsIn(s), [], s);
+      assert.doesNotMatch(s, /100 ?%|\bLedger (is|went) \d+-0/, s);
+    }
+    assert.ok(P.xLength(cap.short) <= 280, cap.short);
+    assert.ok(P.xLength(P.cardhitCaption(CARD_NIGHT, c, 250).short) <= 250);
+  }
+  assert.equal(P.cardhitTitle(c), "All three hit");
+  assert.equal(P.hotrunTitle(mark), "10–0 at 75%+");
+  assert.equal(P.hotrunTitle(brk), "The run ends at 13");
+});
+
 // ── the radar client ──
 
 test("the radar client: the key in a header, never in an error; nothing to send to without a door", async () => {
@@ -324,6 +490,8 @@ test("every post draws the same picture twice, reads every word it drew, and non
   const plans = [
     await F(r).plan("tonight", TODAY), await F(r).plan("gotn", TODAY), await F(r).plan("receipts", LAST_NIGHT),
     await F(r).plan("moved", TODAY, movedExtra), await F(r).plan("week", "2026-10-25"),
+    await F(cardNight(rows())).plan("cardhit", CARD_NIGHT), await F(cardNight(rows(), setStatus("lost", ["balanced", "bold"]))).plan("cardhit", CARD_NIGHT),
+    await F(hotNights(rows(), { right: 9 })).plan("hotrun", LAST_NIGHT), await F(hotNights(rows(), { right: 12, miss: true })).plan("hotrun", LAST_NIGHT),
   ];
   const { cdp, close } = await session();
   const frame = async (p, part, t, extra = {}) => {

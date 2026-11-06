@@ -47,11 +47,29 @@ function sealNote(s) {
   return null;
 }
 
+/** The same rule as facts.mjs sealedCall (kept here so the checks read no data module). */
+const callSealed = (x) => !!x.seal && t(x.seal.committed_at) < t(x.tip) && Math.abs(x.held - x.pct) < 0.06;
+
 /** sealed: the number drawn is the one the Ledger will grade, from a seal on the public chain. */
 export function sealed(plan) {
   const p = plan.proof;
   const bad = sealNote(p.seal ?? null);
   switch (plan.series) {
+    case "cardhit":
+      // the cards' numbers are one morning seal's, before the first tip, and the rule builds the same cards from it
+      if (!plan.facts) return fail("sealed", "the cards aren't graded yet");
+      if (!p.seal) return fail("sealed", "no seal before the first tip holds the cards' numbers");
+      if (bad) return fail("sealed", bad);
+      if (p.rule) return fail("sealed", p.rule);
+      return pass("sealed");
+    case "hotrun": {
+      if (!plan.facts) return fail("sealed", "the night isn't graded yet");
+      if (!p.calls?.length) return fail("sealed", "no call to check");
+      const off = p.calls.find((x) => !callSealed(x));
+      if (off) return fail("sealed", `${off.pick} ${Math.round(off.pct)}%: ${off.seal ? "the newest seal before tip doesn't hold the Ledger's number" : "no seal holds it"}`);
+      const broken = p.calls.map((x) => sealNote(x.seal)).find(Boolean);
+      return broken ? fail("sealed", broken) : pass("sealed");
+    }
     case "week": {
       const missing = p.dates.filter((d) => !p.sealDates.includes(d));
       if (missing.length) return fail("sealed", `no seal for ${missing.join(", ")}`);
@@ -67,7 +85,7 @@ export function sealed(plan) {
   }
 }
 
-/** fresh: today's facts, before tip (the pre-tip posts) or after every final (the recap). */
+/** fresh: today's facts, before tip (the pre-tip posts) or after every final (the recaps: receipts, the week, a card hit, the hot run). */
 export function fresh(plan, now = Date.now()) {
   const p = plan.proof;
   const ahead = (iso) => t(iso) - now >= RULES.tipMargin;
@@ -97,6 +115,21 @@ export function fresh(plan, now = Date.now()) {
       if (p.game.status !== "scheduled" || !ahead(p.game.tipUtc)) return fail("fresh", "the game tips in under 20 minutes", { late: true });
       if (!within(p.whatifAt, RULES.whatifAge, now)) return fail("fresh", p.whatifAt ? `the What-If is ${hours(p.whatifAt, now)} hours old` : "the game has no What-If");
       return pass("fresh");
+    case "cardhit": {
+      const open = p.games.filter((g) => g.status !== "final" && g.status !== "postponed");
+      if (open.length) return fail("fresh", `${open.length} of the cards' games aren't final`, { wait: true });
+      if (p.pending?.length) return fail("fresh", `the ${p.pending.join(", ")} card isn't graded yet`, { wait: true });
+      if (p.shut?.length) return fail("fresh", `the ${p.shut.join(", ")} card's legs aren't public yet`, { wait: true });
+      if (p.lost?.length) return fail("fresh", `a won card's leg didn't win: ${p.lost.join(", ")}`);
+      return pass("fresh");
+    }
+    case "hotrun": {
+      const open = p.games.filter((g) => g.status !== "final");
+      if (open.length) return fail("fresh", `${open.length} of the night's games aren't final`, { wait: true });
+      const lastTip = p.games.map((g) => g.tipUtc).filter(Boolean).sort().pop();
+      if (!plan.facts || !(t(p.ledgerAt) >= t(lastTip) + RULES.graded)) return fail("fresh", "the Ledger hasn't graded the whole night yet", { wait: true });
+      return pass("fresh");
+    }
     default:
       return fail("fresh", `no rule for ${plan.series}`);
   }
