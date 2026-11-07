@@ -47,8 +47,16 @@ export function howPage(m) {
     ["Preseason is close to a coin flip", pre ? `Across ${pre.n.toLocaleString("en-US")} preseason games (${seasonSpan(pre.seasons)}) the regular-season model scored ${pre.brier_raw_model.toFixed(3)} — worse than a coin flip's 0.250 — because starters rest. Pulled toward 50/50 it scored ${pre.brier_shrunk_loso.toFixed(3)}. So preseason numbers stay near 50/50, carry a label, and are never graded.` : "Starters rest and rotations are experiments, so preseason numbers stay near 50/50, carry a label, and are never graded."],
     ["Early season and playoffs are harder", "In the first two weeks each team's rating still leans on last season, and roster changes it hasn't seen yet cost it — ESPN's preseason projections were better early in 2025-26. The playoffs offer far fewer games to learn from. The game page says so on the games it applies to."],
   ];
+  // Short, plain answers up top, the same words as the FAQ and llms.txt use; also published as FAQPage data below.
+  const short = [
+    ["What is Clutch?", "Clutch is an NBA analytics app. It puts a win probability on every game, seals the number in a public GitHub file before tip-off, and grades it in public after the final. It is free in the browser and on iPhone, makes no calls on margins or totals, and carries no affiliate links."],
+    ["What does the model use?", "Form, rest, travel and the official injury report for each game, known that morning, blended with the market's price when the market has one."],
+    ["Is Clutch more accurate than the market or ESPN BPI?", "In the two-season test, Clutch's call has been more accurate than ESPN BPI's and level with the market's final price: as good as the market, not better. The sections below show the test and the model's limits."],
+    ["Can I check that a prediction came before the game?", "Yes. Every number is sealed with a SHA-256 fingerprint in a public GitHub repository before tip-off, and the Ledger grades the number in that file. Anyone can check a seal."],
+  ];
   const body = `<div class="wrap r"><div class="rhead"><span class="kick">How it works</span><h1 class="rh1">How Clutch's call is made.</h1><p class="rdeck">In plain English, with the test it had to pass. Live performance is the Ledger's — never this backtest.</p></div>
 <div class="body">
+<section class="blk" aria-labelledby="short"><h2 id="short">The short answers</h2>${short.map(([q, a]) => `<div class="blk gap"><h3 class="side-h">${esc(q)}</h3><p>${esc(a)}</p></div>`).join("")}</section>
 <section class="blk" aria-labelledby="test"><h2 id="test">The test it had to pass</h2><p>Two full seasons, replayed month by month: every game predicted by a model fit only on the games before it, then graded on the same games as ESPN's BPI and the market's final price before tip. The accuracy score (the Brier score) grades the probability itself — lower is better, and 0.250 is a coin flip. Each difference comes with its likely range: where it lands 95 times in 100 when the same games are resampled.</p></section>
 ${seasons.length ? seasons.map((s) => benchmark(s, bench[s])).join("") : '<p class="note">The benchmark loads with the model\'s record.</p>'}
 <section class="blk"><p>Read it plainly: Clutch's call has been more accurate than ESPN's and level with the market's final price — as good as the market, not better. Model only is level with ESPN. Nobody publishing an NBA model reliably beats the market, and Clutch doesn't claim to. <a href="/accuracy/">The live record and its calibration →</a></p></section>
@@ -58,7 +66,8 @@ ${sections.map(([h, p]) => `<section class="blk"><h2>${esc(h)}</h2><p>${esc(p)}<
 <p class="note">Past performance does not guarantee future results. Predictions are analytics for information and entertainment, not advice to spend money on a game. Model performance varies by sample size and league conditions.${ti.trained_at ? ` Model fit ${esc(mediumDate(ti.trained_at.slice(0, 10)))} on games through ${esc(mediumDate(ti.through))}.` : ""}</p>
 </div></div>`;
   const desc = "How Clutch's NBA win probability is made: what the model knows, how it meets the market, the two-season test against ESPN BPI, and its limits.";
-  return { path: "/how-it-works/", title: "How it works: the model, the test, the limits · Clutch", html: page({ path: "/how-it-works/", title: "How it works: the model, the test, the limits · Clutch", description: desc, body, current: "how", og: "default" }) };
+  const faq = { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: short.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) };
+  return { path: "/how-it-works/", title: "How it works: the model, the test, the limits · Clutch", html: page({ path: "/how-it-works/", title: "How it works: the model, the test, the limits · Clutch", description: desc, body, current: "how", og: "default", jsonld: faq }) };
 }
 
 export function pricingPage(m) {

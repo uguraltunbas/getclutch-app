@@ -147,7 +147,7 @@ function lastSeasonLine(m) {
   return `<section class="blk" aria-labelledby="last"><h2 id="last">Last season's live record</h2><p>In ${esc(l.season)}${l.retired ? ", made by the model Clutch has since retired," : ""} the Ledger graded ${esc(callWord(l.n))}: ${rec(l.hits, l.n)}${l.n >= RATE_FLOOR && l.hitRate != null ? ` (${l.hitRate.toFixed(1)}%)` : ""}${home != null ? `, against ${rec(home, l.n)} for picking the home team on the same games` : ""}. It stays on the Ledger exactly as graded.</p></section>`;
 }
 
-function questions(m) {
+function accuracyQa(m) {
   const r = m.record;
   const sentence = backtestSentence(m.accuracy?.benchmark);
   const qa = [
@@ -163,7 +163,14 @@ function questions(m) {
       return [["Are Clutch's probabilities calibrated?", `In the two-season test (${games.toLocaleString("en-US")} games), each band of Clutch's numbers came true within ${worst.toFixed(1)} points of what it said: its ${t.bands.map((b) => `${bandLabel(b)} calls averaged ${b.said.toFixed(0)}% and won ${b.happened.toFixed(0)}%`).join("; ")}. This season's live bands are rebuilt every morning above.`]];
     })(),
     ["How is a call graded?", "Clutch's number for every game is sealed in a public file on GitHub before tip-off and graded after the final against that same number. The side it gives over 50% is its call. Right and wrong calls stay on the record, in date order."],
+    ["Is there an app that shows how accurate its NBA predictions were?", "Yes. Clutch puts a win probability on every NBA game, free in the browser and on iPhone, seals each number in a public GitHub file before tip-off, and grades it on the Ledger after the final, beside ESPN BPI, the market and picking the home team."],
+    ["Does Clutch publish every prediction, including the misses?", "Yes. Every call goes on the Ledger in date order whether it hit or missed. A miss is never edited or removed, because the number was sealed before the game. Every number is also free to download as JSON or CSV."],
   ];
+  return qa;
+}
+
+function questions(m) {
+  const qa = accuracyQa(m);
   return `<section aria-labelledby="faq"><h2 class="sh" id="faq">Questions</h2>${qa.map(([q, a]) => `<div class="blk gap"><h3 class="side-h">${esc(q)}</h3><p>${esc(a)}</p></div>`).join("")}</section>`;
 }
 
@@ -202,5 +209,7 @@ ${questions(m)}
     ...(updated ? { dateModified: updated } : {}),
     ...(r?.dateRange?.start ? { temporalCoverage: `${r.dateRange.start}/${r.dateRange.end}` } : {}),
   };
-  return { path: PATH, title, html: page({ path: PATH, title, description, body, current: "ledger", og: "ledger", jsonld: ld }) };
+  // The questions on the page, as data for readers that parse it (search, AI answers): the same words, nothing added.
+  const faq = { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: accuracyQa(m).map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) };
+  return { path: PATH, title, html: page({ path: PATH, title, description, body, current: "ledger", og: "ledger", jsonld: [ld, faq] }) };
 }
