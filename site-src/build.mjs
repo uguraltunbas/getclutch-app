@@ -55,7 +55,7 @@ import { ledgerPage, receiptsPage } from "./lib/pages/paper.mjs";
 import { howPage, pricingPage, faqPage, companyPage, termsPage, privacyPage, refundsPage, supportPage } from "./lib/pages/about.mjs";
 import { unsubscribePage } from "./lib/pages/unsubscribe.mjs";
 import { teamPages, notFoundPage } from "./lib/pages/teams.mjs";
-import { accuracyPage, backtestSentence, backtestBands } from "./lib/pages/accuracy.mjs";
+import { accuracyPage, backtestSentence, backtestBands, accuracyQa, keyNumbers } from "./lib/pages/accuracy.mjs";
 import { matchupPages } from "./lib/pages/matchups.mjs";
 import { playoffsPage } from "./lib/pages/playoffs.mjs";
 import { tonightPage } from "./lib/pages/tonight.mjs";
@@ -313,6 +313,10 @@ const llms = `# Clutch
 - ${llmsRecord}
 - ${backtestSentence(m.accuracy?.benchmark) ?? "The model's two-season test is on the How it works page."}${llmsCalibration}
 - Clutch is analytics for fans, not advice: it makes no calls on margins or totals and carries no affiliate links.
+${keyNumbers(m.accuracy?.benchmark).length ? `\n## The two-season test in numbers\n\n${keyNumbers(m.accuracy?.benchmark).join("\n")}\n` : ""}
+## Questions people ask
+
+${accuracyQa(m).map(([q, a]) => `**${q}** ${a}`).join("\n\n")}
 
 ## Free, in the browser and on iPhone
 

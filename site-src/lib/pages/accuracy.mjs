@@ -48,6 +48,17 @@ export function backtestSentence(bench) {
   return `Replayed over ${seasons.length === 2 ? "two" : seasons.length} seasons (${seasons.join(" and ")}, ${games.toLocaleString("en-US")} games), each game predicted only from the games before it, Clutch's probabilities were ${vsE} by the accuracy score, which grades the probability itself. ${vsM}${winners}`;
 }
 
+/** The two-season test as plain lines of numbers (for /llms.txt): per season, share of winners right and accuracy score for each track. */
+export function keyNumbers(bench) {
+  const seasons = Object.keys(bench ?? {}).sort().reverse();
+  const tracks = [["Clutch", "clutch"], ["ESPN BPI", "espn_bpi"], ["the market's final price", "market"], ["always the home team", "always_home"]];
+  return seasons.map((s) => {
+    const t = bench[s].tracks ?? {};
+    const part = (f) => tracks.filter(([, k]) => t[k]?.[f] != null).map(([l, k]) => `${l} ${f === "acc" ? pc1(t[k].acc) : b3(t[k].brier)}`).join(", ");
+    return `- ${s}, ${bench[s].n.toLocaleString("en-US")} games: winners right: ${part("acc")}. Accuracy score (Brier, lower is better): ${part("brier")}.`;
+  });
+}
+
 function liveSection(m) {
   const r = m.record;
   if (!r) {
@@ -147,14 +158,14 @@ function lastSeasonLine(m) {
   return `<section class="blk" aria-labelledby="last"><h2 id="last">Last season's live record</h2><p>In ${esc(l.season)}${l.retired ? ", made by the model Clutch has since retired," : ""} the Ledger graded ${esc(callWord(l.n))}: ${rec(l.hits, l.n)}${l.n >= RATE_FLOOR && l.hitRate != null ? ` (${l.hitRate.toFixed(1)}%)` : ""}${home != null ? `, against ${rec(home, l.n)} for picking the home team on the same games` : ""}. It stays on the Ledger exactly as graded.</p></section>`;
 }
 
-function accuracyQa(m) {
+export function accuracyQa(m) {
   const r = m.record;
   const sentence = backtestSentence(m.accuracy?.benchmark);
   const qa = [
     ["How accurate is Clutch?", r
       ? `This season Clutch is ${rec(r.hits, r.n)} on ${callWord(r.n)} graded after the final${r.n >= RATE_FLOOR && r.hitRate != null ? `, ${r.hitRate.toFixed(1)}% right` : " — too few yet for a rate"}. Picking the home team every night went ${rec(Math.round(((r.homeRate ?? 0) * r.n) / 100), r.n)} on the same games.`
       : "The season's first calls are graded the morning after its first finals; this page fills in from then."],
-    ["Is Clutch more accurate than ESPN BPI?", sentence ? `In the test it had to pass before it shipped: ${sentence} Live, this season's games are graded beside ESPN BPI on the Ledger.` : "Live, this season's games are graded beside ESPN BPI on the Ledger."],
+    ["Is Clutch more accurate than ESPN BPI?", sentence ? `In the test it had to pass before it shipped: ${sentence.charAt(0).toLowerCase()}${sentence.slice(1)} Live, this season's games are graded beside ESPN BPI on the Ledger.` : "Live, this season's games are graded beside ESPN BPI on the Ledger."],
     ...(() => {
       const t = backtestBands(m.accuracy?.current_version);
       if (!t) return [];

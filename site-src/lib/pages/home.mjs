@@ -289,6 +289,8 @@ ${guide(lead, isToday, play)}`;
     // "Clutch" alone is shared with ClutchPoints and Clutch.co.
     { "@context": "https://schema.org", "@type": "WebSite", name: "Clutch", alternateName: "Clutch Ledger", url: ORIGIN + "/", description: desc },
     organizationLd(ORIGIN),
+    // The app as an entity, so "is there an app that..." has something to name. Free to use; Pro and Elite are in-app plans (the offer is the free tier).
+    { "@context": "https://schema.org", "@type": "SoftwareApplication", name: "Clutch — Basketball Stats & AI", alternateName: "Clutch Ledger", applicationCategory: "SportsApplication", operatingSystem: "iOS, Web", url: ORIGIN + "/", downloadUrl: APP_STORE, isAccessibleForFree: true, offers: { "@type": "Offer", price: "0", priceCurrency: "USD" }, description: "NBA win probability for every game, sealed before tip in a public GitHub repository and graded in public after the final. Free in the browser and on iPhone.", publisher: { "@type": "Organization", name: "Clutch", url: ORIGIN + "/" } },
   ];
   // The words people search come first ("NBA win probability"); the brand line
   // ("call every game, beat Clutch") stays in the h1 and the share card.
