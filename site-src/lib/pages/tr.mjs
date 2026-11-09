@@ -5,7 +5,7 @@
 // same data as every other page; checked for Turkish betting words too
 // (build.mjs, TR_WORDS).
 
-import { page, esc, PLAY, APP_STORE } from "../html.mjs";
+import { page, esc, PLAY, APP_STORE, tagged } from "../html.mjs";
 import { pct, pickSide, rec } from "../copy.mjs";
 import { chanceText } from "./playoffs.mjs";
 
@@ -31,7 +31,7 @@ function trHome(m) {
 ${games.length ? `<section class="blk" aria-labelledby="gece"><h2 id="gece">Sıradaki maçlar</h2><ul class="spots">${rows}</ul><p class="note gap">Saatler Türkiye saatiyle (TSİ). Maç sayfaları İngilizce. <a href="/tonight/">Tüm maçlar →</a></p></section>` : ""}
 <section class="blk" aria-labelledby="rockets"><h2 id="rockets">Houston Rockets ve Alperen Şengün</h2><p>Rockets'ın her maçı için Clutch'ın tahmini, playoff şansı ve son maçlar, Türkiye saatiyle: <a href="/tr/houston-rockets/">Houston Rockets sayfası →</a></p></section>
 <section class="blk" aria-labelledby="kayit"><h2 id="kayit">Kayıt ortada</h2><p>${r ? `${esc(r.season)} sezonunda Clutch ${r.n} maçta notlandı: ${rec(r.hits, r.n)} (doğru–yanlış)${r.n < 20 ? "; 20 maçtan az olduğu için henüz yüzde verilmiyor" : ""}.` : "Sezonun ilk notları ilk maçların ertesi sabahı gelir."} Her tahmin maçtan önce GitHub'da mühürlenir; sonradan değiştirilemez, ıskalar da silinmez. <a href="/accuracy/">Doğruluk raporu →</a> · <a href="/learn/what-is-win-probability/">Kazanma olasılığı nedir? (İngilizce) →</a></p></section>
-<section class="blk" aria-labelledby="oyna"><h2 id="oyna">Sen de tahmin et</h2><p>Her maçta Clutch'a karşı kendi tahminini yap; doğru tahminler puan kazandırır, sürpriz ne kadar büyükse puan o kadar yüksek. Ücretsiz, tarayıcıda ya da iPhone'da (uygulama İngilizce). <a href="${PLAY}">Tarayıcıda aç →</a> · <a href="${APP_STORE}">iPhone uygulaması →</a></p></section>
+<section class="blk" aria-labelledby="oyna"><h2 id="oyna">Sen de tahmin et</h2><p>Her maçta Clutch'a karşı kendi tahminini yap; doğru tahminler puan kazandırır, sürpriz ne kadar büyükse puan o kadar yüksek. Ücretsiz, tarayıcıda ya da iPhone'da (uygulama İngilizce). <a href="${tagged(PLAY, "tr")}">Tarayıcıda aç →</a> · <a href="${APP_STORE}">iPhone uygulaması →</a></p></section>
 </div></div>`;
   const path = "/tr/";
   const title = "Clutch Türkçe: her NBA maçı için kazanma olasılığı · Clutch";
@@ -75,7 +75,7 @@ function trRockets(m) {
 <section aria-labelledby="sirada"><h2 class="sh" id="sirada">Sıradaki maçlar (TSİ)</h2>${nextRows || '<p class="sub">Fikstürde henüz maç yok.</p>'}<p class="note gap">Clutch'ın sayısı maç günü sabah (ABD saatiyle) yayımlanır ve maç başlamadan mühürlenir.</p></section>
 <section aria-labelledby="son"><h2 class="sh s" id="son">Son maçlar</h2>${lastRows || '<p class="sub">Henüz biten maç yok.</p>'}<p class="note gap">Hazırlık maçları notlanmaz. Tarihler ABD saatiyle maç günü.</p></section>
 <section class="blk" aria-labelledby="nasil"><h2 id="nasil">Sayı nereden geliyor?</h2><p>Model her maçı o sabah bilinenlerle anlatır: takımların bu sezonki ve son maçlardaki gücü, dinlenme ve arka arkaya maçlar, yolculuk, ve ligin resmî sakat listesi. Playoff şansı, sezonun kalanı her gece 10.000 kez oynatılarak bulunur. <a href="/playoff-chances/">Tüm takımların playoff şansı →</a> · <a href="${m.teamPath(t)}">İngilizce Rockets sayfası →</a></p></section>
-<div class="btns"><a class="btn" href="${PLAY}">Rockets maçlarını tahmin et</a><a class="btn ghost" href="/tr/">Clutch Türkçe</a></div>
+<div class="btns"><a class="btn" href="${tagged(PLAY, "tr-rockets")}">Rockets maçlarını tahmin et</a><a class="btn ghost" href="/tr/">Clutch Türkçe</a></div>
 </div></div>`;
   const path = "/tr/houston-rockets/";
   const title = "Houston Rockets maçları ve Alperen Şengün: Clutch tahminleri · Clutch";

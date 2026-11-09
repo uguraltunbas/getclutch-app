@@ -3,7 +3,7 @@
 // and its latest finals with the Ledger's grade. (No win totals here: the
 // contest and its lines stay in the app and on the rules page.)
 
-import { page, esc, ORIGIN, PLAY, WEB_APP_LIVE, teamSlug } from "../html.mjs";
+import { page, esc, ORIGIN, PLAY, WEB_APP_LIVE, teamSlug, tagged } from "../html.mjs";
 import { pct, pickSide, normalizeStatus, finalLabel, RATE_FLOOR } from "../copy.mjs";
 import { matchupsOf, prevRecord, recordIn } from "./matchups.mjs";
 import { shortDate, mediumDate, timeET, seasonOf as seasonOfDate } from "../time.mjs";
@@ -72,7 +72,7 @@ export function teamPages(m) {
 ${h2h.length ? `<section aria-labelledby="h2h"><h2 class="sh s" id="h2h">Head to head</h2><p class="sub">${h2h.join(" · ")}</p><p class="note gap">${pr.w + pr.l ? `Beside each opponent: the record against it in the ${esc(m.prevSeason)} regular season. ` : ""}Linked opponents have a head-to-head page: every meeting this season and last, with Clutch's call and the result.</p></section>` : ""}
 ${pc != null ? `<p class="note">Playoff chance: ${esc(board.method ? `${board.runs?.toLocaleString("en-US") ?? "10,000"} simulated seasons` : "the season simulation")}, ratings as of ${esc(mediumDate(board.as_of))}${board.phase === "preseason" ? " (preseason)" : ""}. Every team's chances are free in the app, updated nightly. <a href="/playoff-chances/">All 30 teams' playoff chances →</a></p>` : ""}
 ${t.abbreviation === "HOU" ? '<p class="note" lang="tr"><a href="/tr/houston-rockets/" hreflang="tr">Bu sayfa Türkçe: Rockets maçları Türkiye saatiyle →</a></p>' : ""}
-<div class="btns"><a class="btn" href="${PLAY}">Call ${esc(t.nickname)} games ${WEB_APP_LIVE ? "in your browser" : "in the iPhone app"}</a><a class="btn ghost" href="/teams/">All 30 teams</a></div>
+<div class="btns"><a class="btn" href="${tagged(PLAY, "team-page")}">Call ${esc(t.nickname)} games ${WEB_APP_LIVE ? "in your browser" : "in the iPhone app"}</a><a class="btn ghost" href="/teams/">All 30 teams</a></div>
 </div></div>`;
     const title = `${t.name} win probability and playoff chances, ${m.current} · Clutch`;
     const description = `${t.name} win probability for every game${nextG ? `, next ${at(nextG)} the ${opp(nextG).nickname} on ${mediumDate(nextG.game_date)}` : ""}${pc != null ? `; playoff chance ${(pc * 100).toFixed(0)}%` : ""}. Sealed before tip, graded in public.`;

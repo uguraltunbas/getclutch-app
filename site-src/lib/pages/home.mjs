@@ -5,7 +5,7 @@
 // night, tonight's games, three moves, the Ledger, Free and Pro, the close.
 // The questions moved to /faq/, the free paper's cards to /faq/ and /pricing/.
 
-import { page, esc, bar, APP_STORE, ORIGIN, PLAY, PLAY_PRO, WEB_APP_LIVE, LAUNCH_ON, LAUNCH_WORDS, passLink, webAppLink, playWords, priceFig, playNight } from "../html.mjs";
+import { page, esc, bar, APP_STORE, ORIGIN, PLAY, PLAY_PRO, WEB_APP_LIVE, LAUNCH_ON, LAUNCH_WORDS, passLink, webAppLink, playWords, priceFig, playNight, tagged } from "../html.mjs";
 import { board, gameCard, lineIsWhy, scoreLine, statusText, tonightOpen } from "../parts.mjs";
 import { pct, callPoints, comparisons, opener, verdictOf, rec, shortHash, RATE_FLOOR, REGULAR_SEASON_START } from "../copy.mjs";
 import { longDate, dayLabel, shortDate, weekday, timeET, countWord, shift } from "../time.mjs";
@@ -139,7 +139,7 @@ function comingUp(m, tonight, n) {
   if (!nights.length) return "";
   return `<div class="ahead"><span class="mono ink3">Coming up</span>${nights.map(([d, gs]) => {
     const first = gs.map((g) => g.tipUtc).filter(Boolean).sort()[0];
-    return `<a class="arow" href="${playNight(d)}"><span class="d">${esc(dayLabel(d))}</span><span>${gs.length} ${gs.length === 1 ? "game" : "games"}${gs.some((g) => g.preseason) ? ", preseason" : ""}${first ? ` · first tip ${esc(timeET(first))}` : ""}</span><span class="go" aria-hidden="true">›</span></a>`;
+    return `<a class="arow" href="${tagged(playNight(d), "night-row")}"><span class="d">${esc(dayLabel(d))}</span><span>${gs.length} ${gs.length === 1 ? "game" : "games"}${gs.some((g) => g.preseason) ? ", preseason" : ""}${first ? ` · first tip ${esc(timeET(first))}` : ""}</span><span class="go" aria-hidden="true">›</span></a>`;
   }).join("")}<p class="note gap">Each night's numbers land that morning.</p></div>`;
 }
 
@@ -268,9 +268,9 @@ ${missBand(m)}
 <section class="sec" id="pricing" aria-labelledby="price-h"><div class="wrap">
 <h2 class="h2 hm" id="price-h">Free for good. <em>Pro when you want the whole lab.</em></h2>
 <div class="plans">
-<div class="plan row"><h3>Free</h3><div class="price"><span class="d">$0</span><span>for good</span></div><ul>${FRONT_FREE.map((x) => `<li>${esc(x)}</li>`).join("")}</ul><a class="btn ghost" href="${PLAY}">${WEB_APP_LIVE ? play : "Get the free iPhone app"}</a></div>
-<div class="plan pro"><span class="tag">${PLAN.trialDays} days free on annual</span><h3>Pro</h3><div class="price"><span class="d">${priceFig(PLAN.monthly)}</span><span>a month · or ${PLAN.annual} a year</span></div>${LAUNCH_ON ? '<p class="offer">Free on the web during the launch, with the Launch Pass.</p>' : ""}<ul>${FRONT_PRO.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>${LAUNCH_ON ? `<a class="btn" href="${passLink("pricing")}">Claim your Launch Pass</a>` : `<a class="btn" href="${PLAY_PRO}">Try Pro free for ${PLAN.trialDays} days${WEB_APP_LIVE ? "" : " on iPhone"}</a>`}</div>
-<div class="plan elite"><h3>Elite</h3><div class="price"><span class="d">${priceFig(ELITE.monthly)}</span><span>a month · or ${ELITE.annual} a year</span></div><ul>${FRONT_ELITE.map((x) => `<li>${esc(x)}</li>`).join("")}</ul><a class="btn" href="${WEB_APP_LIVE ? PLAY_PRO + "?tier=elite" : PLAY_PRO}">Get Elite${WEB_APP_LIVE ? "" : " on iPhone"}</a></div>
+<div class="plan row"><h3>Free</h3><div class="price"><span class="d">$0</span><span>for good</span></div><ul>${FRONT_FREE.map((x) => `<li>${esc(x)}</li>`).join("")}</ul><a class="btn ghost" href="${tagged(PLAY, "home-free")}">${WEB_APP_LIVE ? play : "Get the free iPhone app"}</a></div>
+<div class="plan pro"><span class="tag">${PLAN.trialDays} days free on annual</span><h3>Pro</h3><div class="price"><span class="d">${priceFig(PLAN.monthly)}</span><span>a month · or ${PLAN.annual} a year</span></div>${LAUNCH_ON ? '<p class="offer">Free on the web during the launch, with the Launch Pass.</p>' : ""}<ul>${FRONT_PRO.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>${LAUNCH_ON ? `<a class="btn" href="${passLink("pricing")}">Claim your Launch Pass</a>` : `<a class="btn" href="${tagged(PLAY_PRO, "home-pro")}">Try Pro free for ${PLAN.trialDays} days${WEB_APP_LIVE ? "" : " on iPhone"}</a>`}</div>
+<div class="plan elite"><h3>Elite</h3><div class="price"><span class="d">${priceFig(ELITE.monthly)}</span><span>a month · or ${ELITE.annual} a year</span></div><ul>${FRONT_ELITE.map((x) => `<li>${esc(x)}</li>`).join("")}</ul><a class="btn" href="${tagged(WEB_APP_LIVE ? PLAY_PRO + "?tier=elite" : PLAY_PRO, "home-elite")}">Get Elite${WEB_APP_LIVE ? "" : " on iPhone"}</a></div>
 </div>
 <p class="note gap">Prices in US dollars. Cancel any time; a plan runs to the end of the period you paid for. <a href="/pricing/">Everything in Free, Pro and Elite →</a> · <a href="/refunds/">Refunds</a> · <a href="/terms/">Terms</a></p>
 </div></section>

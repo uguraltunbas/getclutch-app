@@ -1,7 +1,7 @@
 // Game pieces shared by the front page, the game pages and the team pages:
 // the scoreboard (the instrument), a Tonight card, status and score text.
 
-import { esc, rail, playGame } from "./html.mjs";
+import { esc, rail, playGame, tagged } from "./html.mjs";
 import { pct, callPoints, liveLabel, finalLabel, plainDriverLabel } from "./copy.mjs";
 import { timeET, tipShort } from "./time.mjs";
 
@@ -18,7 +18,7 @@ export function statusText(g, short = false) {
 export const scoreLine = (g) => (g.homeScore == null ? "" : `${g.away.abbreviation} ${g.awayScore} · ${g.home.abbreviation} ${g.homeScore}`);
 
 const teamCls = (g) => `a-${g.away.abbreviation} h-${g.home.abbreviation}`;
-const appGame = (g) => playGame(g.id);
+const appGame = (g) => tagged(playGame(g.id), "call-button");
 
 /** Does tonight (today, New York) still have a game to call? The main action's words follow it (html.mjs playWords). */
 export const tonightOpen = (m) => m.tonight === m.today && (m.nights[m.tonight] ?? []).some((g) => g.status !== "final" && g.status !== "postponed");

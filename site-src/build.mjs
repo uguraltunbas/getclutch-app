@@ -382,6 +382,9 @@ for (const p of pages) if (/<!--\s*(DRAFT|TODO)/i.test(p.html) || /TODO\(owner/i
 // drops them on purpose.
 const built = new Set(pages.map((p) => p.path));
 for (const p of pages) for (const [, href, d] of p.html.matchAll(/href="(\/games\/(\d{4}-\d{2}-\d{2})\/[^"#?]*)"/g)) if (d >= TODAY && !built.has(href)) fail.push(`${p.path}: links ${href}, which this build doesn't make`);
+// Every link into the web app says where on the site it sits (html.mjs tagged), so the app's funnel can tell
+// the masthead from a game's call buttons (the first web sale's header link was untagged, 2026-11-05).
+for (const p of pages) for (const [, href] of p.html.matchAll(/href="(https:\/\/app\.clutchledger\.com[^"]*)"/g)) if (!/[?&](amp;)?utm_source=/.test(href)) fail.push(`${p.path}: links the web app without utm tags (${href})`);
 const st = selfTest();
 if (st.missed.length || st.wrong.length) fail.push(`betting-words self-test: missed ${JSON.stringify(st.missed)}, wrongly caught ${JSON.stringify(st.wrong)}`);
 const scan = scanPages(pages.filter((p) => !p.redirect));

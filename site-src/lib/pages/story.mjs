@@ -6,7 +6,7 @@
 // The comparison words follow the site's claim rules: "more accurate than ESPN's
 // BPI" only with "tested on two seasons", never ahead of the market.
 
-import { page, esc, ORIGIN, APP, APP_STORE } from "../html.mjs";
+import { page, esc, ORIGIN, APP, APP_STORE, tagged } from "../html.mjs";
 import { RECEIPTS_REPO } from "../copy.mjs";
 import { mediumDate } from "../time.mjs";
 import { COMPANY } from "../../content/company.mjs";
@@ -101,7 +101,7 @@ ${seasonLine(m)}</section>
 
 <section class="blk" aria-labelledby="try"><h2 id="try">Try it</h2>
 <ul>
-<li><a href="${APP}"><strong>app.clutchledger.com</strong></a>: tonight's games. Make your call on one, no account needed. It locks at tip and is graded after the final; sign in afterwards if you want to keep it on your record.</li>
+<li><a href="${tagged(`${APP}/`, "story")}"><strong>app.clutchledger.com</strong></a>: tonight's games. Make your call on one, no account needed. It locks at tip and is graded after the final; sign in afterwards if you want to keep it on your record.</li>
 <li><a href="/accuracy/"><strong>The Ledger</strong></a>: every graded game, with ESPN's BPI, the market and the home team beside Clutch.</li>
 <li><a href="/how-it-works/"><strong>How it works</strong></a>: the model, the blend and the two-season test.</li>
 <li><a href="${RECEIPTS_REPO}"><strong>The seals</strong></a>: every number before tip, and how to check one.</li>

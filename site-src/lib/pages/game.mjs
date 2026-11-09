@@ -3,7 +3,7 @@
 // who's out, and the page grading itself after the final. And
 // /games/<date>/ — the night's games on one page.
 
-import { page, esc, APP_STORE, ORIGIN, PLAY, WEB_APP_LIVE, playWords } from "../html.mjs";
+import { page, esc, APP_STORE, ORIGIN, PLAY, WEB_APP_LIVE, playWords, tagged } from "../html.mjs";
 import { board, gameCard, statusText, gradeChip, tonightOpen } from "../parts.mjs";
 import { pct, headlineFor, receiptLine, shortHash, sealFileUrl, CALL_RULE, PRESEASON_DECK, rec, RATE_FLOOR, RECEIPTS_REPO } from "../copy.mjs";
 import { matchupFor } from "./matchups.mjs";
@@ -130,7 +130,7 @@ function aside(g, m, night) {
   // Before tip the call is the instrument's; otherwise the aside sends readers to tonight's games.
   const call = g.status === "scheduled" && g.hasCall
     ? ""
-    : `<section class="callcard" aria-labelledby="mk"><h2 id="mk">Call tonight's games</h2><p>Every game gets Clutch's call. Make yours before tip and the morning grades you both.</p>${WEB_APP_LIVE ? `<a class="btn" href="${PLAY}">${playWords(tonightOpen(m))}</a><a class="iph" href="${APP_STORE}"><span>On iPhone? Get the app</span><span class="amber">→</span></a>` : `<a class="btn" href="${APP_STORE}">Get the iPhone app →</a><a class="iph" href="/ledger/"><span>Read the Ledger</span><span class="amber">→</span></a>`}</section>`;
+    : `<section class="callcard" aria-labelledby="mk"><h2 id="mk">Call tonight's games</h2><p>Every game gets Clutch's call. Make yours before tip and the morning grades you both.</p>${WEB_APP_LIVE ? `<a class="btn" href="${tagged(PLAY, "game-page")}">${playWords(tonightOpen(m))}</a><a class="iph" href="${APP_STORE}"><span>On iPhone? Get the app</span><span class="amber">→</span></a>` : `<a class="btn" href="${APP_STORE}">Get the iPhone app →</a><a class="iph" href="/ledger/"><span>Read the Ledger</span><span class="amber">→</span></a>`}</section>`;
   const mk = g.marketSide == null
     ? `<span class="ink3">${g.marketState === "none" ? "No number yet" : "Not on record"}</span>`
     : `<span class="d">${esc(s.team.abbreviation)} ${pct(g.marketSide)}</span>`;

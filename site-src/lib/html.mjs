@@ -91,6 +91,14 @@ const utm = (campaign, placement) => `?utm_source=clutchledger&amp;utm_medium=si
 export const passLink = (placement) => `${APP}/pass${utm("launch_pass", placement)}`;
 /** The web app's front door, tagged (the "Open Clutch in your browser" links). */
 export const webAppLink = (placement) => `${APP}/${utm("web_app", placement)}`;
+/**
+ * Any link into the web app, tagged the same way (utm_campaign=web_app) with
+ * where it sits, so the app's funnel can say which site link a reader came
+ * through (first web sale, 2026-11-05: the header link was untagged). A link
+ * that already has a query gets the tags after it; the App Store and every
+ * other link come back unchanged. build.mjs fails a page with an untagged one.
+ */
+export const tagged = (href, placement) => (href.startsWith(APP) ? `${href}${href.includes("?") ? "&amp;" : "?"}${utm("web_app", placement).slice(1)}` : href);
 
 /**
  * App Store Connect counts installs per campaign when a link carries the
@@ -163,7 +171,7 @@ const THEME = '<button class="tg" type="button"><span class="vh">Theme: </span><
 function masthead(current) {
   const links = NAV.map(([href, label, key]) => `<a href="${href}"${key === current ? ' aria-current="page"' : ""}>${label}</a>`).join("");
   const acts = WEB_APP_LIVE
-    ? `<a class="signin" href="${APP}/">Sign in</a><a class="btn sm" href="${APP}/">${PLAY_SHORT}</a>`
+    ? `<a class="signin" href="${tagged(`${APP}/`, "masthead-signin")}">Sign in</a><a class="btn sm" href="${tagged(`${APP}/`, "masthead")}">${PLAY_SHORT}</a>`
     : `<a class="btn sm" href="${APP_STORE}"><span class="hide-s">Get the iPhone app</span><span class="show-s">Get the app</span></a>`;
   return `<header class="top"><div class="wrap bar${WEB_APP_LIVE ? " live" : ""}">
 <a class="logo" href="/" aria-label="Clutch, front page">Clutch</a>
@@ -300,7 +308,7 @@ export function prose(text, { email } = {}) {
   const link = (s) => esc(s)
     .replace(/https:\/\/[^\s<]+[^\s<.,)]/g, (u) => `<a href="${u}">${u.replace(/^https:\/\//, "")}</a>`)
     .replace(email ? new RegExp(email.replace(/[.]/g, "\\."), "g") : /$^/, (m) => `<a href="mailto:${m}">${m}</a>`)
-    .replace(/(^|[\s(])(app\.clutchledger\.com)(?![\w/])/g, (m, pre, host) => (WEB_APP_LIVE ? `${pre}<a href="${APP}/">${host}</a>` : m))
+    .replace(/(^|[\s(])(app\.clutchledger\.com)(?![\w/])/g, (m, pre, host) => (WEB_APP_LIVE ? `${pre}<a href="${tagged(`${APP}/`, "text")}">${host}</a>` : m))
     .replace(/reportaproblem\.apple\.com(?![\w/<"])/g, '<a href="https://reportaproblem.apple.com">reportaproblem.apple.com</a>');
   const out = [];
   let list = [];
