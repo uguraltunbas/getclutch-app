@@ -376,6 +376,12 @@ for (const doc of [TERMS, PRIVACY, REFUNDS, SUPPORT]) {
   for (const sec of doc.sections) if (sec.todo || sec.draft) fail.push(`${doc.title} › ${sec.title}: marked todo/draft`);
 }
 for (const p of pages) if (/<!--\s*(DRAFT|TODO)/i.test(p.html) || /TODO\(owner/i.test(p.html)) fail.push(`${p.path}: a draft or todo marker is in the page`);
+// No link to a game page of today or later that this build doesn't make: Google crawls
+// it early, gets a 404 and keeps the URL in its 404 report (/tr/houston-rockets/ linked the
+// Rockets' next five games, 2026-11-09). Past nights are left alone: a short --days build
+// drops them on purpose.
+const built = new Set(pages.map((p) => p.path));
+for (const p of pages) for (const [, href, d] of p.html.matchAll(/href="(\/games\/(\d{4}-\d{2}-\d{2})\/[^"#?]*)"/g)) if (d >= TODAY && !built.has(href)) fail.push(`${p.path}: links ${href}, which this build doesn't make`);
 const st = selfTest();
 if (st.missed.length || st.wrong.length) fail.push(`betting-words self-test: missed ${JSON.stringify(st.missed)}, wrongly caught ${JSON.stringify(st.wrong)}`);
 const scan = scanPages(pages.filter((p) => !p.redirect));

@@ -46,9 +46,12 @@ function trRockets(m) {
   const next = m.raw.upcoming.filter(mine).slice(0, 5);
   const last = m.raw.recent.filter(mine).slice(0, 6);
   const board = (m.seasonBoard?.teams ?? []).find((x) => x.team_id === t.id);
+  // Only games this build makes a page for get a link (as on the English team pages):
+  // a later game's page doesn't exist yet, and a link to it is a 404 for a crawler.
+  const built = new Set(m.pageGames.map((g) => g.id));
   const nextRows = next.map((g) => {
-    const v = m.gameById[g.id];
-    const p = v?.hasCall ? v.homeProb : m.raw.preds[g.id] ? +m.raw.preds[g.id].home_win_prob : null;
+    const view = m.gameById[g.id], v = built.has(g.id) ? view : null;
+    const p = view?.hasCall ? view.homeProb : m.raw.preds[g.id] ? +m.raw.preds[g.id].home_win_prob : null;
     const side = p == null ? null : pickSide(p, m.T[g.home_team_id], m.T[g.away_team_id]);
     const where = g.home_team_id === t.id ? "evinde" : "deplasmanda";
     const name = `${opp(g).nickname} (${where})${g.season_type === "Preseason" ? " · hazırlık" : ""}`;
@@ -56,7 +59,7 @@ function trRockets(m) {
   }).join("");
   const lastRows = last.map((g) => {
     const us = g.home_team_id === t.id ? g.home_score : g.away_score, them = g.home_team_id === t.id ? g.away_score : g.home_score;
-    const c = m.callBy[g.id], v = m.gameById[g.id];
+    const c = m.callBy[g.id], v = built.has(g.id) ? m.gameById[g.id] : null;
     const label = `${us > them ? "G" : "M"} ${us}–${them} · ${opp(g).nickname}${g.season_type === "Preseason" ? " · hazırlık" : g.season_type === "Playoffs" ? " · playoff" : ""}`;
     return `<div class="callrow"><span class="mono">${esc(tsiDay(g.game_date, g.game_date < `${m.current.slice(0, 4)}-08-01`))}</span><span>${v?.path ? `<a href="${v.path}">${esc(label)}</a>` : esc(label)}</span>${c ? `<span class="d">${esc(c.pick)} ${Math.round(c.claimed_pct)}</span><span>${c.correct ? '<span class="chip win">✓ Doğru</span>' : '<span class="chip loss">✗ Yanlış</span>'}</span>` : `<span class="d dim">--</span><span><span class="note">${g.season_type === "Preseason" ? "Hazırlık" : "Notlanmadı"}</span></span>`}</div>`;
   }).join("");
