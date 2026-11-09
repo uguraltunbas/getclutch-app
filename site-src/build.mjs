@@ -60,6 +60,7 @@ import { matchupPages } from "./lib/pages/matchups.mjs";
 import { playoffsPage } from "./lib/pages/playoffs.mjs";
 import { tonightPage } from "./lib/pages/tonight.mjs";
 import { learnPages } from "./lib/pages/learn.mjs";
+import { storyPage } from "./lib/pages/story.mjs";
 import { weekPages } from "./lib/pages/weeks.mjs";
 import { trPages, TR_WORDS } from "./lib/pages/tr.mjs";
 import { embedPages, badgeFiles, BADGE } from "./lib/pages/embed.mjs";
@@ -113,6 +114,7 @@ pages.push(...teamPages(m));
 pages.push(...matchupPages(m));
 const playoffs = playoffsPage(m);
 pages.push(...learnPages(m));
+pages.push(storyPage(m));
 pages.push(...weekPages(m));
 pages.push(...trPages(m));
 pages.push(...embedPages(m));
@@ -356,6 +358,7 @@ ${FEATURES.filter((f) => f.pro === false).map((f) => `- ${f.label}`).join("\n")}
 - [Learn](${ORIGIN}/learn/): what NBA win probability means, calibration and the Brier score, how accurate ESPN BPI is, and how to check a prediction came before the game, and what to use now that FiveThirtyEight's NBA forecast is gone
 - [Pricing](${ORIGIN}/pricing/): what is free and what Pro adds
 - [Company](${ORIGIN}/company/): who makes Clutch
+- [The story](${ORIGIN}/story/): why Clutch exists, how its numbers are sealed and graded, and how a business analyst builds it with Claude Code
 - [The sealed files on GitHub](${RECEIPTS_REPO})
 
 ## Optional

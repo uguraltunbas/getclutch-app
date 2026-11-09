@@ -146,6 +146,7 @@ export function companyPage() {
 <section aria-labelledby="facts"><h2 class="sh" id="facts">At a glance</h2><div class="scroll"><table class="tbl"><tbody>${facts.map(([k, v]) => `<tr><th scope="row">${k}</th><td>${v}</td></tr>`).join("")}</tbody></table></div></section>
 <section aria-labelledby="when"><h2 class="sh" id="when">So far</h2><div class="scroll"><table class="tbl"><tbody>${c.timeline.map(([when, what]) => `<tr><th scope="row">${esc(when)}</th><td>${esc(what)}</td></tr>`).join("")}</tbody></table></div></section>
 <section class="blk" aria-labelledby="else"><h2 id="else">Elsewhere</h2><ul>${elsewhere.map(([label, href]) => `<li><a href="${href}">${esc(label)}</a></li>`).join("")}</ul></section>
+<section class="blk" aria-labelledby="story"><h2 id="story">The story</h2><p>Why Clutch grades itself in public, and how a business analyst builds it with Claude Code as the developer. <a href="/story/">Sealed before tip →</a></p></section>
 <section class="blk" aria-labelledby="write"><h2 id="write">Write to us</h2><p>Press, partners and questions: ${mail}. We answer within 48 hours. Help with the app is on the <a href="/support/">Support</a> page.</p></section>
 </div></div>`;
   const desc = `Clutch is an NBA analytics app built and run by ${c.founder} in ${c.city} since ${c.foundedText}: the founder, the timeline, and how to reach us.`;
