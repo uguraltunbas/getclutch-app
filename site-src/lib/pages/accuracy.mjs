@@ -49,6 +49,19 @@ export function backtestSentence(bench) {
 }
 
 /** The two-season test as plain lines of numbers (for /llms.txt): per season, share of winners right and accuracy score for each track. */
+/**
+ * This season, live: Clutch and ESPN BPI on the same graded games, as plain counts. AI answers called
+ * the two-season test "developer-reported backtesting" (GEO test 2026-11-13); this is the sealed,
+ * live head-to-head beside it. Counts only, no "more accurate" (the claim rules keep that for the
+ * two-season test), and it says so whichever side is ahead. Empty until both have a full track.
+ */
+export function liveBpiSentence(r) {
+  const bpi = r?.tracks?.vs_espn?.espn_bpi, us = r?.tracks?.vs_espn?.clutch;
+  const right = (t) => Math.round((t.hit_rate * t.n) / 100);
+  if (!bpi?.n || us?.n !== bpi.n || bpi.hit_rate == null || us.hit_rate == null || bpi.n < RATE_FLOOR) return "";
+  return `This season, live: on the ${bpi.n} graded games ESPN BPI also had a number on, Clutch's sealed calls got ${right(us)} right and BPI's got ${right(bpi)}.`;
+}
+
 export function keyNumbers(bench) {
   const seasons = Object.keys(bench ?? {}).sort().reverse();
   const tracks = [["Clutch", "clutch"], ["ESPN BPI", "espn_bpi"], ["the market's final price", "market"], ["always the home team", "always_home"]];
@@ -161,11 +174,12 @@ function lastSeasonLine(m) {
 export function accuracyQa(m) {
   const r = m.record;
   const sentence = backtestSentence(m.accuracy?.benchmark);
+  const live = liveBpiSentence(r) || "Live, this season's games are graded beside ESPN BPI on the Ledger.";
   const qa = [
     ["How accurate is Clutch?", r
       ? `This season Clutch is ${rec(r.hits, r.n)} on ${callWord(r.n)} graded after the final${r.n >= RATE_FLOOR && r.hitRate != null ? `, ${r.hitRate.toFixed(1)}% right` : " — too few yet for a rate"}. Picking the home team every night went ${rec(Math.round(((r.homeRate ?? 0) * r.n) / 100), r.n)} on the same games.`
       : "The season's first calls are graded the morning after its first finals; this page fills in from then."],
-    ["Is Clutch more accurate than ESPN BPI?", sentence ? `In the test it had to pass before it shipped: ${sentence.charAt(0).toLowerCase()}${sentence.slice(1)} Live, this season's games are graded beside ESPN BPI on the Ledger.` : "Live, this season's games are graded beside ESPN BPI on the Ledger."],
+    ["Is Clutch more accurate than ESPN BPI?", sentence ? `In the test it had to pass before it shipped: ${sentence.charAt(0).toLowerCase()}${sentence.slice(1)} ${live}` : live],
     ...(() => {
       const t = backtestBands(m.accuracy?.current_version);
       if (!t) return [];

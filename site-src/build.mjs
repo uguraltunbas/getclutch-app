@@ -55,7 +55,7 @@ import { ledgerPage, receiptsPage } from "./lib/pages/paper.mjs";
 import { howPage, pricingPage, faqPage, companyPage, termsPage, privacyPage, refundsPage, supportPage } from "./lib/pages/about.mjs";
 import { unsubscribePage } from "./lib/pages/unsubscribe.mjs";
 import { teamPages, notFoundPage } from "./lib/pages/teams.mjs";
-import { accuracyPage, backtestSentence, backtestBands, accuracyQa, keyNumbers } from "./lib/pages/accuracy.mjs";
+import { accuracyPage, backtestSentence, backtestBands, accuracyQa, keyNumbers, liveBpiSentence } from "./lib/pages/accuracy.mjs";
 import { matchupPages } from "./lib/pages/matchups.mjs";
 import { playoffsPage } from "./lib/pages/playoffs.mjs";
 import { tonightPage } from "./lib/pages/tonight.mjs";
@@ -312,7 +312,8 @@ const llms = `# Clutch
 
 - Each morning Clutch publishes one number per NBA game: the chance the side it favors wins. The number is sealed with a SHA-256 fingerprint before tip-off and never edited.
 - After the final, the Ledger grades it beside ESPN BPI, the market and picking the home team every night, on the same games. Misses stay on the record.
-- ${llmsRecord}
+- ${llmsRecord}${liveBpiSentence(r) ? `
+- ${liveBpiSentence(r)}` : ""}
 - ${backtestSentence(m.accuracy?.benchmark) ?? "The model's two-season test is on the How it works page."}${llmsCalibration}
 - Clutch is analytics for fans, not advice: it makes no calls on margins or totals and carries no affiliate links.
 ${keyNumbers(m.accuracy?.benchmark).length ? `\n## The two-season test in numbers\n\n${keyNumbers(m.accuracy?.benchmark).join("\n")}\n` : ""}
