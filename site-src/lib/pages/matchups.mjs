@@ -14,6 +14,7 @@ import { page, esc, ORIGIN, teamSlug } from "../html.mjs";
 import { pct, normalizeStatus, finalLabel, rec } from "../copy.mjs";
 import { shortDate, mediumDate, dayLabel, timeET, shift } from "../time.mjs";
 import { formSection } from "../form.mjs";
+import { answersSection, faqLd } from "../answers.mjs";
 
 const pairKey = (x, y) => [x, y].sort().join("|");
 const LEAD_DAYS = 7;
@@ -164,10 +165,13 @@ function matchupPage(s, m) {
   ].join("");
   const st = seriesText(s, now);
   const deck = `Every ${a.name}–${b.name} game this season: Clutch's number for each before tip, the final, and whether the call held. ${st ? `${st} this season.` : "Their first meeting of the season is on the schedule below."}${pt ? ` Last season: ${pt}.` : ""}`;
+  // The questions people search this pair with ("magic vs suns prediction", "who will win…"), each answered in its first sentence.
+  const qa = matchupQa(s, m, { next, st, pt, played, graded, right, prevCalls, prevRight });
   const thisSeason = s.games.filter((g) => g.status === "final" || g.status === "postponed" || g.status === "live" || g.status === "halftime");
   const body = `<div class="wrap r"><div class="rhead"><span class="kick">Head to head · ${esc(m.current)}</span><h1 class="rh1">${esc(a.nickname)} vs ${esc(b.nickname)}</h1><p class="rdeck">${esc(deck)}</p>${stats ? `<div class="stat gap">${stats}</div>` : ""}</div>
 <div class="body">
 ${nextSection(next)}
+${answersSection(qa)}
 ${formSection(m, next?.away ?? a, next?.home ?? b, m.today, { heading: `Where they stand, ${shortDate(m.today)}`, chance: true })}
 <section aria-labelledby="season"><h2 class="sh${next ? " s" : ""}" id="season">This season</h2>${thisSeason.length ? thisSeason.map(row).join("") : '<p class="sub">No finals yet between these two this season.</p>'}</section>
 ${ahead.length ? `<section aria-labelledby="ahead"><h2 class="sh s" id="ahead">Still to come</h2>${ahead.map(row).join("")}<p class="note gap">Clutch's number for each game lands the morning of the game and is sealed before tip.</p></section>` : ""}
@@ -189,7 +193,45 @@ ${s.last.length ? `<section aria-labelledby="earlier"><h2 class="sh s" id="earli
   // The share card: the next meeting's (lib/ogcards.mjs), else the latest meeting that has one.
   const coming = s.games.find((g) => g.status !== "final" && g.status !== "postponed");
   const card = (coming && m.og?.[coming.id]) || s.games.slice().reverse().map((g) => m.og?.[g.id]).find(Boolean) || null;
-  return { path, title, html: page({ path, title, description, body, current: "teams", og: card?.name ?? "default", ...(card ? { ogAlt: card.alt } : {}), jsonld: ld }) };
+  return { path, title, html: page({ path, title, description, body, current: "teams", og: card?.name ?? "default", ...(card ? { ogAlt: card.alt } : {}), jsonld: [ld, faqLd(qa)].filter(Boolean) }) };
+}
+
+/** "Knicks lead 2–1" → "The Knicks lead 2–1"; "Level at 1–1" → "They are level at 1–1"; "They split…" stays. Lower-cased "the" mid-sentence. */
+function sentence(x, start = true) {
+  const t = start ? "The" : "the";
+  if (/^Level at /.test(x)) return `${start ? "They" : "they"} are level at ${x.slice(9)}`;
+  if (/^They /.test(x)) return start ? x : `they ${x.slice(5)}`;
+  return `${t} ${x}`;
+}
+
+/**
+ * The pair's short answers: who Clutch has in the next meeting, the season series, last season's,
+ * and how Clutch's graded calls on the pair have gone. A question the data can't answer yet is left out.
+ */
+export function matchupQa(s, m, { next, st, pt, played, graded, right, prevCalls, prevRight }) {
+  const { a, b } = s;
+  const vs = `${a.nickname} vs ${b.nickname}`;
+  let who = "";
+  if (next) {
+    const game = `${next.away.nickname} at ${next.home.nickname} on ${mediumDate(next.date)}`;
+    who = next.hasCall
+      ? `Clutch gives the ${next.side.team.nickname} a ${pct(next.side.prob)}% chance to beat the ${next.side.other.nickname} in ${game}. The number was sealed before tip and is graded the morning after.`
+      : `Clutch's win probability for ${game} comes out the morning of the game and is sealed before tip. Until then, this page has every earlier meeting with Clutch's call and the result.`;
+  }
+  const series = st
+    ? `${sentence(st)} in ${m.current}, after ${played.length} ${played.length === 1 ? "meeting" : "meetings"}.`
+    : next ? `They have not met yet in ${m.current}; the first meeting is ${next.away.nickname} at ${next.home.nickname} on ${mediumDate(next.date)}.` : "";
+  const calls = [
+    graded.length ? `${rec(right, graded.length)} in ${m.current}` : "",
+    prevCalls.length ? `${rec(prevRight, prevCalls.length)} in ${m.prevSeason}` : "",
+  ].filter(Boolean);
+  const record = calls.length ? `Clutch's graded calls on ${vs} games are ${calls.join(" and ")}, right–wrong. Every call is sealed before tip and stays on the public Ledger, misses included.` : "";
+  return [
+    [`Who will win the next ${vs} game?`, who],
+    [`Who leads the ${a.nickname}–${b.nickname} season series?`, series],
+    [`Who won the ${a.nickname}–${b.nickname} season series last season?`, pt ? `In ${m.prevSeason}, ${pt.split(". ").map((x) => sentence(x, false)).join("; ")}.` : ""],
+    [`How accurate is Clutch on ${vs} games?`, record],
+  ];
 }
 
 export function matchupPages(m) {

@@ -7,6 +7,8 @@ import { page, esc, ORIGIN, PLAY, WEB_APP_LIVE, teamSlug, tagged } from "../html
 import { pct, pickSide, normalizeStatus, finalLabel, RATE_FLOOR } from "../copy.mjs";
 import { matchupsOf, prevRecord, recordIn } from "./matchups.mjs";
 import { shortDate, mediumDate, timeET, seasonOf as seasonOfDate } from "../time.mjs";
+import { answersSection, faqLd } from "../answers.mjs";
+import { chanceWords } from "./playoffs.mjs";
 
 export function teamPages(m) {
   const board = m.seasonBoard;
@@ -65,9 +67,32 @@ export function teamPages(m) {
     const path = `/teams/${teamSlug(t)}/`;
     const nextG = next[0];
     const deck = `Clutch's number on every ${t.nickname} game, sealed before tip and graded in public — plus their playoff chance and how Clutch's calls on their games have gone.`;
+    // The questions people ask about a team ("lakers playoff chances", "who do the bulls play next"), each answered in its first sentence.
+    const confRows = (board?.teams ?? []).filter((r) => r.conference === t.conference && r.playoff_pct != null).sort((x, y) => y.playoff_pct - x.playoff_pct);
+    const rank = confRows.findIndex((r) => r.team_id === t.id) + 1;
+    const nth = (n) => `${n}${n % 100 >= 11 && n % 100 <= 13 ? "th" : ["th", "st", "nd", "rd"][n % 10] ?? "th"}`;
+    const nextCall = (() => {
+      if (!nextG) return "";
+      const v = pageOf[nextG.id];
+      const p = v?.hasCall ? v.homeProb : m.raw.preds[nextG.id] ? +m.raw.preds[nextG.id].home_win_prob : null;
+      const side = p == null ? null : pickSide(p, m.T[nextG.home_team_id], m.T[nextG.away_team_id]);
+      const o = opp(nextG);
+      const where = at(nextG) === "vs" ? `host the ${o.nickname}` : `visit the ${o.nickname}`;
+      return `The ${t.nickname} ${where} on ${mediumDate(nextG.game_date)}${nextG.game_time_utc ? `, tip ${timeET(nextG.game_time_utc)}` : ""}.${side ? ` Clutch gives the ${side.team.nickname} a ${pct(side.prob)}% chance to win.` : " Clutch's win probability comes out the morning of the game."}`;
+    })();
+    const qa = [
+      [`Will the ${t.nickname} make the playoffs?`, pc != null && rank
+        ? `Clutch gives the ${t.nickname} a ${chanceWords(pc)} chance to make the ${board.season ?? m.current} playoffs, ${nth(rank)} in the ${t.conference}, from ${(board.runs ?? 10000).toLocaleString("en-US")} simulated seasons of the rest of the schedule${board.as_of ? ` (ratings as of ${mediumDate(board.as_of)})` : ""}. It moves every night with the latest results.`
+        : ""],
+      [`Who do the ${t.nickname} play next?`, nextCall],
+      [`How accurate is Clutch on ${t.nickname} games?`, graded.length
+        ? `Clutch's graded calls in ${t.nickname} games are ${right}–${graded.length - right}, right–wrong, in ${gradedSeason}${gradedSeason !== m.current && m.last?.retired && m.last.season === gradedSeason ? ", made by the model Clutch has since retired" : ""}. Each call is sealed before tip and stays on the public Ledger, misses included.`
+        : ""],
+    ];
     const body = `<div class="wrap r"><div class="rhead h-${t.abbreviation}"><span class="kick">${esc(t.conference)} · ${esc((t.division || ""))}</span><h1 class="rh1">${esc(t.name)}</h1><p class="rdeck">${esc(deck)}</p>${stats ? `<div class="stat gap">${stats}</div>` : ""}</div>
 <div class="body">
 <section aria-labelledby="next"><h2 class="sh" id="next">Next up</h2>${nextRows || '<p class="sub">No games on the schedule yet.</p>'}</section>
+${answersSection(qa)}
 <section aria-labelledby="last"><h2 class="sh s" id="last">Latest finals</h2>${lastRows || '<p class="sub">No finals yet.</p>'}<p class="note gap">Clutch's call is graded only when the Ledger can prove it was made before tip; preseason is never graded.</p></section>
 ${h2h.length ? `<section aria-labelledby="h2h"><h2 class="sh s" id="h2h">Head to head</h2><p class="sub">${h2h.join(" · ")}</p><p class="note gap">${pr.w + pr.l ? `Beside each opponent: the record against it in the ${esc(m.prevSeason)} regular season. ` : ""}Linked opponents have a head-to-head page: every meeting this season and last, with Clutch's call and the result.</p></section>` : ""}
 ${pc != null ? `<p class="note">Playoff chance: ${esc(board.method ? `${board.runs?.toLocaleString("en-US") ?? "10,000"} simulated seasons` : "the season simulation")}, ratings as of ${esc(mediumDate(board.as_of))}${board.phase === "preseason" ? " (preseason)" : ""}. Every team's chances are free in the app, updated nightly. <a href="/playoff-chances/">All 30 teams' playoff chances →</a></p>` : ""}
@@ -78,7 +103,7 @@ ${t.abbreviation === "HOU" ? '<p class="note" lang="tr"><a href="/tr/houston-roc
     const description = `${t.name} win probability for every game${nextG ? `, next ${at(nextG)} the ${opp(nextG).nickname} on ${mediumDate(nextG.game_date)}` : ""}${pc != null ? `; playoff chance ${(pc * 100).toFixed(0)}%` : ""}. Sealed before tip, graded in public.`;
     const ld = [{ "@context": "https://schema.org", "@type": "SportsTeam", name: t.name, sport: "Basketball", url: ORIGIN + path, memberOf: { "@type": "SportsOrganization", name: "NBA" } },
       { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [{ "@type": "ListItem", position: 1, name: "Teams", item: `${ORIGIN}/teams/` }, { "@type": "ListItem", position: 2, name: t.name, item: ORIGIN + path }] }];
-    out.push({ path, title, html: page({ path, title, description, body, current: "teams", og: "default", jsonld: ld }) });
+    out.push({ path, title, html: page({ path, title, description, body, current: "teams", og: "default", jsonld: [...ld, faqLd(qa)].filter(Boolean) }) });
   }
 
   const byConf = (c) => m.raw.teams.filter((t) => t.conference === c).map((t) => `<a class="h-${t.abbreviation}" href="/teams/${teamSlug(t)}/"><span class="sw"></span><span><b>${esc(t.name)}</b><span class="mono">${chance[t.id] != null ? `Playoffs ${(chance[t.id] * 100).toFixed(0)}%` : ""}</span></span></a>`).join("");

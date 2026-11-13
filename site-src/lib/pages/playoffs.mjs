@@ -8,6 +8,7 @@
 import { page, esc, ORIGIN, bar, teamSlug } from "../html.mjs";
 import { mediumDate } from "../time.mjs";
 import { DATA_LICENSE_URL, DATA_LICENSE_LINE } from "../copy.mjs";
+import { answersSection, faqLd } from "../answers.mjs";
 
 export const PLAYOFFS_PATH = "/playoff-chances/";
 
@@ -17,6 +18,25 @@ export function chanceText(p) {
   if (p < 0.005) return "<1%";
   if (p > 0.995) return ">99%";
   return `${Math.round(p * 100)}%`;
+}
+
+/** chanceText in words, for a sentence read aloud: "less than 1%", "more than 99%". */
+export const chanceWords = (p) => chanceText(p).replace("<", "less than ").replace(">", "more than ");
+
+/** The page's short answers: the likeliest teams, the bubble, how the chances are made and how often. */
+export function playoffsQa(rows, conf, board, m) {
+  const runs = (board.runs ?? 10000).toLocaleString("en-US");
+  // "the Celtics (more than 99%), Pistons (98%) and Knicks (98%)" — a sentence that reads aloud.
+  const list = (xs) => { const w = xs.map((r) => `${r.team.nickname} (${chanceWords(r.playoff_pct)})`); return `the ${w.length > 1 ? `${w.slice(0, -1).join(", ")} and ${w.at(-1)}` : w[0]}`; };
+  const top = ["East", "West"].map((c) => `${list(conf(c).slice(0, 3))} in the ${c}`).join(", and ");
+  const bubble = ["East", "West"].map((c) => [c, conf(c).filter((r) => r.playoff_pct >= 0.25 && r.playoff_pct <= 0.75)]).filter(([, xs]) => xs.length);
+  const asOf = board.as_of ? ` (ratings as of ${mediumDate(board.as_of)})` : "";
+  return [
+    ["Which NBA teams are most likely to make the playoffs?", `The likeliest are ${top}, by Clutch's ${runs} simulated seasons${asOf}.`],
+    ["Which NBA teams are on the playoff bubble?", bubble.length ? `Clutch gives a 25% to 75% chance to ${bubble.map(([c, xs]) => `${list(xs)} in the ${c}`).join(", and ")}.` : ""],
+    ["How are NBA playoff chances calculated?", `Clutch plays out the rest of the regular season ${runs} times, with its own win probability for every remaining game and each team's strength allowed to drift as it has in past seasons. A team's playoff chance is how often it finished in the top six or won its way through the play-in.`],
+    ["How often are these playoff chances updated?", "Every night: the simulation is run again after each night's finals, so a team's chance moves with every result."],
+  ];
 }
 
 export function playoffsPage(m) {
@@ -35,8 +55,11 @@ export function playoffsPage(m) {
     : "";
   const top = rows.slice().sort((x, y) => y.playoff_pct - x.playoff_pct)[0];
   const deck = `Every NBA team's chance to make the playoffs, from ${(board.runs ?? 10000).toLocaleString("en-US")} simulated seasons, rebuilt every night with the latest results.${early ? " With only a few games played, these still lean on each team's rating coming into the season." : ""}`;
+  // "who looks ready for a playoff run?" — the questions people put to this page, answered from tonight's board.
+  const qa = playoffsQa(rows, conf, board, m);
   const body = `<div class="wrap r"><div class="rhead"><span class="kick">Playoff chances · ${esc(board.season ?? m.current)}${board.as_of ? ` · Ratings as of ${esc(mediumDate(board.as_of))}` : ""}</span><h1 class="rh1">NBA playoff chances</h1><p class="rdeck">${esc(deck)}</p></div>
 <div class="body">
+${answersSection(qa)}
 ${table("East", "east")}
 ${table("West", "west")}
 <section class="blk" aria-labelledby="how"><h2 id="how">How these are made</h2>
@@ -59,5 +82,5 @@ ${test}
     variableMeasured: ["playoff chance", "wins", "losses"],
     ...(board.as_of ? { dateModified: board.as_of } : {}),
   };
-  return { path: PLAYOFFS_PATH, title, html: page({ path: PLAYOFFS_PATH, title, description, body, current: "teams", og: "default", jsonld: ld }) };
+  return { path: PLAYOFFS_PATH, title, html: page({ path: PLAYOFFS_PATH, title, description, body, current: "teams", og: "default", jsonld: [ld, faqLd(qa)].filter(Boolean) }) };
 }
