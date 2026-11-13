@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Clutch reel</title>
+<link rel="stylesheet" href="../desk-src/brand.css">
+<script src="../desk-src/led.js"></script>
+<style>
+/* The daily reels, 1080×1920, the Night edition (desk-src/brand.css: the app's palette and type,
+   the icon's LED dots). Every frame is drawn from t alone (renderFrame), so a render never depends
+   on the machine. Safe zone for TikTok / Reels / Shorts: words between y 190 and 1540, the lower
+   right kept clear of the like / share column. Team colours are marks (LED codes, bars), never text;
+   amber is Clutch's own: its number and its side. */
+#stage { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; overflow: hidden; background: var(--paper); }
+#bg, #cv, #fx { position: absolute; left: 0; top: 0; }
+#dom, #endl { position: absolute; inset: 0; }
+#bg { z-index: 0; } #cv { z-index: 1; } #dom { z-index: 2; } #endl { z-index: 3; } #fx { z-index: 4; }
+.x { position: absolute; transform-origin: 0 50%; will-change: transform, opacity; }
+.eb { font: 600 30px/1 var(--mono); letter-spacing: .18em; text-transform: uppercase; color: var(--amber); }
+.eb .r { color: var(--ink3); }
+.hd { font: 900 96px/1 var(--display); color: var(--ink); letter-spacing: -.012em; }
+.hd em, .amb { font-style: normal; color: var(--amber); }
+.nm { font: 600 44px/1.15 var(--body); color: var(--ink2); }
+.mono { font: 600 30px/1.3 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink3); }
+.rule2 { border-top: 5px solid var(--ink); border-bottom: 2px solid var(--ink); height: 12px; }
+.panel { background: var(--paper2); border: 2px solid var(--rule); border-radius: 14px; }
+.glass { background: #0F1114; border: 2px solid #2A2E35; border-radius: 14px; }
+.pill { display: inline-block; background: var(--amber); color: var(--onAmber); font: 700 46px/1 var(--mono); letter-spacing: .04em; padding: 30px 44px; border-radius: 8px; }
+.stamp { font: 900 104px/1 var(--display); padding: 14px 34px 22px; border: 10px solid currentColor; border-radius: 14px; text-transform: uppercase; white-space: nowrap; transform-origin: 50% 50%; }
+</style></head>
+<body>
+<div id="stage"><canvas id="bg" width="1080" height="1920"></canvas><canvas id="cv" width="1080" height="1920"></canvas><div id="dom"></div><div id="endl"></div><canvas id="fx" width="1080" height="1920"></canvas></div>
+<script>
+const W = 1080, H = 1920, L = 70, R = 1010;
+const PAPER = "#15130F", INK = "#F1E9D8", INK2 = "#CFC4AE", INK3 = "#B4AA97", AMBER = "#FFB020", WIN = "#5AD98A", HOT = "#FF4D4D", LED_OFF = "rgba(241,233,216,0.07)";
+const bg = document.getElementById("bg").getContext("2d");
+const ctx = document.getElementById("cv").getContext("2d");
+const fxx = document.getElementById("fx").getContext("2d");
+const dom = document.getElementById("dom"), endl = document.getElementById("endl");
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const seg = (t, a, b) => clamp((t - a) / (b - a));
+const eo = (x) => 1 - Math.pow(1 - x, 3);
+const eio = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+const back = (x) => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
+const lerp = (a, b, k) => a + (b - a) * k;
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const CANVAS_WORDS = new Set();
+function el(html, parent = dom) { const d = document.createElement("div"); d.innerHTML = html.trim(); const e = d.firstElementChild; parent.appendChild(e); return e; }
+function vis(e, o, dy = 0, s = 1, dx = 0, rot = 0) { e.style.opacity = o; e.style.transform = `translate(${dx}px, ${dy}px) scale(${s}) rotate(${rot}deg)`; }
+/** in at a (rising), out at b (fading up); visible between. */
+function span(e, t, a, b, dist = 36) {
+  const i = a <= 0 ? 1 : eo(seg(t, a, a + 0.45)), o = b === Infinity ? 0 : eo(seg(t, b, b + 0.3));
+  vis(e, i * (1 - o), (1 - i) * dist - o * 24);
+}
+function dot(c, x, y, r, color) { c.fillStyle = color; c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.fill(); }
+/** LED text with its top-left dot at (x, y); returns its width. */
+function led(c, text, x, y, pitch, o = {}) {
+  CANVAS_WORDS.add(text);
+  LED.draw(c, text, x, y, { pitch, on: o.on ?? AMBER, off: o.off === undefined ? LED_OFF : o.off, glow: o.glow ?? pitch * 0.9, alpha: o.alpha ?? 1, lit: o.lit, r: o.r });
+  return LED.width(text, pitch) - pitch;
+}
+const ledW = (text, pitch) => LED.width(text, pitch) - pitch;
+/** A pitch at which `text` spans at most `w` px (and no more than `max`). */
+const fitPitch = (text, w, max) => Math.min(max, Math.floor(w / (LED.cols(text) - 1)));
+/** Shrinks a block's font until it fits `h` px tall (fonts are loaded by then). */
+function fit(e, h, min = 28) { let s = parseFloat(getComputedStyle(e).fontSize); while (e.scrollHeight > h && s > min) { s -= 2; e.style.fontSize = s + "px"; } return s; }
+
+/** Clutch's number: the digits in LED, the % sign set in Fraunces beside them; returns the total width. */
+function bigNumber(c, n, x, y, pitch, o = {}) {
+  const digits = String(n), w = led(c, digits, x, y, pitch, o);
+  const size = Math.round(pitch * 5.4);
+  c.save(); c.globalAlpha = o.alpha ?? 1; c.font = `900 ${size}px Fraunces`; c.fillStyle = AMBER; c.textBaseline = "alphabetic";
+  c.shadowColor = "rgba(255,176,32,0.45)"; c.shadowBlur = pitch * 0.8;
+  c.fillText("%", x + w + pitch * 1.1, y + 6 * pitch + pitch * 0.32); c.restore();
+  CANVAS_WORDS.add("%");
+  return w + pitch * 1.1 + size * 0.78;
+}
+
+// the paper: a faint dot field, like the glass of a scoreboard with every light off
+function paper() {
+  bg.fillStyle = PAPER; bg.fillRect(0, 0, W, H);
+  bg.fillStyle = "rgba(241,233,216,0.045)";
+  for (let y = 12; y < H; y += 24) for (let x = 12; x < W; x += 24) { bg.beginPath(); bg.arc(x, y, 2.1, 0, Math.PI * 2); bg.fill(); }
+  const v = bg.createRadialGradient(W / 2, H * 0.42, 200, W / 2, H * 0.42, 1250);
+  v.addColorStop(0, "rgba(21,19,15,0)"); v.addColorStop(1, "rgba(8,7,5,0.72)");
+  bg.fillStyle = v; bg.fillRect(0, 0, W, H);
+}
+
+// ── the end card, the same for both reels ───────────────────────────────
+const C_DOTS = [[1, 0], [2, 0], [3, 0], [0, 1], [0, 2], [0, 3], [1, 4], [2, 4], [3, 4]];
+function buildEnd(line) {
+  return el(`<div class="x" style="inset:0;background:var(--paper);display:flex;flex-direction:column;align-items:center;padding-top:860px;gap:30px;text-align:center;transform-origin:50% 50%">
+    <div style="font:900 160px/0.9 var(--display);color:var(--ink)">Clutch</div>
+    <div style="font:900 64px/1.08 var(--display);color:var(--ink)">Call every game.<br><em style="font-style:normal;color:var(--amber)">Beat Clutch.</em></div>
+    <div class="pill" style="margin-top:24px">clutchledger.com</div>
+    <div class="mono" style="margin-top:6px">${esc(line)}</div></div>`, endl);
+}
+function drawEnd(t, t0, e) {
+  const k = seg(t, t0, t0 + 0.25);
+  e.style.opacity = k; e.style.transform = `translateY(${(1 - eo(k)) * 30}px)`;
+  fxx.clearRect(0, 0, W, H);
+  if (t < t0) return;
+  const pitch = 82, r = 30, ox = 540 - 1.5 * pitch - 24, oy = 400;
+  fxx.save(); fxx.globalAlpha = k;
+  for (let gx = -3; gx <= 7; gx++) for (let gy = -1; gy <= 5; gy++) dot(fxx, ox + gx * pitch, oy + gy * pitch, 7, "rgba(241,233,216,0.07)");
+  fxx.shadowColor = AMBER; fxx.shadowBlur = 36;
+  C_DOTS.forEach(([cx, cy], i) => { const a = clamp((t - t0 - 0.12 - i * 0.045) / 0.12); if (a <= 0) return; fxx.globalAlpha = k * a; dot(fxx, ox + cx * pitch, oy + cy * pitch, r, AMBER); });
+  fxx.restore();
+}
+
+/** The top line: what the reel is, and the day. */
+function masthead(left, right) {
+  el(`<div class="x eb" style="left:${L}px;right:${W - R}px;top:200px;display:flex;justify-content:space-between"><span>${esc(left)}</span><span class="r">${esc(right)}</span></div>`);
+  el(`<div class="x rule2" style="left:${L}px;right:${W - R}px;top:250px"></div>`);
+}
+
+/** A team's LED code in its colour, lighting from the left over `k` (0..1). */
+function teamLed(c, abbr, color, x, y, pitch, k = 1, alpha = 1) {
+  return led(c, abbr, x, y, pitch, { on: color, alpha, glow: pitch * 0.7, lit: (i, n, px) => clamp((k * (ledW(abbr, pitch) + pitch * 6) - (px - x)) / (pitch * 3)) });
+}
+
+const SCENES = {};
+
+// ── Tonight's number ─────────────────────────────────────────────────────
+SCENES.tonight = (p) => {
+  const DUR = 15.2, T_NUM = 2.7, T_WHY = 7.4, T_END = 12.5;
+  const pick = p.pickHome ? p.home : p.away, other = p.pickHome ? p.away : p.home;
+  masthead("Game of the night", p.day);
+  // A · the matchup (frame 0 is the hook)
+  const h1 = el(`<div class="x hd" style="left:${L}px;right:${W - R}px;top:300px">Tonight's biggest game, <em>in one number.</em></div>`);
+  const AP = 30, rowY = [700, 1090];
+  const nameA = el(`<div class="x nm" style="left:${L}px;top:${rowY[0] + 6 * AP + 34}px">${esc(p.away.name)}</div>`);
+  const atRow = el(`<div class="x mono" style="left:${L}px;top:${rowY[0] + 6 * AP + 112}px;color:var(--ink3)">at · ${esc(p.tip)}</div>`);
+  const nameH = el(`<div class="x nm" style="left:${L}px;top:${rowY[1] + 6 * AP + 34}px">${esc(p.home.name)}</div>`);
+  // B · the number
+  const NP = fitPitch(String(p.pct), 600, 62), NY = 520;
+  const lab = el(`<div class="x mono" style="left:${L}px;top:322px;color:var(--ink2)">${esc(p.away.abbr)} @ ${esc(p.home.abbr)} · ${esc(p.tip)}</div>`);
+  const who = el(`<div class="x hd" style="left:${L}px;right:${W - R}px;top:${NY + 6 * NP + 70}px;font-size:104px"><em>${esc(pick.nickname)}</em> to win.</div>`);
+  const BY = NY + 6 * NP + 230;
+  const barL = el(`<div class="x mono" style="left:${L}px;right:${W - R}px;top:${BY + 52}px;display:flex;justify-content:space-between;color:var(--ink2)"><span>${esc(pick.abbr)} ${p.pct}</span><span>${esc(other.abbr)} ${100 - p.pct}</span></div>`);
+  const sealed = el(`<div class="x mono" style="left:${L}px;right:${W - R}px;top:${BY + 112}px;font-size:28px">${p.preseason ? "Preseason · sealed, never graded" : `Sealed ${esc(p.sealedAt)} · graded after the final`}</div>`);
+  // C · the reason
+  let why = null;
+  if (p.reason) {
+    why = el(`<div class="x panel" style="left:${L}px;right:${W - R}px;top:${BY + 200}px;padding:34px 40px 38px;display:flex;flex-direction:column;gap:16px">
+      <div class="eb" style="font-size:26px">Why${p.reason.share ? ` · ${p.reason.share}% of the call` : ""}</div>
+      <div style="font:700 60px/1.05 var(--display);color:var(--ink)">${esc(p.reason.title)}</div>
+      <div class="why-line" style="font:500 46px/1.3 var(--body);color:var(--ink2)">${esc(p.reason.line)}.</div></div>`);
+  }
+  const end = buildEnd(p.preseason ? "Preseason · sealed, never graded" : "Play tonight in your browser");
+  window.DURATION = DUR;
+  window.STILL = 9.5;
+  const after = () => { if (why) fit(why.querySelector(".why-line"), 1520 - (BY + 200) - 200, 34); };
+  return { after, frame(t) {
+    ctx.clearRect(0, 0, W, H);
+    // A
+    const outA = eo(seg(t, T_NUM - 0.45, T_NUM - 0.05));
+    vis(h1, 1 - outA, -outA * 30);
+    if (outA < 1) {
+      rowY.forEach((y, i) => {
+        const tm = i ? p.home : p.away;
+        const k = 1;
+        ctx.save(); ctx.globalAlpha = 1 - outA;
+        ctx.fillStyle = tm.color; ctx.fillRect(L, y - AP * 0.5, 14, AP * 7);
+        teamLed(ctx, tm.abbr, tm.color, L + 52, y, AP, k, 1 - outA);
+        ctx.restore();
+      });
+      [nameA, atRow, nameH].forEach((e) => vis(e, 1 - outA, -outA * 30));
+    } else [nameA, atRow, nameH].forEach((e) => vis(e, 0));
+    // B
+    const inB = seg(t, T_NUM, T_NUM + 0.4), outB = 0;
+    vis(lab, eo(inB), (1 - eo(inB)) * 20);
+    if (t >= T_NUM) {
+      // the number counts up from a coin flip, the dots lighting as it goes
+      const kc = eio(seg(t, T_NUM + 0.1, T_NUM + 1.5));
+      const shown = Math.round(lerp(50, p.pct, kc));
+      const full = String(p.pct);
+      const nx = L + NP * 0.3;
+      ctx.save();
+      const glow = ctx.createRadialGradient(nx + ledW(full, NP) / 2, NY + 3 * NP, 40, nx + ledW(full, NP) / 2, NY + 3 * NP, 620);
+      glow.addColorStop(0, `rgba(255,176,32,${0.13 * eo(inB)})`); glow.addColorStop(1, "rgba(255,176,32,0)");
+      ctx.fillStyle = glow; ctx.fillRect(0, NY - 300, W, 6 * NP + 600);
+      ctx.restore();
+      bigNumber(ctx, shown, nx, NY, NP, { alpha: eo(inB), glow: NP * (kc >= 1 ? 1.0 + 0.2 * Math.sin((t - T_NUM) * 3) : 0.8) });
+      CANVAS_WORDS.add(full + "%");
+    }
+    span(who, t, T_NUM + 1.4, Infinity);
+    // the split bar: Clutch's side in its team colour, the other side in its own
+    const kb = eio(seg(t, T_NUM + 1.8, T_NUM + 2.6));
+    if (kb > 0) {
+      const bw = R - L, split = bw * (p.pct / 100) * kb;
+      ctx.save(); ctx.globalAlpha = eo(seg(t, T_NUM + 1.8, T_NUM + 2.0));
+      ctx.fillStyle = "rgba(241,233,216,0.10)"; ctx.beginPath(); ctx.roundRect(L, BY, bw, 30, 4); ctx.fill();
+      ctx.fillStyle = other.color; ctx.beginPath(); ctx.roundRect(L + split + 6, BY, Math.max(0, (bw - split - 6) * kb), 30, 4); ctx.fill();
+      ctx.fillStyle = pick.color; ctx.beginPath(); ctx.roundRect(L, BY, split, 30, 4); ctx.fill();
+      ctx.restore();
+    }
+    span(barL, t, T_NUM + 2.2, Infinity, 16);
+    span(sealed, t, T_NUM + 2.6, Infinity, 16);
+    // C
+    if (why) span(why, t, T_WHY, Infinity, 60);
+    drawEnd(t, T_END, end);
+  } };
+};
+
+// ── Graded ───────────────────────────────────────────────────────────────
+SCENES.graded = (p) => {
+  const DUR = 15.0, T_FINAL = 2.6, T_STAMP = 5.0, T_REC = p.record ? 7.4 : null, T_END = p.record ? 12.3 : 9.6;
+  const pick = p.pickHome ? p.home : p.away, other = p.pickHome ? p.away : p.home;
+  const ps = p.pickHome ? p.homeScore : p.awayScore, os = p.pickHome ? p.awayScore : p.homeScore;
+  masthead("Graded", p.day);
+  // A · what Clutch said (frame 0 is the hook)
+  const h1 = el(`<div class="x hd" style="left:${L}px;right:${W - R}px;top:300px;font-size:92px">Last night's biggest game. <em>Did Clutch's number hold?</em></div>`);
+  const NP = 32, NY = 700;
+  const said = el(`<div class="x mono" style="left:${L}px;top:${NY - 70}px;color:var(--ink2)">Clutch at tip · ${esc(pick.abbr)} to win</div>`);
+  // B · the final, on the scoreboard's glass
+  const GY = 1010, GH = 430, RP = 19;
+  const gHead = el(`<div class="x mono" style="left:${L + 40}px;right:${W - R + 40}px;top:${GY + 30}px;display:flex;justify-content:space-between;color:#A0A6B0;font-size:26px"><span>Final</span><span>${esc(p.away.abbr)} @ ${esc(p.home.abbr)}</span></div>`);
+  const rows = [
+    { t: p.away, s: p.awayScore, y: GY + 110 },
+    { t: p.home, s: p.homeScore, y: GY + 110 + 7 * RP + 40 },
+  ];
+  const tag = el(`<div class="x" style="top:0;left:0;font:700 24px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;background:var(--amber);color:var(--onAmber);padding:8px 10px;border-radius:4px">Clutch</div>`);
+  // C · the verdict
+  const stamp = el(`<div class="x stamp" style="right:${W - R}px;top:${NY + 40}px;font-size:72px;color:${p.correct ? "var(--win)" : "var(--hot)"}">${p.correct ? "✓ Held" : "✗ Missed"}</div>`);
+  const verdict = el(`<div class="x hd" style="left:${L}px;right:${W - R}px;top:300px;font-size:92px">${p.correct
+    ? `The <em>${esc(pick.nickname)}</em> won it, ${Math.max(ps, os)}–${Math.min(ps, os)}.`
+    : `The ${esc(other.nickname)} won it, ${Math.max(ps, os)}–${Math.min(ps, os)}. <em>A miss, on the record.</em>`}</div>`);
+  // D · the season's record
+  let recHead = null, recSub = null, legend = null, grid = null;
+  if (p.record) {
+    const rt = `${p.record.right}–${p.record.wrong}`;
+    recHead = el(`<div class="x hd" style="left:${L}px;right:${W - R}px;top:300px;font-size:92px">Every sealed call this season: <em>${esc(rt)}.</em></div>`);
+    recSub = el(`<div class="x mono" style="left:${L}px;right:${W - R}px;top:560px;color:var(--ink2)">${p.record.rate}% right · ${p.record.n} calls · misses included</div>`);
+    // the grid fills the box at the largest pitch that holds every call
+    const n = p.record.tiles.length, BW = R - L, BH = 760;
+    let pitch = 64; while (pitch > 10 && Math.ceil(n / Math.floor(BW / pitch)) * pitch > BH) pitch -= 1;
+    const cols = Math.floor(BW / pitch);
+    grid = { pitch, cols, x0: L + pitch / 2 + (BW - cols * pitch) / 2, y0: 660 + pitch / 2 };
+    const gh = Math.ceil(n / cols) * pitch;
+    legend = el(`<div class="x mono" style="left:${L}px;top:${660 + gh + 34}px;font-size:26px;display:flex;gap:40px;align-items:center"><span><span style="display:inline-block;width:22px;height:22px;border-radius:50%;background:var(--amber);vertical-align:-3px;margin-right:12px"></span>Right</span><span><span style="display:inline-block;width:18px;height:18px;border-radius:50%;border:3px solid var(--hot);vertical-align:-3px;margin-right:12px"></span>Missed</span><span style="color:var(--ink2)">◎ last night</span></div>`);
+  }
+  const end = buildEnd("Every call, graded: the Ledger");
+  window.DURATION = DUR;
+  window.STILL = T_STAMP + 1.2;
+  return { frame(t) {
+    ctx.clearRect(0, 0, W, H);
+    const outA = T_REC ? eo(seg(t, T_REC - 0.5, T_REC - 0.1)) : 0;
+    // A
+    const v = eo(seg(t, T_STAMP - 0.2, T_STAMP + 0.2));
+    vis(h1, 1 - v, -v * 24);
+    vis(verdict, v * (1 - outA), (1 - v) * 30 - outA * 24);
+    vis(said, 1 - outA, -outA * 24);
+    if (outA < 1) {
+      ctx.save(); ctx.globalAlpha = 1 - outA;
+      bigNumber(ctx, p.pct, L + NP * 0.3, NY, NP, { glow: NP, alpha: 1 - outA });
+      CANVAS_WORDS.add(`${p.pct}%`);
+      ctx.restore();
+    }
+    // B
+    const kg = eo(seg(t, T_FINAL, T_FINAL + 0.45));
+    vis(gHead, kg * (1 - outA), (1 - kg) * 50 - outA * 24);
+    if (kg > 0 && outA < 1) {
+      ctx.save(); ctx.globalAlpha = kg * (1 - outA);
+      ctx.fillStyle = "#0F1114"; ctx.strokeStyle = "#2A2E35"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.roundRect(L, GY + (1 - kg) * 50 - outA * 24, R - L, GH, 14); ctx.fill(); ctx.stroke();
+      ctx.restore();
+    }
+    if (kg > 0 && outA < 1) {
+      const kc = eio(seg(t, T_FINAL + 0.3, T_FINAL + 1.9));
+      const settled = seg(t, T_FINAL + 1.9, T_FINAL + 2.3);
+      rows.forEach((r) => {
+        const isPick = r.t.abbr === pick.abbr, won = r.s > (r === rows[0] ? rows[1].s : rows[0].s);
+        const a = kg * (1 - outA) * (won ? 1 : lerp(1, 0.42, settled));
+        const dy = (1 - kg) * 50 - outA * 24;
+        ctx.save(); ctx.globalAlpha = a;
+        ctx.fillStyle = r.t.color; ctx.fillRect(L + 40, r.y + dy - RP * 0.5, 12, RP * 7);
+        teamLed(ctx, r.t.abbr, r.t.color, L + 84, r.y + dy, RP, 1, a);
+        const sc = String(Math.round(r.s * kc));
+        led(ctx, sc, R - 40 - ledW(sc, RP), r.y + dy, RP, { on: INK, off: "rgba(244,245,247,0.06)", glow: RP * 0.5, alpha: a });
+        CANVAS_WORDS.add(String(r.s));
+        ctx.restore();
+        if (isPick) vis(tag, a, r.y + dy + 2.6 * RP - 18, 1, L + 84 + ledW(r.t.abbr, RP) + 40);
+      });
+    } else vis(tag, 0);
+    // C · the stamp lands
+    const ks = seg(t, T_STAMP, T_STAMP + 0.32);
+    const sOut = outA;
+    if (ks > 0) { const s = lerp(1.9, 1, back(ks)); stamp.style.opacity = clamp(ks * 3) * (1 - sOut); stamp.style.transform = `scale(${s}) rotate(-7deg)`; }
+    else stamp.style.opacity = 0;
+    // D · the record: every graded call, in tip order, last night's ringed
+    if (T_REC) {
+      span(recHead, t, T_REC, Infinity, 30);
+      span(recSub, t, T_REC + 0.3, Infinity, 16);
+      span(legend, t, T_REC + 1.4, Infinity, 16);
+      if (t >= T_REC) {
+        const { pitch, cols, x0, y0 } = grid, tiles = p.record.tiles, n = tiles.length;
+        const r = pitch * 0.33;
+        const wave = seg(t, T_REC + 0.2, T_REC + 1.6);
+        ctx.save();
+        for (let i = 0; i < n; i++) {
+          const k = clamp((wave * (n + 18) - i) / 18);
+          if (k <= 0) continue;
+          const x = x0 + (i % cols) * pitch, y = y0 + Math.floor(i / cols) * pitch;
+          ctx.globalAlpha = k;
+          if (tiles[i]) { ctx.shadowColor = AMBER; ctx.shadowBlur = pitch * 0.35; dot(ctx, x, y, r, AMBER); ctx.shadowBlur = 0; }
+          else { ctx.strokeStyle = HOT; ctx.lineWidth = Math.max(2.5, pitch * 0.09); ctx.beginPath(); ctx.arc(x, y, r - ctx.lineWidth / 2, 0, Math.PI * 2); ctx.stroke(); }
+        }
+        const li = p.record.last;
+        if (li >= 0 && wave >= 1) {
+          const x = x0 + (li % cols) * pitch, y = y0 + Math.floor(li / cols) * pitch;
+          const pulse = 0.5 + 0.5 * Math.sin((t - T_REC - 1.6) * 5);
+          ctx.globalAlpha = 1; ctx.strokeStyle = INK; ctx.lineWidth = 3;
+          ctx.beginPath(); ctx.arc(x, y, r + pitch * (0.18 + 0.08 * pulse), 0, Math.PI * 2); ctx.stroke();
+        }
+        ctx.restore();
+      }
+    }
+    drawEnd(t, T_END, end);
+  } };
+};
+
+let scene = null;
+/** Builds a reel from its facts (reels-src/facts.mjs); resolves once its fonts are in. */
+window.setup = async (plan) => {
+  dom.innerHTML = ""; endl.innerHTML = ""; CANVAS_WORDS.clear();
+  paper();
+  scene = SCENES[plan.kind](plan);
+  await Promise.all(["900 96px Fraunces", "700 60px Fraunces", "600 30px 'Plex Mono'", "700 46px 'Plex Mono'", "600 44px Franklin", "500 46px Franklin"].map((f) => document.fonts.load(f)));
+  await document.fonts.ready;
+  scene.after?.();
+  scene.frame(0);
+  return { dur: window.DURATION, still: window.STILL };
+};
+window.renderFrame = (t) => scene.frame(t);
+/** Every word the reel shows: the page's text and what the canvas drew. */
+window.texts = () => [document.getElementById("stage").innerText, ...CANVAS_WORDS].filter(Boolean);
+</script>
+</body></html>

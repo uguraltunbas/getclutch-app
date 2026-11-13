@@ -1,0 +1,81 @@
+# Clutch's daily reels: two short vertical videos (1080×1920, H.264, no
+# sound, about 15 s) made from public numbers and sent to Uğur on Telegram
+# with a caption to paste — he posts them to TikTok, YouTube Shorts,
+# Instagram Reels and X himself (reels-src/make.mjs):
+#   Graded          last night's game of the night: Clutch's number at tip,
+#                   the final, held or missed, the season's record
+#   Tonight's number  today's game of the night: the sealed number, the tip
+#                   (ET), the biggest reason in plain words
+#
+# When: every day at 15:25 UTC, after the morning seal (pg_cron, 15:00 UTC:
+# 10 AM ET in winter, 11 AM in summer) and well before the first tip; it looks
+# again for up to 30 minutes when the seal is late. By hand: any ET date, one
+# reel, or a dry run.
+#
+# Why here, in the public site repository: Actions minutes are free for a
+# public repository (about 3 minutes a run), and the drawing needs nothing
+# private: it reads what any visitor of clutchledger.com reads, with the
+# public anon key.
+#
+# Secrets: SUPABASE_ANON_KEY (the public key the site reads with),
+# TELEGRAM_BOT_TOKEN (the radar's bot, @clutch_radar_ugur_bot) and
+# TELEGRAM_CHAT_ID (Uğur's chat with it). Without the two Telegram secrets a
+# run draws, checks and logs, and sends nothing.
+#
+# The log names each reel and its checks, never a caption or a number; the
+# files are never kept as artifacts (the repository is public). Inputs reach
+# the script as environment variables, never inside a shell line. Actions are
+# pinned to a commit (the tag in the comment), as in site.yml.
+name: Daily reels
+on:
+  schedule:
+    - cron: "25 15 * * *"
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "ET date of tonight's game (YYYY-MM-DD, empty = today); the graded reel is the day before"
+        required: false
+        default: ""
+        type: string
+      only:
+        description: "One reel only: tonight or graded (empty = both)"
+        required: false
+        default: ""
+        type: string
+      dry:
+        description: "Draw and check, send nothing"
+        required: false
+        default: false
+        type: boolean
+permissions:
+  contents: read
+concurrency:
+  group: reels
+  cancel-in-progress: false
+jobs:
+  reels:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+      - name: ffmpeg
+        run: sudo apt-get update -q && sudo apt-get install -y -q ffmpeg
+      - name: Tests
+        run: node --test reels-src/test/*.test.mjs
+      - name: Make and send the reels
+        env:
+          CHROME_PATH: /usr/bin/google-chrome
+          CI: "true"
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          INPUT_DATE: ${{ github.event.inputs.date }}
+          INPUT_ONLY: ${{ github.event.inputs.only }}
+          INPUT_DRY: ${{ github.event.inputs.dry }}
+          INPUT_WAIT_SEAL: "30"
+        run: node reels-src/make.mjs
