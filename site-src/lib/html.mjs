@@ -12,6 +12,8 @@ import { SUPPORT_EMAIL } from "../content/legal.mjs";
 export const ORIGIN = "https://clutchledger.com";
 export const APP = "https://app.clutchledger.com";
 export const APP_STORE = "https://apps.apple.com/app/id6761838099";
+/** The app icon under a name that says whose it is (build.mjs copies static/icon-512.png here). */
+export const BRAND_ICON = "/clutch-ledger-app-icon.png";
 // IndexNow (Bing, Yandex, Seznam, Naver): public by design — the site serves it at /<key>.txt.
 export const INDEXNOW_KEY = "a31eed2945a541da96d1777477463467";
 // Cloudflare Web Analytics (owner, 2026-10-23): counts visits without cookies; the token is public by design
@@ -214,7 +216,7 @@ function footer(path) {
   const index = FOOT_INDEX.map(([label, links]) => `<div><p>${label}</p>${links.map(([href, text, attrs = ""]) => `<a href="${href}"${attrs}>${text}</a>`).join("")}</div>`).join("");
   const listed = path === "/" ? `<p class="flisted">${LISTED_ON.map((b) => `<a href="${b.href}"><img src="${b.img}" width="${b.w}" height="${b.h}" alt="${b.alt}" loading="lazy" decoding="async"></a>`).join("")}</p>` : "";
   return `<footer class="foot"><div class="wrap">
-<div class="ftop"><div><span class="logo">Clutch</span><p>The NBA, called before tip and graded in public.</p></div><nav class="fkeys" aria-label="Follow Clutch">${keys}</nav></div>
+<div class="ftop"><div><img class="ficon" src="${BRAND_ICON}" width="56" height="56" alt="Clutch Ledger app icon" loading="lazy" decoding="async"><span class="logo">Clutch</span><p>The NBA, called before tip and graded in public.</p></div><nav class="fkeys" aria-label="Follow Clutch">${keys}</nav></div>
 <div class="fgrid">
 <dl class="kunye"><p>The masthead</p>${KUNYE.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("")}</dl>
 <nav class="findex" aria-label="Index">${index}${listed}</nav>

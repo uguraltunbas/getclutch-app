@@ -5,7 +5,7 @@
 // night, tonight's games, three moves, the Ledger, Free and Pro, the close.
 // The questions moved to /faq/, the free paper's cards to /faq/ and /pricing/.
 
-import { page, esc, bar, APP_STORE, ORIGIN, PLAY, PLAY_PRO, WEB_APP_LIVE, LAUNCH_ON, LAUNCH_WORDS, passLink, webAppLink, playWords, priceFig, playNight, tagged } from "../html.mjs";
+import { page, esc, bar, APP_STORE, BRAND_ICON, ORIGIN, PLAY, PLAY_PRO, WEB_APP_LIVE, LAUNCH_ON, LAUNCH_WORDS, passLink, webAppLink, playWords, priceFig, playNight, tagged } from "../html.mjs";
 import { board, gameCard, lineIsWhy, scoreLine, statusText, tonightOpen } from "../parts.mjs";
 import { pct, callPoints, comparisons, opener, verdictOf, rec, shortHash, RATE_FLOOR, REGULAR_SEASON_START } from "../copy.mjs";
 import { longDate, dayLabel, shortDate, weekday, timeET, countWord, shift } from "../time.mjs";
@@ -290,7 +290,7 @@ ${guide(lead, isToday, play)}`;
     { "@context": "https://schema.org", "@type": "WebSite", name: "Clutch", alternateName: "Clutch Ledger", url: ORIGIN + "/", description: desc },
     organizationLd(ORIGIN),
     // The app as an entity, so "is there an app that..." has something to name. Free to use; Pro and Elite are in-app plans (the offer is the free tier).
-    { "@context": "https://schema.org", "@type": "SoftwareApplication", name: "Clutch — Basketball Stats & AI", alternateName: "Clutch Ledger", applicationCategory: "SportsApplication", operatingSystem: "iOS, Web", url: ORIGIN + "/", downloadUrl: APP_STORE, isAccessibleForFree: true, offers: { "@type": "Offer", price: "0", priceCurrency: "USD" }, description: "NBA win probability for every game, sealed before tip in a public GitHub repository and graded in public after the final. Free in the browser and on iPhone.", publisher: { "@type": "Organization", name: "Clutch", url: ORIGIN + "/" } },
+    { "@context": "https://schema.org", "@type": "SoftwareApplication", name: "Clutch — Basketball Stats & AI", alternateName: "Clutch Ledger", applicationCategory: "SportsApplication", operatingSystem: "iOS, Web", url: ORIGIN + "/", image: ORIGIN + BRAND_ICON, downloadUrl: APP_STORE, isAccessibleForFree: true, offers: { "@type": "Offer", price: "0", priceCurrency: "USD" }, description: "NBA win probability for every game, sealed before tip in a public GitHub repository and graded in public after the final. Free in the browser and on iPhone.", publisher: { "@type": "Organization", name: "Clutch", url: ORIGIN + "/" } },
   ];
   // The words people search come first ("NBA win probability"); the brand line
   // ("call every game, beat Clutch") stays in the h1 and the share card.

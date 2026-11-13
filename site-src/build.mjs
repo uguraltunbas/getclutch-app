@@ -42,7 +42,7 @@ import { supabase, loadAll } from "./lib/data.mjs";
 import { buildModel } from "./lib/model.mjs";
 import worker, { EMBED_HEADERS, EMBED_DROPS } from "./worker.js";
 import { etDate, seasonOf, shift } from "./lib/time.mjs";
-import { FONTS, ORIGIN, APP, APP_STORE, INDEXNOW_KEY, WEB_APP_LIVE, WIN_TOTALS_RULES_URL, DESCRIPTION_MAX, LAUNCH_INPUT, LAUNCH_VALID, LAUNCH_UNTIL, LAUNCH_ON, LAUNCH_WORDS } from "./lib/html.mjs";
+import { FONTS, ORIGIN, APP, APP_STORE, BRAND_ICON, INDEXNOW_KEY, WEB_APP_LIVE, WIN_TOTALS_RULES_URL, DESCRIPTION_MAX, LAUNCH_INPUT, LAUNCH_VALID, LAUNCH_UNTIL, LAUNCH_ON, LAUNCH_WORDS } from "./lib/html.mjs";
 import { ttfToWoff2 } from "./lib/woff2.mjs";
 import { swatchOn } from "./lib/swatch.mjs";
 import { checkContrast, editions } from "./check-contrast.mjs";
@@ -241,6 +241,10 @@ for (const f of readdirSync(join(HERE, "static", "email"))) copyFileSync(join(HE
 mkdirSync(join(OUT, "badges"), { recursive: true });
 for (const f of readdirSync(join(HERE, "static", "badges"))) copyFileSync(join(HERE, "static", "badges", f), join(OUT, "badges", f));
 for (const f of ["favicon.png", "apple-touch-icon.png", "icon-512.png"]) copyFileSync(join(HERE, "static", f), join(OUT, f));
+// The icon again under a name that says whose it is: ChatGPT and Bing pick an app's picture by image
+// search (GEO test 2026-11-13: "Clutch Ledger NBA app" returned ClutchPoints' and Clinch's images,
+// never ours), so the front page's app data, the footer and the sitemap point at this file.
+copyFileSync(join(HERE, "static", "icon-512.png"), join(OUT, BRAND_ICON.slice(1)));
 // The open data (lib/pages/data.mjs): Clutch's own numbers as JSON and CSV, rebuilt with the pages.
 const data = dataFiles(m);
 mkdirSync(join(OUT, "data"), { recursive: true });
@@ -284,7 +288,7 @@ function lastmod(path) {
   if (["/terms/", "/privacy/", "/refunds/", "/support/"].includes(path)) return LEGAL_ISO;
   return today;
 }
-writeFileSync(join(OUT, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${listed.map((p) => `<url><loc>${ORIGIN}${p.path}</loc><lastmod>${lastmod(p.path)}</lastmod><changefreq>${p.path === "/" || p.path === "/tonight/" || p.path.startsWith("/games/") ? "hourly" : "daily"}</changefreq><priority>${p.path === "/" ? "1.0" : p.path === "/tonight/" ? "0.9" : p.path.startsWith("/games/") ? "0.8" : "0.6"}</priority></url>`).join("\n")}\n</urlset>\n`);
+writeFileSync(join(OUT, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n${listed.map((p) => `<url><loc>${ORIGIN}${p.path}</loc>${p.path === "/" ? `<image:image><image:loc>${ORIGIN}${BRAND_ICON}</image:loc></image:image>` : ""}<lastmod>${lastmod(p.path)}</lastmod><changefreq>${p.path === "/" || p.path === "/tonight/" || p.path.startsWith("/games/") ? "hourly" : "daily"}</changefreq><priority>${p.path === "/" ? "1.0" : p.path === "/tonight/" ? "0.9" : p.path.startsWith("/games/") ? "0.8" : "0.6"}</priority></url>`).join("\n")}\n</urlset>\n`);
 // Search engines, AI answers and model training may all read the paper: a new name
 // is known to an assistant only if it was in what the model learned from (owner
 // decision 2026-10-25, reversing chat 13's ai-train=no). Content-Signal is
@@ -517,8 +521,9 @@ const tourB = Buffer.byteLength(tourJs), tourGz = gzipSync(tourJs, { level: 9 })
 // 34 KB since the Theme button moved to the masthead's corner at every width (it had
 // 149 bytes left at 32); 35 KB since Tonight's games became rows (the design system's
 // MiniScoreRow, about 1 KB); 36 KB since the footer became the paper's masthead box (the
-// künye, owner's pick 2026-11-01, about 1 KB). Still one render-blocking file, content-hashed, cached a year.
-if (cssKB > 36) fail.push(`CSS ${cssKB.toFixed(1)} KB (budget 36 KB, 36,864 bytes)`);
+// künye, owner's pick 2026-11-01, about 1 KB); 37 KB since the footer shows the app icon (2026-11-13,
+// 9 bytes were left at 36). Still one render-blocking file, content-hashed, cached a year.
+if (cssKB > 37) fail.push(`CSS ${cssKB.toFixed(1)} KB (budget 37 KB, 37,888 bytes)`);
 if (liveKB > 5) fail.push(`live script ${liveKB.toFixed(1)} KB (budget 5)`);
 if (themeB > 700) fail.push(`theme script ${themeB} bytes (budget 700: it is in every page's head)`);
 if (tourGz > 3072) fail.push(`guide script ${tourGz} bytes gzipped (budget 3 KB)`);
