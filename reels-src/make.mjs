@@ -37,6 +37,10 @@ import { supabase } from "../site-src/lib/data.mjs";
 import { etDate, shift } from "../site-src/lib/time.mjs";
 import { reelFacts } from "./facts.mjs";
 import { caption, checkWords } from "./words.mjs";
+import { captionsFor } from "./publish/captions.mjs";
+import { bannedIn } from "./publish/guard.mjs";
+import { publishReels, settings as publishSettings, summaryHtml } from "./publish/publish.mjs";
+import { memoryStore, releaseStore } from "./publish/store.mjs";
 
 const SUPABASE_URL = "https://rgksgqnajvcsoftqncqe.supabase.co";
 const PAGE = "../reels-src/reels.html"; // render.mjs opens pages from desk-src/
@@ -91,8 +95,12 @@ export function telegram(token = process.env.TELEGRAM_BOT_TOKEN, chat = process.
 }
 
 const escHtml = (s) => String(s).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
-/** The Telegram message under a reel: what it is, and the caption in a block that copies with one tap. */
-export const tgCaption = (plan, cap) => `<b>${escHtml(LABEL[plan.kind])}</b> · ${escHtml(plan.day)} · ${escHtml(plan.away.abbr)} @ ${escHtml(plan.home.abbr)}\nTap the block to copy the caption:\n<pre>${escHtml(cap)}</pre>`;
+/**
+ * The Telegram message under a reel: what it is, and the TikTok caption in a
+ * block that copies with one tap (TikTok is the one platform posted by hand:
+ * save the video, paste the caption). Telegram's caption limit is 1,024.
+ */
+export const tgCaption = (plan, cap) => `<b>${escHtml(LABEL[plan.kind])}</b> · ${escHtml(plan.day)} · ${escHtml(plan.away.abbr)} @ ${escHtml(plan.home.abbr)}\nFor TikTok: save the video, tap the block to copy the caption:\n<pre>${escHtml(cap)}</pre>`.slice(0, 1024);
 
 /** One reel drawn: the MP4, a still PNG and every word it showed. */
 export async function drawReel(cdp, plan, dir) {
@@ -129,9 +137,10 @@ function phoneMp4(src, out, crf) {
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 /** A run: each reel planned, drawn, checked and sent (or kept, on a dry run). */
-export async function run({ date, only, out, dry, waitSeal = 0 }, { F, T = null, log = console.log, chrome = session, draw = drawReel } = {}) {
+export async function run({ date, only, out, dry, waitSeal = 0 }, { F, T = null, log = console.log, chrome = session, draw = drawReel, publish = null } = {}) {
   mkdirSync(out, { recursive: true });
-  const report = { made: [], skipped: [], failed: [] };
+  const report = { made: [], skipped: [], failed: [], published: null };
+  const made = [];
   const plans = { graded: () => F.graded(shift(date, -1)), tonight: () => F.tonight(date) };
   let browser = null;
   try {
@@ -151,11 +160,14 @@ export async function run({ date, only, out, dry, waitSeal = 0 }, { F, T = null,
           continue;
         }
         const cap = caption(plan);
+        const tiktok = captionsFor(plan).tiktok.caption;
         browser ??= await chrome();
         const d = await draw(browser.cdp, plan, out);
         const words = checkWords(d.texts, cap);
+        for (const id of bannedIn(tiktok)) { words.ok = false; words.hits.push(`tiktok caption: ${id}`); }
         writeFileSync(join(out, `${kind}.png`), d.png);
         writeFileSync(join(out, `${kind}.txt`), cap + "\n");
+        writeFileSync(join(out, `${kind}.tiktok.txt`), tiktok + "\n");
         writeFileSync(join(out, `${kind}.json`), JSON.stringify({ ...plan, checks: words }, null, 2));
         if (!words.ok) {
           report.failed.push({ kind, why: words.hits.join("; ") });
@@ -163,8 +175,9 @@ export async function run({ date, only, out, dry, waitSeal = 0 }, { F, T = null,
           if (T && !dry) await T.line(`⚠️ <b>${escHtml(LABEL[kind])}</b> held back: ${escHtml(words.hits.join("; "))}`);
           continue;
         }
+        made.push({ kind, key: plan.key, plan, mp4: d.mp4, dur: d.dur });
         if (!T || dry) { report.made.push({ kind, sent: false }); log(`${kind}: drawn, not sent (✓ words · ${(d.mp4.length / 1e6).toFixed(1)} MB · ${d.dur}s)`); continue; }
-        await T.video(d.mp4, tgCaption(plan, cap), { duration: d.dur });
+        await T.video(d.mp4, tgCaption(plan, tiktok), { duration: d.dur });
         report.made.push({ kind, sent: true });
         log(`${kind}: sent (✓ words · ${(d.mp4.length / 1e6).toFixed(1)} MB · ${d.dur}s)`);
       } catch (e) {
@@ -176,7 +189,32 @@ export async function run({ date, only, out, dry, waitSeal = 0 }, { F, T = null,
   } finally {
     browser?.close();
   }
+  // the checked reels, out to the platforms that are switched on (publish/publish.mjs)
+  if (publish && made.length) {
+    try {
+      const res = await publish(made, { dry, log });
+      report.published = res;
+      writeFileSync(join(out, "publish.json"), JSON.stringify(res, null, 2) + "\n");
+      const html = summaryHtml(res);
+      if (html && T && !dry) await T.line(html);
+    } catch (e) {
+      report.failed.push({ kind: "publish", why: String(e.message).slice(0, 300) });
+      log(`publish: failed (${e.message})`);
+      if (T && !dry) await T.line(`⚠️ <b>📣 Auto-posting</b> failed: ${escHtml(String(e.message).slice(0, 200))}`).catch(() => {});
+    }
+    if (report.published?.rows.some((r) => r.status === "failed")) report.failed.push({ kind: "publish", why: "a platform failed" });
+  }
   return report;
+}
+
+/** The publishing step as the workflow runs it: the state release when live, memory on a dry run. */
+export function publisher(env = process.env) {
+  return async (made, { dry, log }) => {
+    const mode = publishSettings(env, { dry }).mode;
+    if (mode === "off") return { mode, rows: [] };
+    const store = mode === "on" ? releaseStore({ repo: env.GITHUB_REPOSITORY, token: env.GITHUB_TOKEN, secret: env.PUBLISH_STATE_KEY || null }) : memoryStore();
+    return publishReels(made, { env, store, dry, log });
+  };
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
@@ -186,6 +224,6 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   const F = reelFacts(supabase(process.env.SUPABASE_URL || SUPABASE_URL, anon));
   const T = inputs.dry ? null : telegram();
   if (!T && !inputs.dry) console.log("::notice::No TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID: drawn and checked, not sent.");
-  const report = await run(inputs, { F, T });
+  const report = await run(inputs, { F, T, publish: publisher() });
   if (report.failed.length) process.exitCode = 1;
 }
