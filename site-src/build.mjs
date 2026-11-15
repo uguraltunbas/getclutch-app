@@ -55,7 +55,7 @@ import { ledgerPage, receiptsPage } from "./lib/pages/paper.mjs";
 import { howPage, pricingPage, faqPage, companyPage, termsPage, privacyPage, refundsPage, supportPage } from "./lib/pages/about.mjs";
 import { unsubscribePage } from "./lib/pages/unsubscribe.mjs";
 import { teamPages, notFoundPage } from "./lib/pages/teams.mjs";
-import { accuracyPage, backtestSentence, backtestBands, accuracyQa, keyNumbers, liveBpiSentence } from "./lib/pages/accuracy.mjs";
+import { accuracyPage, backtestSentence, backtestBands, accuracyQa, keyNumbers, liveBpiSentence, scorePairs } from "./lib/pages/accuracy.mjs";
 import { matchupPages } from "./lib/pages/matchups.mjs";
 import { playoffsPage } from "./lib/pages/playoffs.mjs";
 import { tonightPage } from "./lib/pages/tonight.mjs";
@@ -392,6 +392,21 @@ for (const p of pages) for (const [, href, d] of p.html.matchAll(/href="(\/games
 for (const p of pages) for (const [, href] of p.html.matchAll(/href="(https:\/\/app\.clutchledger\.com[^"]*)"/g)) if (!/[?&](amp;)?utm_source=/.test(href)) fail.push(`${p.path}: links the web app without utm tags (${href})`);
 // …and which kind of page it sits on (html.mjs withSitePage), so a sale can be traced to /accuracy/ or a game page.
 for (const p of pages) for (const [, href] of p.html.matchAll(/href="(https:\/\/app\.clutchledger\.com[^"]*utm_source=clutchledger[^"]*)"/g)) if (!/&amp;utm_term=[a-z0-9-]+/.test(href)) fail.push(`${p.path}: a web app link without the page's utm_term (${href})`);
+// /accuracy/'s season score table compares each number on one set of games: Clutch against ESPN BPI on
+// BPI's games, against the market on the market's. (Live on 2026-11-15 it set Clutch's 0.188 on 189
+// games beside BPI's 0.186 on 183; on BPI's own 183 games Clutch scored 0.183.)
+for (const p of scorePairs(m.record?.tracks)) if (!p.same) fail.push(`/accuracy/: the ${p.label} score pair is counted on different games (Clutch ${p.us.n}, them ${p.them.n}, the pair ${p.n})`);
+{
+  const mixed = scorePairs({ vs_espn: { n: 183, clutch: { brier: 0.19, n: 189 }, espn_bpi: { brier: 0.18, n: 183 } } });
+  if (mixed.length !== 1 || mixed[0].same) fail.push("/accuracy/ score-pair self-test: a pair counted on 189 and 183 games was not caught");
+  const acc = pages.find((p) => p.path === "/accuracy/")?.html ?? "";
+  const want = new Map(scorePairs(m.record?.tracks).filter((p) => p.same).map((p) => [p.key, p]));
+  for (const [, key, n, us, them] of acc.matchAll(/<tr data-pair="([a-z_]+)"><td>[^<]*<\/td><td class="num">(\d+)<\/td><td class="num">([\d.—]+)<\/td><td class="num">([\d.—]+)<\/td><\/tr>/g)) {
+    const p = want.get(key);
+    if (!p || +n !== p.n || us !== p.us.brier.toFixed(3) || them !== p.them.brier.toFixed(3)) fail.push(`/accuracy/: the score row "${key}" (${n} games, ${us} vs ${them}) is not one pair counted on the same games`);
+  }
+  if (/Accuracy score this season/.test(acc) && !/<tr data-pair=/.test(acc)) fail.push("/accuracy/: the season score table has rows that aren't same-games pairs");
+}
 const st = selfTest();
 if (st.missed.length || st.wrong.length) fail.push(`betting-words self-test: missed ${JSON.stringify(st.missed)}, wrongly caught ${JSON.stringify(st.wrong)}`);
 const scan = scanPages(pages.filter((p) => !p.redirect));

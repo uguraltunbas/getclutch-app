@@ -62,6 +62,23 @@ export function liveBpiSentence(r) {
   return `This season, live: on the ${bpi.n} graded games ESPN BPI also had a number on, Clutch's sealed calls got ${right(us)} right and BPI's got ${right(bpi)}.`;
 }
 
+/**
+ * The season's accuracy score as pairs, each scored on one set of games: Clutch's call against
+ * ESPN BPI on the games BPI had a number for (tracks.vs_espn), against the market's final price on
+ * the games with a price (tracks.with_line). Never Clutch's all-games score beside a number that
+ * covered fewer games: on 2026-11-15 that read 0.188 (189 games) against BPI's 0.186 (183), while
+ * on BPI's own 183 games Clutch scored 0.183. `same` is false when a pair's two scores were counted
+ * on different games; the page leaves such a pair out and build.mjs fails the build.
+ */
+export function scorePairs(tracks) {
+  const pair = (key, label, g) => {
+    const us = g?.clutch, them = g?.[key];
+    if (us?.brier == null || them?.brier == null) return null;
+    return { key, label, n: g.n, us, them, model: g.model ?? null, same: us.n === them.n && us.n === g.n };
+  };
+  return [pair("espn_bpi", "ESPN BPI", tracks?.vs_espn), pair("market", "The market · final price", tracks?.with_line)].filter(Boolean);
+}
+
 export function keyNumbers(bench) {
   const seasons = Object.keys(bench ?? {}).sort().reverse();
   const tracks = [["Clutch", "clutch"], ["ESPN BPI", "espn_bpi"], ["the market's final price", "market"], ["always the home team", "always_home"]];
@@ -88,11 +105,15 @@ function liveSection(m) {
 <div class="crow"><span>Clutch</span>${c.small ? "<span></span>" : bar(c.us, "ink")}<span class="d v">${val(c.us, c.usRec)}</span></div>
 <div class="crow"><span class="ink3">${esc(c.themLabel)}</span>${c.small ? "<span></span>" : bar(c.them, "dim")}<span class="d v">${val(c.them, c.themRec)}</span></div></div>`;
   }
-  // The accuracy score (Brier) on the same games, once there are enough of them to read.
-  const t = r.tracks;
-  const scores = [["Clutch's call", t?.all_games?.clutch, true], ["ESPN BPI", t?.vs_espn?.espn_bpi], ["The market · final price", t?.with_line?.market]].filter(([, x]) => x?.brier != null && x.n >= RATE_FLOOR);
-  if (scores.length > 1) {
-    html += `<div class="scroll gap"><table class="tbl"><caption class="vh">Accuracy score this season, lower is better</caption><thead><tr><th scope="col">Number</th><th scope="col" class="num">Accuracy score</th><th scope="col" class="num">Games</th></tr></thead><tbody>${scores.map(([l, x, lead]) => `<tr><td${lead ? ' class="lead"' : ""}>${esc(l)}</td><td class="num">${b3(x.brier)}</td><td class="num">${x.n}</td></tr>`).join("")}</tbody></table></div><p class="note">The accuracy score (the Brier score) grades the probability itself, not just the side: lower is better, 0.250 is a coin flip.</p>`;
+  // The accuracy score (Brier), each pair on one set of games, once there are enough of them to read.
+  const pairs = scorePairs(r.tracks).filter((p) => p.same && p.n >= RATE_FLOOR);
+  if (pairs.length) {
+    const bpi = pairs.find((p) => p.key === "espn_bpi");
+    const model = bpi?.model?.brier != null && bpi.model.n === bpi.n ? bpi.model : null;
+    const modelLine = model
+      ? ` Model only, Clutch's own number before the market is mixed in, scored ${b3(model.brier)} on the same ${bpi.n} games: ${model.brier > bpi.them.brier ? "behind ESPN BPI so far" : model.brier < bpi.them.brier ? "ahead of ESPN BPI so far" : "level with ESPN BPI so far"}.`
+      : "";
+    html += `<div class="scroll gap"><table class="tbl"><caption class="vh">Accuracy score this season, lower is better: Clutch's call and each other number, scored on the same games</caption><thead><tr><th scope="col">Clutch's call against</th><th scope="col" class="num">Same games</th><th scope="col" class="num">Clutch</th><th scope="col" class="num">Them</th></tr></thead><tbody>${pairs.map((p) => `<tr data-pair="${p.key}"><td>${esc(p.label)}</td><td class="num">${p.n}</td><td class="num">${b3(p.us.brier)}</td><td class="num">${b3(p.them.brier)}</td></tr>`).join("")}</tbody></table></div><p class="note">The accuracy score (the Brier score) grades the probability itself, not just the side: lower is better, 0.250 is a coin flip. Each row scores Clutch's call on exactly the games the other number had.${modelLine}</p>`;
   }
   const notes = [];
   if (r.excluded) notes.push(`${r.excluded} more ${r.excluded === 1 ? "call is" : "calls are"} left out because ${r.excluded === 1 ? "it" : "they"} can't be proven to predate tip; the count is printed so the record can't quietly shrink.`);
