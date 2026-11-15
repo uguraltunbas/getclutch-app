@@ -40,7 +40,7 @@ export function lines(p) {
       ? `Clutch said ${p.pct}%. The ${pick.nickname} won ${score}.`
       : `Clutch gave the ${other.nickname} ${100 - p.pct}%. They won ${score}.`,
     short: p.correct ? `Clutch said ${p.pct}%. ${pick.nickname} won.` : `Clutch gave the ${other.nickname} ${100 - p.pct}%. They won.`,
-    when: `${p.away.abbr} @ ${p.home.abbr} · ${p.day} · Final ${p.awayScore}–${p.homeScore}`,
+    when: `${p.away.abbr} @ ${p.home.abbr} · ${p.day} · final`,
     why: p.correct ? "The call held." : "A miss, and it stays on the record.",
     proof: p.record ? `Every sealed call this season: ${p.record.right}–${p.record.wrong} (${p.record.rate}%).` : "Every call is sealed before tip and graded in public.",
     ask: "Think you can call them better?",
@@ -102,7 +102,7 @@ export function captionsFor(p) {
   return {
     youtube: {
       title: ytTitle,
-      description: join([L.hook, L.when, L.why, L.proof, "", `${L.ask} Make your own call: ${siteUrl("youtube", kind)}`, "", [...L.tags, "#basketball", "#Shorts"].join(" ")]),
+      description: join([L.hook, L.when, L.why, L.proof, "", `${L.ask} ${siteUrl("youtube", kind)}`, "", [...L.tags, "#basketball", "#Shorts"].join(" ")]),
       tags: ["NBA", ...L.teams, "basketball", "NBA predictions", "Clutch"],
     },
     instagram: {

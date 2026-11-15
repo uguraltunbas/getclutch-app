@@ -1,7 +1,9 @@
 # Clutch's daily reels: two short vertical videos (1080×1920, H.264, no
-# sound, about 15 s) made from public numbers and sent to Uğur on Telegram
-# with a caption to paste — he posts them to TikTok, YouTube Shorts,
-# Instagram Reels and X himself (reels-src/make.mjs):
+# sound, about 16 s) made from public numbers, sent to Uğur on Telegram with
+# the TikTok caption to paste (TikTok stays by hand), and published by the
+# official APIs to the brand's own YouTube Shorts, Instagram Reels, Threads,
+# Facebook Reels and Bluesky where each is switched on (reels-src/make.mjs,
+# reels-src/publish/):
 #   Graded          last night's game of the night: Clutch's number at tip,
 #                   the final, held or missed, the season's record
 #   Tonight's number  today's game of the night: the sealed number, the tip
@@ -22,8 +24,18 @@
 # TELEGRAM_CHAT_ID (Uğur's chat with it). Without the two Telegram secrets a
 # run draws, checks and logs, and sends nothing.
 #
+# Publishing (reels-src/publish/publish.mjs): repository variable PUBLISH =
+# off | dry | on (off by default), and one variable per platform —
+# PUBLISH_YOUTUBE, PUBLISH_INSTAGRAM, PUBLISH_THREADS, PUBLISH_FACEBOOK,
+# PUBLISH_BLUESKY = on — with PUBLISH_CAP (posts per platform a day, 2).
+# Each platform's secrets are in SETUP-TR.md's list; a platform without them
+# is skipped and the Telegram line says so. What went where is kept in the
+# `reels-state` prerelease (ledger.json), which is why this job may write
+# contents: it never pushes a commit.
+#
 # The log names each reel and its checks, never a caption or a number; the
-# files are never kept as artifacts (the repository is public). Inputs reach
+# files are never kept as artifacts (the repository is public; the reels a
+# platform fetches by URL sit in the reels-state prerelease once posted). Inputs reach
 # the script as environment variables, never inside a shell line. Actions are
 # pinned to a commit (the tag in the comment), as in site.yml.
 name: Daily reels
@@ -43,12 +55,12 @@ on:
         default: ""
         type: string
       dry:
-        description: "Draw and check, send nothing"
+        description: "Draw and check, send nothing (publishing prints what it would post)"
         required: false
         default: false
         type: boolean
 permissions:
-  contents: read
+  contents: write # the reels-state prerelease only (publishing's ledger); nothing is pushed
 concurrency:
   group: reels
   cancel-in-progress: false
@@ -78,4 +90,22 @@ jobs:
           INPUT_ONLY: ${{ github.event.inputs.only }}
           INPUT_DRY: ${{ github.event.inputs.dry }}
           INPUT_WAIT_SEAL: "30"
+          GITHUB_TOKEN: ${{ github.token }}
+          PUBLISH: ${{ vars.PUBLISH }}
+          PUBLISH_CAP: ${{ vars.PUBLISH_CAP }}
+          PUBLISH_YOUTUBE: ${{ vars.PUBLISH_YOUTUBE }}
+          PUBLISH_INSTAGRAM: ${{ vars.PUBLISH_INSTAGRAM }}
+          PUBLISH_THREADS: ${{ vars.PUBLISH_THREADS }}
+          PUBLISH_FACEBOOK: ${{ vars.PUBLISH_FACEBOOK }}
+          PUBLISH_BLUESKY: ${{ vars.PUBLISH_BLUESKY }}
+          PUBLISH_STATE_KEY: ${{ secrets.PUBLISH_STATE_KEY }}
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+          IG_TOKEN: ${{ secrets.IG_TOKEN }}
+          THREADS_TOKEN: ${{ secrets.THREADS_TOKEN }}
+          FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
+          FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
+          BSKY_HANDLE: ${{ secrets.BSKY_HANDLE }}
+          BSKY_APP_PASSWORD: ${{ secrets.BSKY_APP_PASSWORD }}
         run: node reels-src/make.mjs

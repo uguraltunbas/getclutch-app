@@ -1,14 +1,15 @@
 // The daily reels: two short vertical videos a day from Clutch's public
-// numbers, each sent to Uğur on Telegram with its caption ready to paste into
-// TikTok, YouTube Shorts, Instagram Reels and X. Posting stays his: nothing
-// here signs in to a social network.
+// numbers, each sent to Uğur on Telegram with its TikTok caption ready to
+// paste (TikTok's API doesn't take a brand's own uploads, so that one stays
+// by hand), then published to the platforms switched on in publish/ (YouTube
+// Shorts, Instagram Reels, Threads, Facebook Reels, Bluesky). X stays by hand.
 //
 //   tonight  today's game of the night: Clutch's sealed number, the matchup,
 //            the tip (ET), the biggest reason in plain words
 //   graded   yesterday's game of the night as the Ledger graded it (held or
 //            missed, misses shown as they are) and the season's record
 //
-//   node reels-src/make.mjs [--date 2026-11-13] [--only tonight|graded] [--out dir] [--dry] [--wait-seal 30]
+//   node reels-src/make.mjs [--date 2026-11-13] [--only tonight|graded] [--out dir] [--dry] [--wait-seal 30] [--variant versus]
 //
 // --date is the ET date of tonight's game (default: today in New York); the
 // graded reel is the day before. --dry, or no TELEGRAM_BOT_TOKEN /
@@ -50,6 +51,17 @@ const MAX_MP4 = 45e6; // the bot API takes an upload up to 50 MB
 const KINDS = ["graded", "tonight"];
 const LABEL = { tonight: "🎬 Tonight's number", graded: "🎬 Graded" };
 
+/**
+ * Each reel has two hooks (reels.html), taken in turn by the day so no two
+ * days in a row look alike to a viewer or to a platform's repeat check:
+ * tonight "number" / "versus", graded "verdict" / "scoreboard".
+ */
+export const VARIANTS = { tonight: ["number", "versus"], graded: ["verdict", "scoreboard"] };
+export function variantFor(kind, date) {
+  const day = Math.floor(Date.parse(`${date}T12:00:00Z`) / 864e5);
+  return VARIANTS[kind][day % VARIANTS[kind].length];
+}
+
 export function readInputs(argv = process.argv.slice(2), env = process.env) {
   const arg = (k) => { const i = argv.indexOf(k); return i >= 0 ? argv[i + 1] : undefined; };
   const date = String(arg("--date") ?? env.INPUT_DATE ?? "") || etDate();
@@ -57,8 +69,10 @@ export function readInputs(argv = process.argv.slice(2), env = process.env) {
   const only = String(arg("--only") ?? env.INPUT_ONLY ?? "") || null;
   if (only && !KINDS.includes(only)) throw new Error(`only: one of ${KINDS.join(", ")}`);
   const wait = Number(arg("--wait-seal") ?? env.INPUT_WAIT_SEAL ?? 0);
+  const variant = arg("--variant") ?? null;
+  if (variant && !Object.values(VARIANTS).flat().includes(variant)) throw new Error(`variant: one of ${Object.values(VARIANTS).flat().join(", ")}`);
   return {
-    date, only, waitSeal: Number.isFinite(wait) ? Math.max(0, Math.min(wait, 60)) : 0,
+    date, only, variant, waitSeal: Number.isFinite(wait) ? Math.max(0, Math.min(wait, 60)) : 0,
     out: resolve(arg("--out") ?? join(env.RUNNER_TEMP || tmpdir(), "clutch-reels")),
     dry: argv.includes("--dry") || env.INPUT_DRY === "true",
   };
@@ -137,7 +151,7 @@ function phoneMp4(src, out, crf) {
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 /** A run: each reel planned, drawn, checked and sent (or kept, on a dry run). */
-export async function run({ date, only, out, dry, waitSeal = 0 }, { F, T = null, log = console.log, chrome = session, draw = drawReel, publish = null } = {}) {
+export async function run({ date, only, out, dry, waitSeal = 0, variant = null }, { F, T = null, log = console.log, chrome = session, draw = drawReel, publish = null } = {}) {
   mkdirSync(out, { recursive: true });
   const report = { made: [], skipped: [], failed: [], published: null };
   const made = [];
@@ -159,6 +173,7 @@ export async function run({ date, only, out, dry, waitSeal = 0 }, { F, T = null,
           if (T && !dry) await T.line(`<b>${escHtml(LABEL[kind])}</b> · no reel today (${escHtml(why)})`);
           continue;
         }
+        plan.variant = variant && VARIANTS[kind].includes(variant) ? variant : variantFor(kind, plan.date ?? date);
         const cap = caption(plan);
         const tiktok = captionsFor(plan).tiktok.caption;
         browser ??= await chrome();

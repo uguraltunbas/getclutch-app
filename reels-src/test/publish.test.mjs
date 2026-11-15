@@ -16,7 +16,7 @@ import { bluesky } from "../publish/platforms/bluesky.mjs";
 import { facebook } from "../publish/platforms/facebook.mjs";
 import { instagram, threads } from "../publish/platforms/meta.mjs";
 import { redact } from "../publish/platforms/http.mjs";
-import { run, tgCaption } from "../make.mjs";
+import { run, tgCaption, variantFor, VARIANTS, readInputs } from "../make.mjs";
 
 const GSW = teamOf({ abbreviation: "GSW", name: "Golden State Warriors", city: "San Francisco", nickname: "Warriors", primary_color: "#1D428A" });
 const SAS = teamOf({ abbreviation: "SAS", name: "San Antonio Spurs", city: "San Antonio", nickname: "Spurs", primary_color: "#C4CED4" });
@@ -306,4 +306,15 @@ test("a run with publishing: the TikTok caption under the video, then one line o
   assert.equal(r.failed.length, 0);
   assert.ok(existsSync(out + "/graded.tiktok.txt"));
   assert.ok(tgCaption(tonight, "a").length < 1024);
+});
+
+test("the hooks take turns by day, and a preview can ask for one", () => {
+  for (const kind of ["tonight", "graded"]) {
+    const a = variantFor(kind, "2026-11-15"), b = variantFor(kind, "2026-11-16"), c = variantFor(kind, "2026-11-17");
+    assert.notEqual(a, b);
+    assert.equal(a, c);
+    assert.ok(VARIANTS[kind].includes(a));
+  }
+  assert.equal(readInputs(["--variant", "versus"], {}).variant, "versus");
+  assert.throws(() => readInputs(["--variant", "x"], {}));
 });
