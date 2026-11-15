@@ -284,8 +284,29 @@ ${live ? '<script src="/live.js" defer></script>' : ""}${tour ? '<script src="/t
 </body>
 </html>
 `;
-  // Every link to the App Store on this page carries the page's campaign (when the token is set).
-  return html.replaceAll(`href="${APP_STORE}"`, `href="${esc(appStoreLink(path))}"`);
+  // Every link to the App Store on this page carries the page's campaign (when the token is set), and every
+  // tagged link into the web app says which kind of page it sat on.
+  return withSitePage(html.replaceAll(`href="${APP_STORE}"`, `href="${esc(appStoreLink(path))}"`), path);
+}
+
+/**
+ * The kind of site page a path is, for utm_term on links into the web app: the first web sale (2026-11-05) came
+ * from /accuracy/ through the masthead, and utm_content alone ("masthead") can't say which of ~550 pages that was
+ * (the browser sends only the site's origin as the referrer). Kinds, not paths, so a breakdown stays readable:
+ * "home", "game", "night", "team", "matchup", "tr", or the page's own name ("accuracy", "ledger", "pricing" …).
+ */
+export function sitePage(path) {
+  if (path === "/") return "home";
+  if (/^\/games\/[^/]+\/[^/]+\/$/.test(path)) return "game";
+  const first = path.split("/").filter(Boolean)[0] ?? "home";
+  const kinds = { games: "night", tonight: "night", teams: "team", matchups: "matchup", tr: "tr" };
+  return (kinds[first] ?? first).replace(/[^a-z0-9-]/g, "").slice(0, 40) || "other";
+}
+
+/** Adds utm_term=<the page's kind> to every link into the web app that this site tagged (utm_source=clutchledger). */
+export function withSitePage(html, path) {
+  const term = sitePage(path);
+  return html.replace(/href="(https:\/\/app\.clutchledger\.com[^"]*utm_source=clutchledger[^"]*)"/g, (m, href) => (href.includes("utm_term=") ? m : `href="${href}&amp;utm_term=${term}"`));
 }
 
 /**
