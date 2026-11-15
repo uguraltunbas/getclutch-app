@@ -131,7 +131,9 @@ export const priceFig = (s) => esc(s).replace(/\.(?=\d)/, '<span class="dp">.</s
 export const DESCRIPTION_MAX = 160;
 export function clipDescription(s, max = DESCRIPTION_MAX) {
   if (s.length <= max) return s;
-  const sentences = s.match(/[^.!?]+[.!?]+(\s|$)/g) ?? [];
+  // A sentence ends at . ! ? followed by a space or the end — never at the point inside "$9.99" (the live /pricing/
+  // description read "…the Ledger. 99 a year, 7 days free. 99 a year." until 2026-11-15).
+  const sentences = s.match(/.+?[.!?]+(?=\s|$)/g) ?? [];
   let out = "";
   for (const x of sentences) { if ((out + x).trim().length > max) break; out += x; }
   if (out.trim()) return out.trim();

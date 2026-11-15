@@ -96,15 +96,17 @@ export function pricingPage(m) {
   // for a subscription: always available, nothing shipped (opens at once, $0),
   // and the web's 14-day refund (/refunds/), asked for by e-mail: Google's "by mail", the online
   // return (its other choices are a store or a kiosk). No review or rating: there are none to cite.
+  // "$9.99" → "9.99": the offers read the plan constants, so a price change is one edit (content/features.mjs).
+  const num = (p) => p.replace(/^\$/, "");
   const offer = (name, price) => ({
     "@type": "Offer", name, price, priceCurrency: "USD", url: ORIGIN + "/pricing/",
     availability: "https://schema.org/InStock",
     shippingDetails: { "@type": "OfferShippingDetails", shippingRate: { "@type": "MonetaryAmount", value: 0, currency: "USD" }, shippingDestination: { "@type": "DefinedRegion", addressCountry: "US" }, deliveryTime: { "@type": "ShippingDeliveryTime", handlingTime: { "@type": "QuantitativeValue", minValue: 0, maxValue: 0, unitCode: "DAY" }, transitTime: { "@type": "QuantitativeValue", minValue: 0, maxValue: 0, unitCode: "DAY" } } },
     hasMerchantReturnPolicy: { "@type": "MerchantReturnPolicy", applicableCountry: "US", returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow", merchantReturnDays: 14, returnMethod: "https://schema.org/ReturnByMail", returnFees: "https://schema.org/FreeReturn", merchantReturnLink: ORIGIN + "/refunds/" },
   });
-  const ld = { "@context": "https://schema.org", "@type": "Product", name: PLAN.name, description: desc, image: ORIGIN + "/og/pricing.jpg", brand: { "@type": "Brand", name: "Clutch" }, url: ORIGIN + "/pricing/", offers: [offer("Pro monthly", "9.99"), offer("Pro yearly", "59.99")] };
-  const eliteLd = { "@context": "https://schema.org", "@type": "Product", name: ELITE.name, description: `${ELITE.name}: ${ELITE.line} ${ELITE.monthly} a month or ${ELITE.annual} a year, no free trial.`, image: ORIGIN + "/og/pricing.jpg", brand: { "@type": "Brand", name: "Clutch" }, url: ORIGIN + "/pricing/", offers: [offer("Elite monthly", "19.99"), offer("Elite yearly", "119.99")] };
-  return { path: "/pricing/", title: "Pricing: Free for good, Clutch Pro $9.99 and Elite $19.99 a month · Clutch", html: page({ path: "/pricing/", title: "Pricing: Free for good, Clutch Pro $9.99 and Elite $19.99 a month · Clutch", description: desc, body, current: "pricing", og: "pricing", jsonld: [ld, eliteLd] }) };
+  const ld = { "@context": "https://schema.org", "@type": "Product", name: PLAN.name, description: desc, image: ORIGIN + "/og/pricing.jpg", brand: { "@type": "Brand", name: "Clutch" }, url: ORIGIN + "/pricing/", offers: [offer("Pro monthly", num(PLAN.monthly)), offer("Pro yearly", num(PLAN.annual))] };
+  const eliteLd = { "@context": "https://schema.org", "@type": "Product", name: ELITE.name, description: `${ELITE.name}: ${ELITE.line} ${ELITE.monthly} a month or ${ELITE.annual} a year, no free trial.`, image: ORIGIN + "/og/pricing.jpg", brand: { "@type": "Brand", name: "Clutch" }, url: ORIGIN + "/pricing/", offers: [offer("Elite monthly", num(ELITE.monthly)), offer("Elite yearly", num(ELITE.annual))] };
+  return { path: "/pricing/", title: `Pricing: Free for good, Clutch Pro ${PLAN.monthly} and Elite ${ELITE.monthly} a month · Clutch`, html: page({ path: "/pricing/", title: `Pricing: Free for good, Clutch Pro ${PLAN.monthly} and Elite ${ELITE.monthly} a month · Clutch`, description: desc, body, current: "pricing", og: "pricing", jsonld: [ld, eliteLd] }) };
 }
 
 /**
