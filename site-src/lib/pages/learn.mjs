@@ -12,6 +12,7 @@ import { lastGradedNight } from "../model.mjs";
 import { COMPANY } from "../../content/company.mjs";
 import { dataRows, DATA, FILES } from "./data.mjs";
 import { backtestSentence } from "./accuracy.mjs";
+import { answersSection, faqLd } from "../answers.mjs";
 
 const LEARN = "/learn/";
 const b3 = (x) => (x == null ? "—" : x.toFixed(3));
@@ -111,6 +112,24 @@ function brierArticle(m) {
   const worst = rows.slice().sort((a, b) => b.q - a.q)[0]; // the night's most confident call shows the stakes best
   const bands = (m.record ? m.ledger?.calibration ?? [] : []).filter((b) => b && b.n > 0);
   const band = (b) => `${Math.round(b.lo * 100)}–${Math.round(b.hi * 100)}%`;
+  // Common questions (answers.mjs): each answered in its first sentence, the same words on the page and as FAQPage.
+  const seasonsText = list(seasons);
+  const qa = [
+    ["What is a good Brier score for NBA predictions?",
+      T("market").length && T("espn_bpi").length
+        ? `About 0.20 or a little below: over the ${seasonsText} NBA seasons the market's final price scored ${sc(T("market"))}, ESPN BPI ${sc(T("espn_bpi"))}, and picking the home team every game scored ${sc(T("always_home"))}; a coin flip on every game scores 0.250.`
+        : ""],
+    ["What does a Brier score of 0.25 mean?",
+      "It is what saying 50% on every game scores, so a forecaster at 0.250 or worse has told you nothing a coin flip would not; lower is better."],
+    ["How is the Brier score calculated?",
+      "For each game, square the gap between the probability given and what happened (1 if that side won, 0 if it lost), then average over every game: a 70% favorite that wins costs 0.090 and one that loses costs 0.490."],
+    ["What is calibration in sports forecasting?",
+      "Calibration means a forecaster's numbers come true as often as they say: of all the games called at 70%, the favorite should win about 70 in 100, and a band means little until it holds a few dozen games."],
+    ["What is Clutch's Brier score?",
+      T("clutch").length === seasons.length && T("market").length === seasons.length
+        ? `Tested on the ${seasonsText} seasons, every game predicted only from the games before it, Clutch's call scored ${sc(T("clutch"))}, level with the market's final price (${sc(T("market"))}); this season's live scores are on the Ledger's accuracy page.`
+        : ""],
+  ];
   const body = `
 <section class="panel" aria-labelledby="short"><span class="kick">The short answer</span><h2 id="short">Does 70% happen 70% of the time, and how confident was it when it mattered?</h2>
 <p class="sub">Calibration asks whether a forecaster's numbers come true as often as they say: of all the games called at 70%, the favorite should win about 70 in 100. The Brier score turns calibration and confidence into one number per forecaster. Lower is better and a coin flip on every game scores 0.250. Over the last two NBA seasons the market's final price scored ${sc(T("market"))}, ESPN BPI ${sc(T("espn_bpi"))}, and picking the home team every night ${sc(T("always_home"))}.</p></section>
@@ -131,8 +150,11 @@ function brierArticle(m) {
 <section class="blk" aria-labelledby="both"><h2 id="both">Why both matter</h2>
 <p>Calibration alone can be gamed by never saying much: a forecaster that gives every home team 56% is close to calibrated and tells you almost nothing. The Brier score catches that, because it rewards numbers that are far from 50% and right. A forecaster that is bold and wrong loses on both counts. Good forecasts are calibrated and as confident as the evidence allows.</p></section>
 
+${answersSection(qa, { id: "faq", heading: "Common questions" })}
+
 <p class="note">The night and the bands are rebuilt from Clutch's Ledger every day; the season scores from its walk-forward test. <a href="/learn/">More on reading the numbers →</a></p>`;
   return {
+    qa,
     slug: "calibration-and-brier-score",
     h1: "Calibration and the Brier score, explained",
     kick: "The basics",
@@ -140,7 +162,7 @@ function brierArticle(m) {
     description: "How to grade a forecaster: calibration (does 70% happen 70% of the time?) and the Brier score, with real NBA calls scored one game at a time.",
     deck: "Two ways to grade anyone who puts a number on a game: does it come true as often as it says, and was it confident when it mattered? With real NBA calls, scored one game at a time.",
     published: "2026-10-23",
-    modified: "2026-10-23",
+    modified: "2026-11-17",
     body,
   };
 }
@@ -365,7 +387,7 @@ function articlePage(a) {
     publisher: { "@type": "Organization", name: "Clutch", url: ORIGIN + "/", logo: { "@type": "ImageObject", url: `${ORIGIN}/icon-512.png` } },
   };
   const crumbs = { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [{ "@type": "ListItem", position: 1, name: "Learn", item: ORIGIN + LEARN }, { "@type": "ListItem", position: 2, name: a.h1, item: ORIGIN + path }] };
-  return { path, title: a.title, html: page({ path, title: a.title, description: a.description, body, current: "how", og: "ledger", ogType: "article", jsonld: [ld, crumbs] }) };
+  return { path, title: a.title, html: page({ path, title: a.title, description: a.description, body, current: "how", og: "ledger", ogType: "article", jsonld: [ld, crumbs, a.qa ? faqLd(a.qa) : null].filter(Boolean) }) };
 }
 
 // The hub's terms: each one short, each linked to the page that explains it in full.
